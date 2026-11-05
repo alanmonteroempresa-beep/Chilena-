@@ -24,9 +24,9 @@ Mínimo 16 px en texto normal; la cédula del árbitro usa 18 px o más.
 | `--brand-blue` | `#0250B0` | Elite Blue: institucional, rol Jugador en claro |
 | `--brand-lime` | `#D0FF41` | Volt Lime: **acción principal** (botones) y momentos de gol. El texto encima siempre es oscuro (`#07090C`) |
 | `--brand-silver` | `#C6D0DD` | Silver Cloud: bordes, divisores, rol Liga en oscuro |
-| `--warning` | `#FFB020` | Amarillas, pendientes, alertas ("Aguas") |
+| `--warning` | `#FFB020` oscuro · `#9A5B00` claro | Amarillas, pendientes, alertas ("Aguas"). Chips sobre `--warning-soft` (`#FFF3DC` en claro) |
 | `--danger` | rojo (validar AA en cada modo) | Rojas, suspendido, EN VIVO (punto pulsante) |
-| `--success` | `#0F7B45` claro · `#3DDC84` oscuro | Solo el chip "OFICIAL · cédula" (pantalla 32) |
+| `--success` | `#0F7B45` claro · `#3DDC84` oscuro | Solo el chip "OFICIAL · cédula" (pantalla 32), sobre `--success-soft` (`#E3F5EA` en claro) |
 | `--whatsapp` | `#25D366` | **Solo** botones de WhatsApp |
 | `--gold` | `#E8C46A` | Carta Oro, trofeos |
 
@@ -71,12 +71,14 @@ Fondo negro puro, texto blanco, botones de evento enormes con color semántico (
 |---|---|---|
 | Botón lima | `button.tsx` (`BotonLima`, variantes `lima`, `whatsapp`, `quieto`, tamaño `cta`) | Alto 48 px. Para un `<Link>`: `buttonVariants({ variant: "lima", size: "cta" })` |
 | Escudo | `escudo.tsx` | Forma de escudo (partido, carta) o cuadro (selector, chips); las siglas eligen tinta o blanco por contraste |
-| Chip de marcador | `chip-marcador.tsx` (`ChipMarcador`, `ChipEstado`) | En claro el chip EN VIVO lleva texto blanco (el rojo claro no aguanta tinta) |
+| Chip de marcador | `chip-marcador.tsx` (`ChipMarcador`, `ChipEstado`) | `fuente` obligatoria (regla 1): `banda` siempre agrega NO OFICIAL; `cedula` (solo validados) pone FINAL + OFICIAL. En claro EN VIVO lleva texto blanco |
 | Carta de crack | `carta-crack.tsx` | 5 materiales del export (bronce, plata, oro, leyenda, especial), en construcción y reverso. Se escala con `ancho` |
 | Header | `app-header.tsx` + `role-switcher.tsx` | PRD §5: logo, chip del rol, búsqueda, campana y avatar con aro del rol. En el chip las siglas de la liga van en la línea del rol para que el equipo quepa a 390 px |
 | Barra inferior | `bottom-nav.tsx` | El central sale de `accionCentral(rol)` (`src/shared/lib/roles.ts`). Pase de lista y Programar jornada reciben su ruta con `hrefCentral` |
 
 Sin `backdrop-blur` en el header ni en las hojas: en Android de gama baja el desenfoque traba el scroll.
+
+**Radios (export de Claude Design):** `rounded-lg` 12 px para controles (botones, header, chip del rol), `rounded-xl` 16 px para tarjetas, `rounded-2xl` 20 px para tarjetas grandes. Los chips de estado usan 7 px.
 - **Estados vacíos:** ilustración + titular de momento + 1 acción.
 - **Skeletons** en lugar de spinners; optimistic UI en reacciones, seguir y votar.
 - Áreas táctiles ≥ 44 px.

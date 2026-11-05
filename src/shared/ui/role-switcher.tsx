@@ -66,7 +66,7 @@ export function RoleSwitcher({ opciones, activoId, onCambiar, hrefUnirme, classN
   );
 
   const claseChip = cn(
-    "flex h-11 w-full min-w-0 items-center gap-1.5 rounded-xl border border-border bg-surface px-1.5 text-foreground outline-none",
+    "flex h-11 w-full min-w-0 items-center gap-1.5 rounded-lg border border-border bg-surface px-1.5 text-foreground outline-none",
     className,
   );
 
@@ -112,7 +112,7 @@ export function RoleSwitcher({ opciones, activoId, onCambiar, hrefUnirme, classN
                     if (!esActivo) onCambiar?.(o);
                   }}
                   className={cn(
-                    "flex min-h-14 w-full items-center gap-3 rounded-xl border bg-surface px-3 py-2.5 text-left transition-colors outline-none hover:bg-surface-2 focus-visible:ring-3 focus-visible:ring-ring/50",
+                    "flex min-h-14 w-full items-center gap-3 rounded-lg border bg-surface px-3 py-2.5 text-left transition-colors outline-none hover:bg-surface-2 focus-visible:ring-3 focus-visible:ring-ring/50",
                     esActivo ? "border-role" : "border-border",
                   )}
                 >
@@ -132,7 +132,7 @@ export function RoleSwitcher({ opciones, activoId, onCambiar, hrefUnirme, classN
                     </span>
                   ) : (
                     o.pendiente && (
-                      <span className="etiqueta shrink-0 rounded-md bg-warning/14 px-1.5 py-1 text-[10px] font-extrabold tracking-[0.12em] text-warning">
+                      <span className="etiqueta shrink-0 rounded-md bg-warning-soft px-1.5 py-1 text-[10px] font-extrabold tracking-[0.12em] text-warning">
                         {o.pendiente}
                       </span>
                     )
@@ -146,7 +146,7 @@ export function RoleSwitcher({ opciones, activoId, onCambiar, hrefUnirme, classN
           <Link
             href={hrefUnirme}
             onClick={() => setAbierto(false)}
-            className="mx-4 mt-2 flex min-h-12 items-center gap-2 rounded-xl px-1 text-[15px] font-semibold outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="mx-4 mt-2 flex min-h-12 items-center gap-2 rounded-lg px-1 text-[15px] font-semibold outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             <span className="flex size-6 items-center justify-center rounded-full bg-brand-lime text-ink">
               <Plus aria-hidden className="size-4" strokeWidth={3} />

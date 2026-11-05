@@ -37,7 +37,7 @@ const buttonVariants = cva(
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
         // Botón de acción de Chilena: ≥ 48 px, Barlow Condensed 800 en mayúsculas
-        cta: "h-12 gap-2 rounded-xl px-6 font-condensed text-sm font-extrabold tracking-[0.14em] uppercase [&_svg:not([class*='size-'])]:size-[18px]",
+        cta: "h-12 gap-2 rounded-lg px-6 font-condensed text-sm font-extrabold tracking-[0.14em] uppercase [&_svg:not([class*='size-'])]:size-[18px]",
       },
     },
     defaultVariants: {

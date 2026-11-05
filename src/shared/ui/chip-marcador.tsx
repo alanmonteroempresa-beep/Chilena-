@@ -29,8 +29,8 @@ const estiloEstado: Record<EstadoMarcador["tipo"], string> = {
   // El rojo de modo claro (#C8102E) pide texto blanco; el de oscuro (#FF4D4F), tinta (pantalla 32)
   "en-vivo": "bg-danger text-white dark:text-ink",
   final: "bg-surface-2 text-muted-foreground",
-  "no-oficial": "bg-warning/14 text-warning",
-  oficial: "bg-success/14 text-success",
+  "no-oficial": "bg-warning-soft text-warning",
+  oficial: "bg-success-soft text-success",
 };
 
 /** Chip de estado: EN VIVO · 88' (rojo con punto) · FINAL · NO OFICIAL · OFICIAL */
@@ -53,6 +53,22 @@ export function ChipEstado({ estado, className }: { estado: EstadoMarcador; clas
   );
 }
 
+/**
+ * De dónde sale el marcador (regla 1). Obligatorio: no hay marcador sin fuente.
+ * - `banda`: lo actualizan aficionados y delegados (LiveScoreUpdate). Siempre lleva NO OFICIAL.
+ * - `cedula`: solo para partidos VALIDADOS. FINAL + OFICIAL · CÉDULA.
+ */
+export type FuenteMarcador =
+  { tipo: "banda"; enVivo: boolean; minuto?: number | null } | { tipo: "cedula"; arbitro?: string };
+
+/** Chips que acompañan al marcador según su fuente (pantalla 32) */
+export function chipsDelMarcador(fuente: FuenteMarcador): EstadoMarcador[] {
+  if (fuente.tipo === "cedula") return [{ tipo: "final" }, { tipo: "oficial", arbitro: fuente.arbitro }];
+  return fuente.enVivo
+    ? [{ tipo: "en-vivo", minuto: fuente.minuto ?? undefined }, { tipo: "no-oficial" }]
+    : [{ tipo: "no-oficial" }];
+}
+
 type EquipoMarcador = ColoresEquipo & { siglas: string; nombre: string };
 
 type ChipMarcadorProps = {
@@ -60,19 +76,19 @@ type ChipMarcadorProps = {
   visitante: EquipoMarcador;
   golesLocal: number;
   golesVisitante: number;
-  estado?: EstadoMarcador;
+  fuente: FuenteMarcador;
   /** Muestra el nombre corto del equipo junto al escudo (PORTALES 3–2 CONDESA) */
   conNombres?: boolean;
   className?: string;
 };
 
-/** Chip de marcador: escudos + "3–2" + estado (docs/DISENO.md §4) */
+/** Chip de marcador: escudos + "3–2" + estado según la fuente (docs/DISENO.md §4) */
 export function ChipMarcador({
   local,
   visitante,
   golesLocal,
   golesVisitante,
-  estado,
+  fuente,
   conNombres = false,
   className,
 }: ChipMarcadorProps) {
@@ -96,7 +112,9 @@ export function ChipMarcador({
         )}
         <Escudo {...visitante} tamano={24} />
       </span>
-      {estado && <ChipEstado estado={estado} />}
+      {chipsDelMarcador(fuente).map((estado) => (
+        <ChipEstado key={estado.tipo} estado={estado} />
+      ))}
     </span>
   );
 }

@@ -7,7 +7,7 @@ import { AppHeader } from "@/shared/ui/app-header";
 import { BarraInferior } from "@/shared/ui/bottom-nav-barra";
 import { BotonLima, Button } from "@/shared/ui/button";
 import { CartaCrack, type NivelCarta } from "@/shared/ui/carta-crack";
-import { ChipEstado, ChipMarcador } from "@/shared/ui/chip-marcador";
+import { ChipMarcador } from "@/shared/ui/chip-marcador";
 import { RoleSwitcher, type OpcionRol } from "@/shared/ui/role-switcher";
 
 // Datos de muestra del deck (El Chícharo, Liga Dominical Iztapalapa). Solo para la vitrina.
@@ -148,32 +148,31 @@ export function Vitrina() {
         </Seccion>
 
         <Seccion titulo="Chip de marcador">
+          {/* Desde la banda, en vivo: siempre NO OFICIAL (regla 1) */}
           <ChipMarcador
             local={PORTALES}
             visitante={TIGRES}
             golesLocal={1}
             golesVisitante={0}
-            estado={{ tipo: "en-vivo", minuto: 34 }}
+            fuente={{ tipo: "banda", enVivo: true, minuto: 34 }}
           />
+          {/* Desde la banda, ya terminó pero la cédula no está validada */}
           <ChipMarcador
             local={PORTALES}
             visitante={TIGRES}
             golesLocal={1}
             golesVisitante={0}
-            estado={{ tipo: "no-oficial" }}
+            fuente={{ tipo: "banda", enVivo: false }}
           />
+          {/* Cédula validada */}
           <ChipMarcador
             local={PORTALES}
             visitante={CONDESA}
             golesLocal={3}
             golesVisitante={2}
             conNombres
-            estado={{ tipo: "final" }}
+            fuente={{ tipo: "cedula", arbitro: "J. Mendoza" }}
           />
-          <div className="flex flex-wrap gap-2">
-            <ChipEstado estado={{ tipo: "oficial", arbitro: "J. Mendoza" }} />
-            <ChipEstado estado={{ tipo: "en-vivo", minuto: 88 }} />
-          </div>
         </Seccion>
 
         <Seccion titulo="Carta de crack · niveles">

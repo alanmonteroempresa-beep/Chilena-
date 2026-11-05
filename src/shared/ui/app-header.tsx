@@ -16,7 +16,7 @@ type AppHeaderProps = {
 };
 
 const botonIcono =
-  "relative inline-flex size-11 shrink-0 items-center justify-center rounded-xl border border-border bg-surface text-foreground transition-colors hover:bg-surface-2 focus-visible:ring-3 focus-visible:ring-ring/50 outline-none";
+  "relative inline-flex size-11 shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-foreground transition-colors hover:bg-surface-2 focus-visible:ring-3 focus-visible:ring-ring/50 outline-none";
 
 /**
  * Header del celular — docs/PRD.md §5: logo, chip del rol activo, búsqueda, campana y avatar.
