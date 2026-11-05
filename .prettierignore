@@ -1,0 +1,4 @@
+# Export de Claude Design: referencia exacta, no se formatea
+docs/diseno/
+src/generated/
+pnpm-lock.yaml

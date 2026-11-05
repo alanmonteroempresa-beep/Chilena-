@@ -255,7 +255,7 @@ Cada jugador tiene su **carta de crack** tipo FIFA: media, posición, foto, escu
 - **Rankings con humor** ("El más tarjeteado"): **opcionales por liga** (`League.rankingsConHumor`, apagado por defecto).
 
 ### 6.6 Insignias (pantallas 14, 28)
-**Para todos**, no solo para los que anotan. Coleccionables, con **rareza visible** ("solo el 3% la tiene") y progreso en las que faltan ("12 de 15 domingos"). El catálogo está en `docs/CARTA_E_INSIGNIAS.md` §4, incluidas **DE CHILENA** y **PIONERO**.
+**Para todos**, no solo para los que anotan. Coleccionables, con **rareza visible** ("solo el 3% la tiene") y progreso en las que faltan ("12 de 15 domingos"). El catálogo está en `docs/CARTA_E_INSIGNIAS.md` §4, incluidas **DE CHILENA** y **PIONERO**. Qué cuenta como "domingo sin faltar": §7.6.
 
 ### 6.7 Votaciones (pantalla 12)
 Votan **compañeros y aficionados**, con un toque por voto. Cierran a una hora fija (por ejemplo, domingo 22:00).
@@ -322,7 +322,7 @@ Asistente de 7 pasos:
 2. Calendario (fecha de inicio, # de jornadas, día, horarios, canchas).
 3. Formato (liga, liga + liguilla, copa; ida o ida y vuelta).
 4. Costos (inscripción y arbitraje).
-5. Reglas (puntos; rojas: 1 partido; 5 amarillas: 1 partido; mínimo y máximo de jugadores).
+5. Reglas (puntos; rojas: 1 partido; 5 amarillas: 1 partido; mínimo y máximo de jugadores). El desempate de la tabla es fijo en la beta (§7.13).
 6. Invitar equipos y árbitros (link, código o QR).
 7. Generar rol.
 
@@ -348,12 +348,24 @@ Estados: `BORRADOR → INSCRIPCIONES_ABIERTAS → EN_CURSO → LIGUILLA → FINA
    - El delegado manda el link al grupo de WhatsApp.
    - Cada jugador contesta **VOY / NO VOY sin cuenta y sin descargar nada** (`AttendanceLink`, eligiendo su nombre).
    - El delegado ve "11 de 16 ya contestaron que van" y manda recordatorio.
-2. **Alineación** (pantalla 53):
-   - Se arma con los confirmados, con alertas: **suspendido**, **cuota pendiente**, **no registrado en el torneo** o **registrado con otro equipo**.
-   - Las alertas no bloquean; el delegado decide y la liga revisa.
+   - El suspendido **sí aparece** en el pase de lista, con su nota ("Suspendido · roja en la J14"), para que cuadre "11 de 16". No se puede alinear (punto 2).
+2. **Alineación** (pantalla 53): se arma con los confirmados. Las alertas tienen **dos niveles**:
+   - **Rojo = no puede** (no entra a la cédula, ni de titular ni a la banca):
+     - **Registrado con otro equipo** del torneo (regla 4): "Ya está registrado en Tigres en este torneo".
+     - **Suspendido** con una sanción activa (§7.8).
+     - **No registrado en el torneo**, o su inscripción no está aprobada. La liga lo puede registrar en ese momento.
+   - **Ámbar = ojo** (puede jugar; el delegado decide):
+     - **Cuota pendiente** con el equipo: es asunto interno del equipo.
+     - **A una amarilla de la suspensión** (pantalla 53): lleva 4 de 5 en su acumulado (§7.8). Juega, pero si le sacan otra se sienta un partido.
+   - El servidor valida la alineación (`assertCan()`): si trae a alguien en rojo, no se guarda. Las alertas quedan en `Lineup.alerts`.
 3. **Marcador en vivo desde la banda** (pantalla 32):
    - Aficionados y delegados lo actualizan ("¿Cambió el marcador?") y lo narran ("87' El Brujo, de chilena").
    - Es **NO OFICIAL** y se muestra con su chip.
+4. **Asistencia: "domingos sin faltar"** (insignias `DOMINGOS_5/12/25` y `rachaAsistencia`):
+   - Cuenta como domingo **ir**: aparecer en la alineación de la cédula validada, de titular **o en la banca**.
+   - Corta la racha un partido validado de su equipo en el que no está en la alineación.
+   - **Pausa** (ni suma ni corta): los domingos sin partido de su equipo (descanso, "No hay juego", partido suspendido o reprogramado) y los partidos en que cumple una suspensión.
+   - Solo cuentan partidos **VALIDADOS** (regla 2). CON (constancia, `docs/CARTA_E_INSIGNIAS.md`) sigue midiendo "fue y jugó", que es otra cosa.
 
 ### 7.7 La cédula (pantallas 02, 08b, 19, 46, 56)
 **Captura del árbitro** en su celular. **El árbitro elige: en vivo o al terminar el partido.** El modo por defecto es **"llenar al terminar"**, como la cédula de papel:
@@ -373,10 +385,31 @@ Estados: `BORRADOR → INSCRIPCIONES_ABIERTAS → EN_CURSO → LIGUILLA → FINA
 **Firmas pendientes:** si después de 48 h un delegado no firma ni señala, la liga puede validar igual.
 
 ### 7.8 Sanciones (pantalla 47)
-- **Automáticas:** roja = 1 partido; 5 amarillas acumuladas = 1 partido (configurable).
+- **Automáticas** (salen solas de la cédula validada, con las reglas del torneo): roja = 1 partido (`partidosPorRoja`); 5 amarillas acumuladas = 1 partido (`amarillasParaSuspension`).
 - **Manuales:** partidos, multa, expulsión del torneo, pérdida del partido.
-- Los partidos cumplidos se descuentan al validar cada jornada.
-- **Alerta preventiva al jugador:** "Aguas: llevas 4 amarillas. Una más y te sientas un partido."
+- Los partidos cumplidos se descuentan al validar cada partido del equipo. Los domingos sin partido de su equipo no descuentan.
+
+**La liga ajusta una automática en la misma sanción** (una sanción por hecho):
+- La roja crea su sanción automática (1 partido). La liga la **sube, la baja o la anula** en esa misma sanción ("APLICAR: 2 PARTIDOS"), con motivo y bitácora (antes → después).
+- `Sanction.automatica` significa "nació de la cédula", aunque la liga la haya ajustado.
+- No se puede dejar en menos partidos de los que ya cumplió. Para quitarla, se anula.
+
+**Amarillas acumuladas:**
+- Al llegar a 5 se crea la suspensión y el **acumulado vuelve a 0**: la siguiente suspensión sale con 5 más.
+- **Doble amarilla en un partido:** la cédula guarda las dos amarillas y la expulsión (`ROJA`), pero cuenta como **una sola expulsión**:
+  - Sanción: 1 partido, como la roja.
+  - Juego limpio (§7.13): 3 puntos, como roja, no 5.
+  - Acumulado: esas 2 amarillas **no** suman.
+  - Carta (DIS) y estadísticas del jugador: cuenta como 1 roja y 0 amarillas, no como roja + 2 amarillas.
+- **Amarilla y luego roja directa** en el mismo partido: la roja suspende y la amarilla **sí** suma al acumulado y a DIS (4 puntos de juego limpio).
+- **Liguilla:** el acumulado vuelve a 0 al empezar la liguilla. Las suspensiones pendientes sí se cumplen.
+- **Alerta preventiva al jugador:** usa el acumulado, no el total del torneo: "Aguas: llevas 4 amarillas. Una más y te sientas un partido."
+
+**Multas:**
+- Una sanción puede llevar partidos **y** multa a la vez (`partidos` y `multaCents`).
+- Si trae multa, se crea su cargo a la liga (`LeagueCharge` tipo `MULTA`, ligado por `sanctionId`) por el mismo monto, en centavos (regla 7). Así se ve en la pantalla 47 y en el "Por pagar a la liga" del delegado ("Multa · roja de La Roca · $300").
+- Condonar la multa se hace en el cargo (`CONDONADO`), con bitácora. Un cargo ya confirmado no se condona.
+- Una multa que ya tiene su cargo no se cambia ni se quita desde la sanción: se condona en el cargo.
 
 ### 7.9 "No hay juego", suspensión y reprogramación
 - El **delegado no suspende**: avisa "No hay juego" y **la liga confirma**.
@@ -392,13 +425,27 @@ Estados: `BORRADOR → INSCRIPCIONES_ABIERTAS → EN_CURSO → LIGUILLA → FINA
 | Flujo | Cómo funciona |
 |---|---|
 | **Cuota del equipo** (delegado ↔ jugadores, pantallas 31, 54) | El delegado crea "Cuota de octubre $650". El jugador ve los datos de pago del delegado y toca **"YA PAGUÉ"** (queda *En revisión*); el delegado **confirma**. En la plantilla: Habilitado · Cuota pendiente |
-| **Equipo → Liga** (inscripción, arbitraje y multas) | Cargo de la liga → "Por pagar a la liga" del delegado → "Ya pagué" → la liga confirma. Panel: "Cobrado en octubre $18,400 de $21,000" |
+| **Equipo → Liga** (inscripción, arbitraje y multas) | Cargo de la liga → "Por pagar a la liga" del delegado → "Ya pagué" → la liga confirma. Panel: "Cobrado en octubre $18,400 de $21,000". La multa va ligada a su sanción (§7.8) |
 | **Liga → Árbitro** | Control de lo que se le debe y se le pagó por partido |
 
 ### 7.12 Moderación (pantalla 50)
 Los **reportes de la porra** llegan al panel de la liga dueña del contenido. Acciones: Ocultar · Mantener · Avisar al usuario. El superadmin es respaldo.
 
-### 7.13 Liguilla y campeón
+### 7.13 Tabla, liguilla y campeón
+**Tabla:** solo cuentan los partidos **VALIDADOS** de la fase regular (regla 2), con los puntos del torneo (3 por ganar y 1 por empatar, configurables). Si dos o más equipos empatan en puntos, el desempate es **fijo en la beta** (estilo Liga MX):
+1. Puntos.
+2. Diferencia de goles.
+3. Goles a favor.
+4. **Resultado entre ellos:** puntos y luego diferencia, solo en los partidos entre los empatados. Si siguen empatados algunos, se vuelve a aplicar solo entre ellos.
+5. **Juego limpio:** menos puntos de tarjetas en el torneo (amarilla 1, roja 3; la doble amarilla vale 3, como roja).
+6. **Sorteo:** lo marca la liga a mano en `StandingRow.ordenManual` (1 va arriba de 2), siempre con motivo y bitácora (`AuditLog`). Tiene que ordenar a **todos** los empatados; si a alguno le falta, la tabla avisa que el empate sigue sin resolver. El orden manual solo cuenta como último criterio: nunca le gana a los puntos ni a los otros desempates.
+
+**Empates durante el torneo y al cierre:**
+- Durante el torneo, los empatados sin resolver se muestran en la **misma posición** (3º, 3º, 5º…). La liga no tiene que sortear cada jornada.
+- El sorteo **solo se exige al cerrar la fase regular**, porque define los cruces de la liguilla: no se cierra mientras quede un empate sin sortear ("Falta el sorteo entre Tigres y Condesa para cerrar la fase regular").
+- Si un empate sorteado se deshace (por resultados, o porque otro equipo se suma al empate), el recálculo de la tabla **borra** `ordenManual`. Si vuelven a empatar, se sortea de nuevo.
+
+**Liguilla:**
 - Al terminar la fase regular se proponen los cruces desde la tabla (editable).
 - Semifinal y final generan posts especiales.
 - Al cerrar el torneo: campeón, trofeo en la vitrina, insignias y **cierre de temporada** para todos.

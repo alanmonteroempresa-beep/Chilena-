@@ -1,10 +1,13 @@
 // Semilla de Chilena. `pnpm prisma db seed`
 // - Siempre: feature flags e insignias.
-// - SEED_DEMO=1: liga demo del deck (Fase 0 — por implementar, ver docs/ROADMAP.md).
+// - SEED_DEMO=1: liga demo del deck (prisma/demo/, docs/ROADMAP.md Fase 0).
 import { PrismaPg } from "@prisma/adapter-pg";
+import { fromZonedTime } from "date-fns-tz";
 import { PrismaClient } from "../src/generated/prisma/client";
+import { TZ } from "../src/shared/lib/dates";
 import { FLAG_DEFAULTS } from "../src/modules/core/flags.defaults";
 import { BADGES } from "../src/modules/carta/badges.catalog";
+import { cargarLigaDemo } from "./demo/cargar";
 
 const db = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DIRECT_URL ?? process.env.DATABASE_URL }),
@@ -13,22 +16,49 @@ const db = new PrismaClient({
 async function main() {
   for (const [key, { enabled, descripcion }] of Object.entries(FLAG_DEFAULTS)) {
     // No pisa un flag que alguien ya cambió a mano.
-    await db.featureFlag.upsert({ where: { key }, create: { key, enabled, descripcion }, update: { descripcion } });
+    await db.featureFlag.upsert({
+      where: { key },
+      create: { key, enabled, descripcion },
+      update: { descripcion },
+    });
   }
 
   for (const [orden, b] of BADGES.entries()) {
     await db.badge.upsert({
       where: { code: b.code },
       create: { ...b, orden },
-      update: { nombre: b.nombre, descripcion: b.descripcion, icon: b.icon, repetible: b.repetible, criteria: b.criteria, categoria: b.categoria, orden },
+      update: {
+        nombre: b.nombre,
+        descripcion: b.descripcion,
+        icon: b.icon,
+        repetible: b.repetible,
+        criteria: b.criteria,
+        categoria: b.categoria,
+        orden,
+      },
     });
   }
 
   if (process.env.SEED_DEMO === "1") {
-    // TODO Fase 0: Liga Dominical Iztapalapa · Apertura 2026 · 8 equipos · 16 jugadores c/u ·
-    // 3 árbitros · Deportivo Cuitláhuac (3 canchas) · 15 jornadas validadas con eventos realistas.
-    // Datos y nombres: docs/ROADMAP.md (Fase 0) y docs/fuentes/Pelotazo_Pantallas.pptx.
-    console.info("SEED_DEMO: pendiente de implementar (Fase 0)");
+    // Liga Dominical Iztapalapa · Apertura 2026 (prisma/demo/). Solo en chilena-dev.
+    // SEED_HOY=2026-10-12 reproduce las fechas exactas del deck; sin él, la J16 es el próximo domingo.
+    const seedHoy = process.env.SEED_HOY;
+    if (seedHoy && !/^\d{4}-\d{2}-\d{2}$/.test(seedHoy)) {
+      throw new Error(`SEED_HOY debe ser una fecha AAAA-MM-DD (llegó "${seedHoy}")`);
+    }
+    const hoy = seedHoy ? fromZonedTime(`${seedHoy}T12:00:00`, TZ) : new Date();
+    const { plan, reclamados } = await cargarLigaDemo(db, {
+      hoy,
+      forzar: process.env.SEED_DEMO_FORZAR === "1",
+    });
+    console.info(
+      `SEED_DEMO: ${plan.league.nombre} · ${plan.tournament.nombre} · J15 el ${plan.claves.fechaJ15} · ` +
+        `${plan.teams.length} equipos · ${plan.users.length} personas · ${plan.matches.length} partidos · ` +
+        `${plan.matchEvents.length} eventos` +
+        (reclamados ? ` · ${reclamados} perfil(es) reclamado(s) se conservaron` : ""),
+    );
+    console.table(plan.resumen.tabla);
+    console.table(plan.resumen.goleo);
   }
 
   console.info(`Semilla lista: ${Object.keys(FLAG_DEFAULTS).length} flags, ${BADGES.length} insignias`);

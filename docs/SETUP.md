@@ -39,6 +39,7 @@ pnpm prisma migrate dev --create-only --name extras   # pega prisma/sql/001_extr
 pnpm prisma migrate dev
 pnpm prisma db seed
 ```
+Liga demo (solo `chilena-dev`): `pnpm db:seed:demo`. Borra la demo anterior y la vuelve a crear con IDs fijos, así las URLs no cambian. Las fechas se calculan desde hoy (la J16 cae el próximo domingo). Con `SEED_HOY=2026-10-12 pnpm db:seed:demo` salen las fechas exactas del deck (J15 el domingo 11 de octubre). Guardias: solo borra filas con los IDs de la demo; no corre en producción; se detiene si la base ya tiene otras ligas (si es chilena-dev, `SEED_DEMO_FORZAR=1`) o si un username o slug de la demo ya lo usa alguien más. Los perfiles demo que alguien reclamó se conservan.
 Para `chilena-beta`: `pnpm prisma migrate deploy` con las URLs de ese proyecto. La semilla de producción carga **solo** flags e insignias, no la liga demo.
 
 ### Jobs con pg_cron (en el SQL editor de cada proyecto)

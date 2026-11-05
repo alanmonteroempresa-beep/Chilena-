@@ -64,6 +64,7 @@ Si algo no está en el PRD, **pregunta o propón el cambio en el PRD antes de im
 - **Servicios puros y testeables** (sin Next) para: fórmula de la carta, generador del rol, máquina de estados del partido, cálculo de tabla, sanciones, quiniela, rareza de insignias y plantillas de titulares.
 - **Perfiles sin reclamar:** `User.authId = null`. Al reclamar se liga `authId`; nunca se duplica la persona.
 - **Contadores denormalizados** en la misma transacción. **Bitácora** (`AuditLog`) en cambios a resultados, eventos oficiales, sanciones y dinero.
+- **Bitácora en la MISMA transacción que el cambio:** toda acción que escribe `AuditLog` (sorteo, sanción, resultado, dinero) lo hace dentro del mismo `db.$transaction` que el cambio. Si falla una de las dos, no se guarda ninguna: nunca hay un cambio sin bitácora ni una bitácora sin cambio.
 
 ## Reglas que nunca se rompen (cada una con test)
 1. **Marcador oficial = cédula firmada (o capturada por la liga desde papel) y validada.** Lo de la banda es `LiveScoreUpdate` con chip "NO OFICIAL".

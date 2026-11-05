@@ -26,7 +26,7 @@ Interpolación lineal entre los puntos de cada tabla (fuera de rango se toma el 
 | **DEF** Definición | goles / partido | 0 → 45 · 0.25 → 60 · 0.5 → 70 · 1.0 → 85 · 1.5 → 95 |
 | **PAS** Pase | asistencias / partido | 0 → 45 · 0.2 → 62 · 0.4 → 75 · 0.8 → 90 |
 | **CON** Constancia | % de convocatorias en que fue y jugó | 0% → 40 · 50% → 65 · 80% → 82 · 100% → 95 |
-| **DIS** Disciplina | tarjetas en la ventana | 95 − 4 × amarillas − 12 × rojas (mín. 40) |
+| **DIS** Disciplina | tarjetas en la ventana (la doble amarilla cuenta como 1 roja y 0 amarillas, PRD §7.8) | 95 − 4 × amarillas − 12 × rojas (mín. 40) |
 | **CRK** Crack | MVP ganados + % de votos promedio | 55 + 10 × MVP + 0.2 × %votos (máx. 99) |
 | **RES** Respeto | promedio de `RespectVote` (1–5), **solo de rivales** | 1 → 40 · 3 → 68 · 5 → 95 · con menos de 5 votos = 70 |
 
@@ -78,7 +78,7 @@ Interpolación lineal entre los puntos de cada tabla (fuera de rango se toma el 
 | Goleo | `PlayerTournamentStat.goles` | Mi liga → Goleo |
 | **Duelo** | Dos cartas lado a lado; gana cada atributo el mayor | Botón "Comparar con…" en la carta |
 | **El clásico** | Todos los partidos validados entre dos equipos (torneo + retas): G-E-P, último resultado, goleador histórico | Perfil de equipo y Rankings |
-| **Rachas** | `rachaGoles`, `rachaAsistencia` y racha de resultados del equipo (`StandingRow.racha`) | Rankings, auto-post `AUTO_RACHA` |
+| **Rachas** | `rachaGoles`, `rachaAsistencia` ("domingos sin faltar": fue a la cédula, titular o banca; descansos y suspensiones pausan, PRD §7.6) y racha de resultados del equipo (`StandingRow.racha`) | Rankings, auto-post `AUTO_RACHA` |
 | **Récords** | Gol más rápido (minuto), goleada más grande, valla menos vencida, más goles en un partido | Rankings del torneo |
 | Humor (opcional por liga) | Más tarjeteado, más "NO VOY", etc. | Solo si `League.rankingsConHumor` |
 

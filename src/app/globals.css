@@ -38,7 +38,10 @@
   --color-ink: #07090c;
   --color-gold: #e8c46a;
   --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
   --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
   --color-whatsapp: #25d366;
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
@@ -56,8 +59,9 @@
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
+  /* Export de Claude Design: controles 12 px (lg) · tarjetas 16 px (xl) · tarjetas grandes 20 px (2xl) */
+  --radius-xl: calc(var(--radius) * 4 / 3);
+  --radius-2xl: calc(var(--radius) * 5 / 3);
 }
 
 /* ---------- Modo claro ---------- */
@@ -84,9 +88,13 @@
   --border: #e3e8ee;
   --input: #d5dce5;
   --ring: #0250b0;
-  --warning: #b86e00; /* ámbar con contraste AA sobre blanco */
+  /* Ámbar: 5.4:1 sobre blanco y 4.9:1 sobre su fondo de chip (el #B86E00 anterior daba 4.0:1) */
+  --warning: #9a5b00;
+  --warning-soft: #fff3dc;
   --danger: #c8102e;
   --destructive: #c8102e;
+  --success: #0f7b45; /* "OFICIAL · cédula" (pantalla 32), AA sobre blanco */
+  --success-soft: #e3f5ea; /* 4.7:1 con --success encima */
 
   /* acento por rol (variante "Fondo" de la lámina 23) */
   --role-accent: #5b6675;
@@ -115,8 +123,11 @@
   --input: #262b33;
   --ring: #5b9bff;
   --warning: #ffb020;
+  --warning-soft: rgb(255 176 32 / 0.14);
   --danger: #ff4d4f;
   --destructive: #ff4d4f;
+  --success: #3ddc84;
+  --success-soft: rgb(61 220 132 / 0.14);
 
   --role-accent: #c6d0dd;
   --role-card: #262b33;

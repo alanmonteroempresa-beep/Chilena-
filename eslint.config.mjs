@@ -24,7 +24,8 @@ const eslintConfig = defineConfig([
     },
   },
   { files: ["src/shared/lib/logger.ts", "prisma/**", "tests/**", "**/*.test.ts"], rules: { "no-console": "off" } },
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "src/generated/**"]),
+  // docs/diseno/html: export de Claude Design (solo referencia, no es código de la app)
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "src/generated/**", "docs/**"]),
 ]);
 
 export default eslintConfig;

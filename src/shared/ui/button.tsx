@@ -17,6 +17,12 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+        // Chilena — docs/DISENO.md §4: acción principal en lima, texto siempre oscuro
+        lima: "bg-brand-lime text-ink shadow-[inset_0_-3px_0_rgba(0,0,0,0.18)] hover:bg-brand-lime/90 focus-visible:ring-brand-lime/50 disabled:bg-surface-2 disabled:text-muted-foreground disabled:shadow-none disabled:opacity-100",
+        // Solo botones de WhatsApp
+        whatsapp: "bg-whatsapp text-ink shadow-[inset_0_-3px_0_rgba(0,0,0,0.18)] hover:bg-whatsapp/90",
+        // "NO VOY": secundaria sin relleno
+        quieto: "text-foreground hover:bg-muted",
       },
       size: {
         default:
@@ -30,6 +36,8 @@ const buttonVariants = cva(
         "icon-sm":
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
+        // Botón de acción de Chilena: ≥ 48 px, Barlow Condensed 800 en mayúsculas
+        cta: "h-12 gap-2 rounded-lg px-6 font-condensed text-sm font-extrabold tracking-[0.14em] uppercase [&_svg:not([class*='size-'])]:size-[18px]",
       },
     },
     defaultVariants: {
@@ -54,4 +62,13 @@ function Button({
   )
 }
 
-export { Button, buttonVariants }
+/** Botón lima de Chilena ("CONFIRMO QUE VOY", "PRESUME TU GOLAZO"). Para un <Link> usa `buttonVariants({ variant: "lima", size: "cta" })`. */
+function BotonLima({
+  variant = "lima",
+  size = "cta",
+  ...props
+}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+  return <Button variant={variant} size={size} {...props} />
+}
+
+export { Button, BotonLima, buttonVariants }

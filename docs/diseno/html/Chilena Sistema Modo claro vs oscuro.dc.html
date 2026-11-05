@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&family=Big+Shoulders+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0&display=block" rel="stylesheet">
+<style>body{margin:0;background:#03070F;}a{color:#D0FF41;}a:hover{color:#fff;}</style>
+</helmet>
+<div style="display:flex;flex-direction:column;align-items:center;gap:40px;padding:40px;">
+<section data-screen-label="Sistema Modo claro vs oscuro" style="width:1440px;background:#0250B0;padding:40px 48px 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:28px;font-family:'Barlow',sans-serif;color:#fff;">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;">
+    <div style="display:flex;align-items:flex-end;gap:20px;">
+      <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:64px;line-height:.82;color:#D0FF41;">SIS</span>
+      <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-style:italic;font-size:64px;line-height:.82;text-transform:uppercase;">Modo claro vs modo oscuro</span>
+      <span style="font-size:16px;line-height:1.3;max-width:380px;padding-bottom:2px;">Mismo producto, dos fondos · la lima es relleno, nunca texto sobre blanco · la carta de crack, las plantillas y el alto contraste no cambian</span>
+    </div>
+    <img src="assets/chilena-logo-azul.png" alt="Chilena" style="width:72px;height:72px;display:block;">
+  </div>
+
+  <div style="display:grid;grid-template-columns:150px minmax(0,1fr) minmax(0,1fr);border-radius:20px;overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.28);">
+    <div style="background:#0247A0;"></div>
+    <div style="background:#07090C;padding:22px 28px 6px;display:flex;align-items:center;gap:12px;">
+      <span style="font-family:'Material Symbols Rounded';font-size:22px;color:#F4F7FA;">dark_mode</span>
+      <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-style:italic;font-size:34px;line-height:1;text-transform:uppercase;color:#F4F7FA;">Oscuro</span>
+      <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:.16em;color:#8E9AAB;">PARA LA NOCHE Y EL ÁRBITRO</span>
+    </div>
+    <div style="background:#F4F7FA;padding:22px 28px 6px;display:flex;align-items:center;gap:12px;">
+      <span style="font-family:'Material Symbols Rounded';font-size:22px;color:#07090C;">light_mode</span>
+      <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-style:italic;font-size:34px;line-height:1;text-transform:uppercase;color:#07090C;">Claro</span>
+      <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:.16em;color:#5B6878;">NUEVO · PARA LEER DE DÍA</span>
+    </div>
+
+    <!-- TOKENS -->
+    <div style="background:#0247A0;padding:24px 20px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:.16em;">TOKENS</div>
+    <div style="background:#07090C;padding:18px 28px 22px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px 12px;">
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#07090C;border:1px solid #242C36;"></div><div style="font-size:12px;font-weight:600;color:#F4F7FA;">Fondo</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#8E9AAB;">#07090C</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#10141A;border:1px solid #242C36;"></div><div style="font-size:12px;font-weight:600;color:#F4F7FA;">Superficie</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#8E9AAB;">#10141A</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#242C36;"></div><div style="font-size:12px;font-weight:600;color:#F4F7FA;">Borde</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#8E9AAB;">#242C36</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#F4F7FA;"></div><div style="font-size:12px;font-weight:600;color:#F4F7FA;">Texto</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#8E9AAB;">#F4F7FA · 18.5:1</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#8E9AAB;"></div><div style="font-size:12px;font-weight:600;color:#F4F7FA;">Texto 2</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#8E9AAB;">#8E9AAB · 7.0:1</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#D0FF41;"></div><div style="font-size:12px;font-weight:600;color:#F4F7FA;">Volt Lime</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#8E9AAB;">#D0FF41 · relleno y texto</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#0250B0;"></div><div style="font-size:12px;font-weight:600;color:#F4F7FA;">Elite Blue</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#8E9AAB;">#0250B0 · marca</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#FFB020;"></div><div style="font-size:12px;font-weight:600;color:#F4F7FA;">Ámbar</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#8E9AAB;">#FFB020 · 10.9:1</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#FF5247;"></div><div style="font-size:12px;font-weight:600;color:#F4F7FA;">Rojo</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#8E9AAB;">#FF5247 · 6.2:1</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#25D366;"></div><div style="font-size:12px;font-weight:600;color:#F4F7FA;">WhatsApp</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#8E9AAB;">#25D366 · relleno</div></div>
+    </div>
+    <div style="background:#F4F7FA;padding:18px 28px 22px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px 12px;">
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#F4F7FA;border:1px solid #E3E8EE;"></div><div style="font-size:12px;font-weight:600;color:#07090C;">Fondo</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#5B6878;">#F4F7FA</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#FFFFFF;border:1px solid #E3E8EE;"></div><div style="font-size:12px;font-weight:600;color:#07090C;">Superficie</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#5B6878;">#FFFFFF</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#E3E8EE;"></div><div style="font-size:12px;font-weight:600;color:#07090C;">Borde</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#5B6878;">#E3E8EE</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#07090C;"></div><div style="font-size:12px;font-weight:600;color:#07090C;">Texto</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#5B6878;">#07090C · 19.9:1</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#5B6878;"></div><div style="font-size:12px;font-weight:600;color:#07090C;">Texto 2 · gris azulado</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#5B6878;">#5B6878 · 5.7:1</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#D0FF41;"></div><div style="font-size:12px;font-weight:600;color:#07090C;">Volt Lime</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#5B6878;">#D0FF41 · sólo relleno</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#0250B0;"></div><div style="font-size:12px;font-weight:600;color:#07090C;">Elite Blue</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#5B6878;">#0250B0 · 7.6:1</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#9A5B00;"></div><div style="font-size:12px;font-weight:600;color:#07090C;">Ámbar AA</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#5B6878;">#9A5B00 · 5.4:1</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#C62828;"></div><div style="font-size:12px;font-weight:600;color:#07090C;">Rojo AA</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#5B6878;">#C62828 · 5.6:1</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:40px;border-radius:8px;background:#25D366;"></div><div style="font-size:12px;font-weight:600;color:#07090C;">WhatsApp</div><div style="font-family:'Barlow Condensed';font-size:12px;color:#5B6878;">#25D366 · texto #07090C</div></div>
+    </div>
+
+    <!-- BOTONES -->
+    <div style="background:#0247A0;padding:24px 20px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:.16em;">BOTONES</div>
+    <div style="background:#07090C;padding:18px 28px 22px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+      <div style="height:44px;padding:0 20px;border-radius:12px;background:#D0FF41;color:#07090C;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18);display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:14px;letter-spacing:.14em;">CONFIRMO QUE VOY</div>
+      <div style="height:44px;padding:0 18px;border-radius:12px;border:1.5px solid #242C36;color:#F4F7FA;display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:14px;letter-spacing:.14em;">NO VOY</div>
+      <div style="height:44px;padding:0 18px;border-radius:12px;background:#25D366;color:#07090C;display:flex;align-items:center;gap:8px;font-family:'Barlow Condensed';font-weight:800;font-size:14px;letter-spacing:.14em;"><span style="font-family:'Material Symbols Rounded';font-size:19px;letter-spacing:0;">chat</span>WHATSAPP</div>
+      <div style="height:44px;padding:0 18px;border-radius:12px;background:#FF5247;color:#07090C;display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:14px;letter-spacing:.14em;">APLICAR SANCIÓN</div>
+      <div style="height:44px;padding:0 6px;color:#5B9BFF;display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:14px;letter-spacing:.14em;">VER TABLA →</div>
+    </div>
+    <div style="background:#F4F7FA;padding:18px 28px 22px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+      <div style="height:44px;padding:0 20px;border-radius:12px;background:#D0FF41;color:#07090C;box-shadow:inset 0 -3px 0 rgba(7,9,12,.14),0 1px 0 #B9E52E;display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:14px;letter-spacing:.14em;">CONFIRMO QUE VOY</div>
+      <div style="height:44px;padding:0 18px;border-radius:12px;border:1.5px solid #C6D0DD;background:#FFFFFF;color:#07090C;display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:14px;letter-spacing:.14em;">NO VOY</div>
+      <div style="height:44px;padding:0 18px;border-radius:12px;background:#25D366;color:#07090C;display:flex;align-items:center;gap:8px;font-family:'Barlow Condensed';font-weight:800;font-size:14px;letter-spacing:.14em;"><span style="font-family:'Material Symbols Rounded';font-size:19px;letter-spacing:0;">chat</span>WHATSAPP</div>
+      <div style="height:44px;padding:0 18px;border-radius:12px;background:#C62828;color:#FFFFFF;display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:14px;letter-spacing:.14em;">APLICAR SANCIÓN</div>
+      <div style="height:44px;padding:0 6px;color:#0250B0;display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:14px;letter-spacing:.14em;">VER TABLA →</div>
+    </div>
+
+    <!-- CHIPS -->
+    <div style="background:#0247A0;padding:24px 20px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:.16em;">CHIPS</div>
+    <div style="background:#07090C;padding:16px 28px 22px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:12px;letter-spacing:.14em;">
+      <span style="height:26px;padding:0 10px;border-radius:7px;background:#FF5247;color:#07090C;display:flex;align-items:center;gap:6px;"><span style="width:6px;height:6px;border-radius:50%;background:#07090C;"></span>EN VIVO · 88'</span>
+      <span style="height:26px;padding:0 10px;border-radius:7px;background:rgba(255,176,32,.14);color:#FFB020;display:flex;align-items:center;">PENDIENTE</span>
+      <span style="height:26px;padding:0 10px;border-radius:7px;background:rgba(255,82,71,.14);color:#FF5247;display:flex;align-items:center;">SUSPENDIDO</span>
+      <span style="height:26px;padding:0 10px;border-radius:7px;background:rgba(37,211,102,.14);color:#3DDC84;display:flex;align-items:center;">PAGADO</span>
+      <span style="height:26px;padding:0 10px;border-radius:7px;background:#D0FF41;color:#07090C;display:flex;align-items:center;">🔥 4 PARTIDOS ANOTANDO</span>
+      <span style="height:30px;padding:0 14px;border-radius:99px;background:#D0FF41;color:#07090C;display:flex;align-items:center;">TODO</span>
+      <span style="height:30px;padding:0 14px;border-radius:99px;border:1.5px solid #242C36;color:#F4F7FA;display:flex;align-items:center;">BUSCO JUGADOR</span>
+    </div>
+    <div style="background:#F4F7FA;padding:16px 28px 22px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:12px;letter-spacing:.14em;">
+      <span style="height:26px;padding:0 10px;border-radius:7px;background:#C62828;color:#FFFFFF;display:flex;align-items:center;gap:6px;"><span style="width:6px;height:6px;border-radius:50%;background:#FFFFFF;"></span>EN VIVO · 88'</span>
+      <span style="height:26px;padding:0 10px;border-radius:7px;background:#FFF3DC;color:#9A5B00;display:flex;align-items:center;">PENDIENTE</span>
+      <span style="height:26px;padding:0 10px;border-radius:7px;background:#FDECEC;color:#C62828;display:flex;align-items:center;">SUSPENDIDO</span>
+      <span style="height:26px;padding:0 10px;border-radius:7px;background:#E3F6EA;color:#147A3D;display:flex;align-items:center;">PAGADO</span>
+      <span style="height:26px;padding:0 10px;border-radius:7px;background:#D0FF41;color:#07090C;display:flex;align-items:center;">🔥 4 PARTIDOS ANOTANDO</span>
+      <span style="height:30px;padding:0 14px;border-radius:99px;background:#D0FF41;color:#07090C;display:flex;align-items:center;">TODO</span>
+      <span style="height:30px;padding:0 14px;border-radius:99px;border:1.5px solid #C6D0DD;background:#FFFFFF;color:#07090C;display:flex;align-items:center;">BUSCO JUGADOR</span>
+    </div>
+
+    <!-- PARTIDO + CARTA -->
+    <div style="background:#0247A0;padding:24px 20px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:.16em;line-height:1.5;">TARJETA DE PARTIDO<br>+ CARTA DE CRACK</div>
+    <div style="background:#07090C;padding:18px 28px 24px;display:grid;grid-template-columns:minmax(0,1fr) 168px;gap:16px;align-items:start;">
+      <div style="border-radius:16px;background:linear-gradient(135deg,rgba(255,82,71,.28),#10141A 60%);border:1px solid #242C36;padding:16px;display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="height:24px;padding:0 9px;border-radius:7px;background:#FF5247;color:#07090C;display:flex;align-items:center;gap:6px;font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.14em;"><span style="width:6px;height:6px;border-radius:50%;background:#07090C;"></span>TU EQUIPO · EN VIVO · 88'</span>
+          <span style="font-size:12px;color:#8E9AAB;">👀 128 viendo</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;flex:none;border-radius:7px;background:#0250B0;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;font-size:13px;color:#fff;border-top:5px solid #fff;box-sizing:border-box;">DP</div><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:21px;white-space:nowrap;color:#F4F7FA;">PORTALES</span></div>
+          <span style="font-family:'Big Shoulders Display';font-weight:900;font-size:36px;line-height:1;flex:none;white-space:nowrap;color:#D0FF41;">3–2</span>
+          <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:21px;white-space:nowrap;color:#F4F7FA;">CONDESA</span><div style="width:32px;height:32px;flex:none;border-radius:7px;background:#8A1C2B;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;font-size:13px;color:#fff;">RC</div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <span style="font-size:13px;color:#F4F7FA;"><b style="color:#FF5247;">87'</b> El Brujo, de chilena. Se cae la banca.</span>
+          <span style="height:34px;padding:0 14px;border-radius:10px;background:#D0FF41;color:#07090C;display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:12px;letter-spacing:.14em;white-space:nowrap;">VER EN VIVO</span>
+        </div>
+      </div>
+      <div style="width:168px;height:228px;border-radius:14px;background:linear-gradient(160deg,#0A63D6,#0250B0 55%,#023B83);position:relative;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.08);">
+        <div style="position:absolute;left:14px;top:12px;font-family:'Big Shoulders Display';font-weight:900;line-height:.85;color:#D0FF41;"><div style="font-size:38px;">87</div><div style="font-size:15px;">DC</div></div>
+        <div style="position:absolute;right:14px;top:16px;width:72px;height:72px;border-radius:50%;background:#C6D0DD;border:3px solid #D0FF41;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;font-size:22px;color:#023B83;">CH</div>
+        <div style="position:absolute;left:14px;top:110px;font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:30px;line-height:.86;color:#fff;">EL<br>CHÍCHARO</div>
+        <div style="position:absolute;left:14px;top:168px;font-family:'Barlow Condensed';font-weight:700;font-size:10px;letter-spacing:.16em;color:#C6D0DD;">PORTALES · #9</div>
+        <div style="position:absolute;left:14px;right:14px;bottom:12px;display:flex;justify-content:space-between;font-family:'Barlow Condensed';color:#fff;"><span><b style="font-size:18px;color:#D0FF41;">19</b> <span style="font-size:10px;letter-spacing:.1em;">GOL</span></span><span><b style="font-size:18px;">14</b> <span style="font-size:10px;letter-spacing:.1em;">PJ</span></span><span><b style="font-size:18px;">7</b> <span style="font-size:10px;letter-spacing:.1em;">AST</span></span></div>
+      </div>
+    </div>
+    <div style="background:#F4F7FA;padding:18px 28px 24px;display:grid;grid-template-columns:minmax(0,1fr) 168px;gap:16px;align-items:start;">
+      <div style="border-radius:16px;background:linear-gradient(135deg,rgba(198,40,40,.09),#FFFFFF 60%);border:1px solid #E3E8EE;box-shadow:0 1px 2px rgba(7,9,12,.06);padding:16px;display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="height:24px;padding:0 9px;border-radius:7px;background:#C62828;color:#FFFFFF;display:flex;align-items:center;gap:6px;font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.14em;"><span style="width:6px;height:6px;border-radius:50%;background:#FFFFFF;"></span>TU EQUIPO · EN VIVO · 88'</span>
+          <span style="font-size:12px;color:#5B6878;">👀 128 viendo</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;flex:none;border-radius:7px;background:#0250B0;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;font-size:13px;color:#fff;border-top:5px solid #fff;box-sizing:border-box;box-shadow:0 0 0 1px #E3E8EE;">DP</div><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:21px;white-space:nowrap;color:#07090C;">PORTALES</span></div>
+          <span style="font-family:'Big Shoulders Display';font-weight:900;font-size:36px;line-height:1;flex:none;white-space:nowrap;color:#07090C;">3–2</span>
+          <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:21px;white-space:nowrap;color:#07090C;">CONDESA</span><div style="width:32px;height:32px;flex:none;border-radius:7px;background:#8A1C2B;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;font-size:13px;color:#fff;">RC</div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <span style="font-size:13px;color:#07090C;"><b style="color:#C62828;">87'</b> El Brujo, de chilena. Se cae la banca.</span>
+          <span style="height:34px;padding:0 14px;border-radius:10px;background:#D0FF41;color:#07090C;display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:12px;letter-spacing:.14em;white-space:nowrap;">VER EN VIVO</span>
+        </div>
+      </div>
+      <div style="width:168px;height:228px;border-radius:14px;background:linear-gradient(160deg,#0A63D6,#0250B0 55%,#023B83);position:relative;overflow:hidden;box-shadow:0 10px 24px rgba(2,80,176,.28);">
+        <div style="position:absolute;left:14px;top:12px;font-family:'Big Shoulders Display';font-weight:900;line-height:.85;color:#D0FF41;"><div style="font-size:38px;">87</div><div style="font-size:15px;">DC</div></div>
+        <div style="position:absolute;right:14px;top:16px;width:72px;height:72px;border-radius:50%;background:#C6D0DD;border:3px solid #D0FF41;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;font-size:22px;color:#023B83;">CH</div>
+        <div style="position:absolute;left:14px;top:110px;font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:30px;line-height:.86;color:#fff;">EL<br>CHÍCHARO</div>
+        <div style="position:absolute;left:14px;top:168px;font-family:'Barlow Condensed';font-weight:700;font-size:10px;letter-spacing:.16em;color:#C6D0DD;">PORTALES · #9</div>
+        <div style="position:absolute;left:14px;right:14px;bottom:12px;display:flex;justify-content:space-between;font-family:'Barlow Condensed';color:#fff;"><span><b style="font-size:18px;color:#D0FF41;">19</b> <span style="font-size:10px;letter-spacing:.1em;">GOL</span></span><span><b style="font-size:18px;">14</b> <span style="font-size:10px;letter-spacing:.1em;">PJ</span></span><span><b style="font-size:18px;">7</b> <span style="font-size:10px;letter-spacing:.1em;">AST</span></span></div>
+      </div>
+    </div>
+
+    <!-- ROLES -->
+    <div style="background:#0247A0;padding:24px 20px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:.16em;line-height:1.5;">ACENTOS<br>DE ROL</div>
+    <div style="background:#07090C;padding:16px 28px 24px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;">
+      <sc-for list="{{ rolesDark }}" as="r" hint-placeholder-count="5">
+        <div style="border-radius:14px;background:#10141A;border:1px solid #242C36;border-top:2px solid {{ r.text }};padding:12px;display:flex;flex-direction:column;gap:10px;">
+          <span style="font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.16em;color:{{ r.text }};">{{ r.label }}</span>
+          <div style="height:30px;border-radius:8px;background:{{ r.fill }};color:{{ r.onFill }};display:flex;align-items:center;gap:6px;padding:0 9px;font-size:12px;font-weight:600;"><span style="font-family:'Material Symbols Rounded';font-size:16px;">home</span>Inicio</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="width:30px;height:30px;border-radius:50%;box-shadow:0 0 0 2px #10141A,0 0 0 4px {{ r.text }};background:#C6D0DD;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;font-size:11px;color:#023B83;">{{ r.ini }}</div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;color:{{ r.text }};"><span style="font-family:'Material Symbols Rounded';font-size:18px;font-variation-settings:'FILL' 1;">home</span><span style="font-size:9px;font-weight:700;">Inicio</span></div>
+          </div>
+          <div style="font-family:'Barlow Condensed';font-size:11px;line-height:1.35;color:#8E9AAB;">Fondo {{ r.fill }}<br>Texto {{ r.text }} · {{ r.ratio }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="background:#F4F7FA;padding:16px 28px 24px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;">
+      <sc-for list="{{ rolesLight }}" as="r" hint-placeholder-count="5">
+        <div style="border-radius:14px;background:#FFFFFF;border:1px solid #E3E8EE;border-top:2px solid {{ r.text }};padding:12px;display:flex;flex-direction:column;gap:10px;">
+          <span style="font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.16em;color:{{ r.text }};">{{ r.label }}</span>
+          <div style="height:30px;border-radius:8px;background:{{ r.fill }};color:{{ r.onFill }};display:flex;align-items:center;gap:6px;padding:0 9px;font-size:12px;font-weight:600;"><span style="font-family:'Material Symbols Rounded';font-size:16px;">home</span>Inicio</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="width:30px;height:30px;border-radius:50%;box-shadow:0 0 0 2px #FFFFFF,0 0 0 4px {{ r.text }};background:#C6D0DD;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;font-size:11px;color:#023B83;">{{ r.ini }}</div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;color:{{ r.text }};"><span style="font-family:'Material Symbols Rounded';font-size:18px;font-variation-settings:'FILL' 1;">home</span><span style="font-size:9px;font-weight:700;">Inicio</span></div>
+          </div>
+          <div style="font-family:'Barlow Condensed';font-size:11px;line-height:1.35;color:#5B6878;">Fondo y texto {{ r.text }}<br>{{ r.ratio }} sobre blanco</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- REGLAS -->
+    <div style="background:#0247A0;padding:24px 20px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:.16em;">REGLAS</div>
+    <div style="grid-column:span 2;background:#FFFFFF;padding:20px 28px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;color:#07090C;font-size:14px;line-height:1.4;">
+      <div style="display:flex;gap:12px;"><span style="flex:none;width:28px;height:28px;border-radius:8px;background:#D0FF41;"></span><span><b>Lima = acción.</b> En claro sólo rellena botones y chips, siempre con texto #07090C. Los acentos de texto pasan al color del rol.</span></div>
+      <div style="display:flex;gap:12px;"><span style="flex:none;width:28px;height:28px;border-radius:50%;box-shadow:inset 0 0 0 3px #0250B0;"></span><span><b>El rol marca dónde estás.</b> En claro se usa el tono "Fondo" de la lámina 23 para texto, aros y tab activo; la línea de 2px y el degradado bajan a 8%.</span></div>
+      <div style="display:flex;gap:12px;"><span style="flex:none;width:28px;height:28px;border-radius:8px;background:#07090C;"></span><span><b>No cambian:</b> carta de crack, plantillas para compartir (lámina 21) y el alto contraste del árbitro se ven igual en ambos modos.</span></div>
+    </div>
+  </div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      rolesDark: [
+        { label: 'JUGADOR', fill: '#0250B0', onFill: '#FFFFFF', text: '#5B9BFF', ratio: '7.2:1', ini: 'CH' },
+        { label: 'DELEGADO', fill: '#6B2FD6', onFill: '#FFFFFF', text: '#B38CFF', ratio: '7.7:1', ini: 'MS' },
+        { label: 'ÁRBITRO', fill: '#08716D', onFill: '#FFFFFF', text: '#3FE0D0', ratio: '12.1:1', ini: 'JM' },
+        { label: 'AFICIONADA', fill: '#B8228F', onFill: '#FFFFFF', text: '#FF7AD9', ratio: '8.6:1', ini: 'DL' },
+        { label: 'LIGA', fill: '#E9E4D8', onFill: '#07090C', text: '#E9E4D8', ratio: '15.7:1', ini: 'DT' }
+      ],
+      rolesLight: [
+        { label: 'JUGADOR', fill: '#0250B0', onFill: '#FFFFFF', text: '#0250B0', ratio: '7.6:1', ini: 'CH' },
+        { label: 'DELEGADO', fill: '#6B2FD6', onFill: '#FFFFFF', text: '#6B2FD6', ratio: '7.0:1', ini: 'MS' },
+        { label: 'ÁRBITRO', fill: '#08716D', onFill: '#FFFFFF', text: '#08716D', ratio: '5.8:1', ini: 'JM' },
+        { label: 'AFICIONADA', fill: '#B8228F', onFill: '#FFFFFF', text: '#B8228F', ratio: '5.7:1', ini: 'DL' },
+        { label: 'LIGA', fill: '#4B5868', onFill: '#FFFFFF', text: '#4B5868', ratio: '7.3:1', ini: 'DT' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
