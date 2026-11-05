@@ -2,7 +2,9 @@
 // - Siempre: feature flags e insignias.
 // - SEED_DEMO=1: liga demo del deck (prisma/demo/, docs/ROADMAP.md Fase 0).
 import { PrismaPg } from "@prisma/adapter-pg";
+import { fromZonedTime } from "date-fns-tz";
 import { PrismaClient } from "../src/generated/prisma/client";
+import { TZ } from "../src/shared/lib/dates";
 import { FLAG_DEFAULTS } from "../src/modules/core/flags.defaults";
 import { BADGES } from "../src/modules/carta/badges.catalog";
 import { cargarLigaDemo } from "./demo/cargar";
@@ -40,12 +42,20 @@ async function main() {
   if (process.env.SEED_DEMO === "1") {
     // Liga Dominical Iztapalapa · Apertura 2026 (prisma/demo/). Solo en chilena-dev.
     // SEED_HOY=2026-10-12 reproduce las fechas exactas del deck; sin él, la J16 es el próximo domingo.
-    const hoy = process.env.SEED_HOY ? new Date(`${process.env.SEED_HOY}T12:00:00-06:00`) : new Date();
-    const plan = await cargarLigaDemo(db, { hoy });
+    const seedHoy = process.env.SEED_HOY;
+    if (seedHoy && !/^\d{4}-\d{2}-\d{2}$/.test(seedHoy)) {
+      throw new Error(`SEED_HOY debe ser una fecha AAAA-MM-DD (llegó "${seedHoy}")`);
+    }
+    const hoy = seedHoy ? fromZonedTime(`${seedHoy}T12:00:00`, TZ) : new Date();
+    const { plan, reclamados } = await cargarLigaDemo(db, {
+      hoy,
+      forzar: process.env.SEED_DEMO_FORZAR === "1",
+    });
     console.info(
       `SEED_DEMO: ${plan.league.nombre} · ${plan.tournament.nombre} · J15 el ${plan.claves.fechaJ15} · ` +
         `${plan.teams.length} equipos · ${plan.users.length} personas · ${plan.matches.length} partidos · ` +
-        `${plan.matchEvents.length} eventos`,
+        `${plan.matchEvents.length} eventos` +
+        (reclamados ? ` · ${reclamados} perfil(es) reclamado(s) se conservaron` : ""),
     );
     console.table(plan.resumen.tabla);
     console.table(plan.resumen.goleo);

@@ -161,7 +161,7 @@ describe("lo que muestran las pantallas", () => {
     ]);
   });
 
-  it("pase de lista de la J16: 11 de 16 van, Rambo no va, 3 sin contestar, La Roca suspendido", () => {
+  it("pase de lista de la J16: 11 de 16 van, Rambo no va, 3 sin contestar, La Roca suspendido en la lista", () => {
     const va = plan.matchAttendances.filter((a) => a.status === "VA");
     expect(va).toHaveLength(11);
     expect(plan.matchAttendances.find((a) => a.userId === usuario("rambo-bautista").id)).toMatchObject({
@@ -169,7 +169,27 @@ describe("lo que muestran las pantallas", () => {
       nota: "Le toca trabajar",
     });
     expect(plan.matchAttendances.filter((a) => a.status === "CONVOCADO")).toHaveLength(3);
-    expect(plan.matchAttendances.some((a) => a.userId === usuario("la-roca").id)).toBe(false);
+    // Las alertas no bloquean (PRD §7.6): el suspendido sale en la lista con su nota
+    expect(plan.matchAttendances).toHaveLength(16);
+    expect(plan.matchAttendances.find((a) => a.userId === usuario("la-roca").id)).toMatchObject({
+      status: "NO_VA",
+      nota: "Suspendido · roja en la J14",
+    });
+  });
+
+  it("bitácora: la liga validó cada partido y aplicó la sanción manual", () => {
+    const validados = plan.matches.filter((m) => m.status === "VALIDADO");
+    const validaciones = plan.auditLogs.filter((a) => a.action === "VALIDATE");
+    expect(validaciones.map((a) => a.entityId).sort()).toEqual(validados.map((m) => m.id).sort());
+    const roca = plan.sanctions.find((s) => s.userId === usuario("la-roca").id)!;
+    expect(plan.auditLogs.find((a) => a.entityId === roca.id)).toMatchObject({
+      action: "CREATE",
+      entityType: "Sanction",
+    });
+  });
+
+  it("los puntos salen de la configuración del torneo", () => {
+    expect([plan.tournament.puntosVictoria, plan.tournament.puntosEmpate]).toEqual([3, 1]);
   });
 });
 
@@ -261,7 +281,21 @@ describe("base de datos", () => {
       expect(u.email ?? null).toBeNull();
       expect(u.fechaNacimiento ?? null).toBeNull();
       expect(u.contactoEmergenciaTel ?? null).toBeNull();
+      expect(u.contactoEmergenciaNom ?? null).toBeNull();
     }
+    for (const p of plan.playerProfiles) {
+      expect([p.tallaCalzado, p.tallaPantalon, p.tallaPlayera].map((x) => x ?? null)).toEqual([
+        null,
+        null,
+        null,
+      ]);
+    }
+    for (const r of plan.refereeProfiles) {
+      expect([r.tallaPlayera, r.tallaPantalon].map((x) => x ?? null)).toEqual([null, null]);
+    }
+    for (const t of plan.teams) expect(t.datosPago ?? null).toBeNull();
+    expect(plan.league.datosPago ?? null).toBeNull();
+    expect(plan.league.whatsappContacto ?? null).toBeNull();
   });
 
   it("regla 7 y CHECKs: dinero en centavos enteros y positivos", () => {

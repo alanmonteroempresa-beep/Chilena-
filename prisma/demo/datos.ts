@@ -72,6 +72,8 @@ export const TORNEO = {
   duracionPartidoMin: 90,
   costoInscripcionCents: 250_000,
   costoArbitrajeCents: 65_000,
+  puntosVictoria: 3,
+  puntosEmpate: 1,
 };
 
 export const ORGANIZADOR = { nombre: "Antonio", apellidos: "Gutiérrez", sobrenombre: "Don Toño" };

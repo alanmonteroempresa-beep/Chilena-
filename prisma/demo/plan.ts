@@ -112,7 +112,11 @@ const SIEMPRE: Ref[] = [
 const PRESENTES: Partial<Record<Ref, number[]>> = { "DP:11": [15], "DP:14": [15], "DP:5": [15] };
 /** Nunca salen de cambio */
 const INTOCABLES: Ref[] = ["DP:7", "DP:8", "DP:9", "DP:10", "TL:9", "RC:9"];
-/** Rojas. La de La Roca: la liga aplicó 2 partidos (panel de la liga), cumplió uno en la J15. */
+/**
+ * Rojas. La de La Roca: la liga aplicó 2 partidos (panel de la liga, "APLICAR: 2 PARTIDOS") y ya cumplió uno.
+ * PROVISIONAL: el PRD (§7.8) no dice si la sanción manual reemplaza a la automática (roja = 1) o se suma;
+ * aquí queda una sola sanción manual de 2 partidos, con su bitácora.
+ */
 const ROJAS: { jornada: number; ref: Ref; minuto: number; partidos: number; automatica: boolean }[] = [
   { jornada: 6, ref: "TL:3", minuto: 64, partidos: 1, automatica: true },
   { jornada: 9, ref: "SN:4", minuto: 58, partidos: 1, automatica: true },
@@ -732,7 +736,7 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
     // Puntos con la configuración del torneo. Desempate provisional: puntos, diferencia, goles a favor
     // (el PRD todavía no define el desempate).
     return filas
-      .map((f) => ({ ...f, dg: f.gf - f.gc, pts: f.pg * 3 + f.pe }))
+      .map((f) => ({ ...f, dg: f.gf - f.gc, pts: f.pg * TORNEO.puntosVictoria + f.pe * TORNEO.puntosEmpate }))
       .sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.nombre.localeCompare(b.nombre, "es"))
       .map((f, i) => ({ ...f, posicion: i + 1 }));
   };
@@ -980,6 +984,8 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
     costoInscripcionCents: TORNEO.costoInscripcionCents,
     costoArbitrajeCents: TORNEO.costoArbitrajeCents,
     ventanaFichajesAbierta: false,
+    puntosVictoria: TORNEO.puntosVictoria,
+    puntosEmpate: TORNEO.puntosEmpate,
   };
   const tournamentTeams: Prisma.TournamentTeamCreateManyInput[] = EQUIPOS.map((e, i) => ({
     id: inscripcionId(e.clave),
@@ -1181,6 +1187,31 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
     };
   });
 
+  // Bitácora (CLAUDE.md: cambios a resultados y sanciones): la liga validó cada partido y aplicó la sanción manual
+  const auditLogs: Prisma.AuditLogCreateManyInput[] = [
+    ...jugados.map((p) => ({
+      id: idDemo("bitacora", `validar:${p.clave}`),
+      actorId: organizadorId,
+      action: "VALIDATE" as const,
+      entityType: "Match",
+      entityId: p.id,
+      before: { status: "FINALIZADO" },
+      after: { status: "VALIDADO", homeScore: p.goles.L, awayScore: p.goles.V },
+      createdAt: noDespuesDeAhora(enCDMX(sumarDias(p.fecha, 1), "10:00")),
+    })),
+    ...sanctions
+      .filter((s) => !s.automatica)
+      .map((s) => ({
+        id: idDemo("bitacora", `sancion:${s.id}`),
+        actorId: organizadorId,
+        action: "CREATE" as const,
+        entityType: "Sanction",
+        entityId: s.id!,
+        after: { type: s.type, partidos: s.partidos, userId: s.userId },
+        motivo: s.motivo,
+      })),
+  ];
+
   const standings: Prisma.StandingRowCreateManyInput[] = tabla.map((f) => ({
     tournamentTeamId: inscripcionId(f.clave),
     tournamentId: torneoId,
@@ -1326,24 +1357,26 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
       createdAt: masMinutos(ahora, -26 * 60),
     },
   ];
-  const noVa: Partial<Record<Ref, string>> = { "DP:15": "Le toca trabajar" };
+  // La Roca también va en la lista con su alerta: las alertas no bloquean (PRD §7.6), decide el delegado
+  const noVa: Partial<Record<Ref, string>> = {
+    "DP:15": "Le toca trabajar",
+    "DP:4": "Suspendido · roja en la J14",
+  };
   const sinRespuesta: Ref[] = ["DP:7", "DP:14", "DP:12"];
-  const matchAttendances: Prisma.MatchAttendanceCreateManyInput[] = plantilla("DP")
-    .filter((j) => !suspendido(j.ref, j16DP.jornada)) // La Roca no se convoca: está suspendido
-    .map((j, i) => {
-      if (sinRespuesta.includes(j.ref))
-        return { matchId: j16DP.id, userId: j.id, teamId: equipoId("DP"), status: "CONVOCADO" as const };
-      const nota = noVa[j.ref];
-      return {
-        matchId: j16DP.id,
-        userId: j.id,
-        teamId: equipoId("DP"),
-        status: nota ? ("NO_VA" as const) : ("VA" as const),
-        channel: j.ref === "DP:9" || j.ref === "DP:3" ? ("APP" as const) : ("LINK" as const),
-        nota: nota ?? null,
-        respondedAt: masMinutos(ahora, -(60 + i * 37)),
-      };
-    });
+  const matchAttendances: Prisma.MatchAttendanceCreateManyInput[] = plantilla("DP").map((j, i) => {
+    if (sinRespuesta.includes(j.ref))
+      return { matchId: j16DP.id, userId: j.id, teamId: equipoId("DP"), status: "CONVOCADO" as const };
+    const nota = noVa[j.ref];
+    return {
+      matchId: j16DP.id,
+      userId: j.id,
+      teamId: equipoId("DP"),
+      status: nota ? ("NO_VA" as const) : ("VA" as const),
+      channel: j.ref === "DP:9" || j.ref === "DP:3" ? ("APP" as const) : ("LINK" as const),
+      nota: nota ?? null,
+      respondedAt: masMinutos(ahora, -(60 + i * 37)),
+    };
+  });
 
   const teamFollows: Prisma.TeamFollowCreateManyInput[] = equiposQueSigue.map((c) => ({
     userId: lupeId,
@@ -1400,6 +1433,7 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
     teamFollows,
     userFollows,
     leagueFollows,
+    auditLogs,
     /** Para el log y los tests */
     resumen: {
       tabla: tabla.map((f) => ({
