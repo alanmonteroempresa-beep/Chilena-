@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Info, TriangleAlert } from "lucide-react";
+import { Info } from "lucide-react";
 import { Logo } from "@/shared/ui/logo";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { isEnabled } from "../../server/flags";
@@ -18,18 +18,19 @@ export function PantallaEntrar({ parametros }: { parametros: Parametros }) {
   return (
     <div className="flex min-h-dvh flex-col bg-background lg:flex-row">
       <Hero />
-      <section className="flex flex-1 flex-col px-4 pt-6 pb-[max(2rem,env(safe-area-inset-bottom))] lg:max-w-[600px] lg:justify-center lg:px-14">
+      {/* En celular el formulario queda abajo, al alcance del pulgar, como en el deck */}
+      <main className="flex flex-col px-4 pt-6 pb-[max(2rem,env(safe-area-inset-bottom))] lg:max-w-[600px] lg:flex-1 lg:justify-center lg:px-14">
         <Suspense fallback={<TarjetaCargando />}>
           <TarjetaEntrar parametros={parametros} />
         </Suspense>
-      </section>
+      </main>
     </div>
   );
 }
 
 function Hero() {
   return (
-    <header className="dark relative isolate flex min-h-[52dvh] flex-col overflow-hidden bg-ink px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-6 text-white lg:min-h-dvh lg:flex-1 lg:px-16 lg:pt-12 lg:pb-14">
+    <header className="dark relative isolate flex min-h-[52dvh] flex-1 flex-col overflow-hidden bg-ink px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-6 text-foreground lg:min-h-dvh lg:px-16 lg:pt-12 lg:pb-14">
       {/* Atardecer en el llano: luz dorada arriba, azul de la marca al fondo y las líneas de la cancha */}
       <div
         aria-hidden
@@ -37,7 +38,7 @@ function Hero() {
       />
       <div
         aria-hidden
-        className="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-[repeating-linear-gradient(90deg,transparent_0_118px,color-mix(in_oklch,white_5%,transparent)_118px_120px)] [mask-image:linear-gradient(to_top,black,transparent)]"
+        className="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-[repeating-linear-gradient(90deg,transparent_0_119px,color-mix(in_oklch,var(--color-brand-silver)_6%,transparent)_119px_120px)] [mask-image:linear-gradient(to_top,black,transparent)]"
       />
       <Logo tamano={44} />
       <div className="mt-auto flex flex-col gap-4 pt-10 lg:max-w-[640px]">
@@ -45,10 +46,13 @@ function Hero() {
           <span aria-hidden className="h-px w-8 bg-brand-lime" />
           La red del fútbol llanero
         </p>
-        <h1 className="titular-momento text-[56px] leading-[0.86] sm:text-[72px] lg:text-[112px]">
-          Del llano a tu <span className="text-brand-lime">celular.</span>
+        {/* Siempre en dos líneas, como el deck: "DEL LLANO A TU" / "CELULAR." */}
+        <h1 className="titular-momento text-[clamp(44px,15vw,56px)] leading-[0.86] sm:text-[72px] lg:text-[68px] xl:text-[96px] 2xl:text-[112px]">
+          Del llano a tu
+          <br />
+          <span className="text-brand-lime">celular.</span>
         </h1>
-        <p className="max-w-[460px] text-[15px] leading-snug text-white/80 lg:text-lg">
+        <p className="max-w-[460px] text-[15px] leading-snug text-foreground/80 lg:text-lg">
           <span className="lg:hidden">Resultados, golazos y la porra de tu equipo. Gratis.</span>
           <span className="hidden lg:inline">
             Resultados al momento, cada golazo con su portada y la porra de tu equipo. Gratis y sin
@@ -72,25 +76,15 @@ async function TarjetaEntrar({ parametros }: { parametros: Parametros }) {
   return (
     <div className="flex flex-col gap-5 lg:rounded-2xl lg:border lg:border-border lg:bg-card lg:p-8 lg:shadow-sm">
       <div className="hidden flex-col gap-3 lg:flex">
-        <h2 className="titular-momento text-[52px] leading-[0.9]">Entra con tu correo</h2>
+        <h2 className="titular-momento text-[48px] leading-[0.9] text-balance">Entra con tu correo</h2>
         <p className="text-sm text-muted-foreground">
           Te mandamos un link a tu correo. Sin contraseñas que olvidar.
         </p>
       </div>
 
-      {aviso && (
-        <p
-          role="alert"
-          className="flex gap-2.5 rounded-xl bg-warning-soft p-3 text-sm leading-snug font-medium text-warning"
-        >
-          <TriangleAlert aria-hidden className="mt-0.5 size-4 shrink-0" />
-          {aviso}
-        </p>
-      )}
+      <FormularioCorreo next={next} aviso={aviso} />
 
-      <FormularioCorreo next={next} />
-
-      <div className="flex items-center gap-3 text-xs text-muted-foreground" aria-hidden>
+      <div className="hidden items-center gap-3 text-xs text-muted-foreground lg:flex" aria-hidden>
         <span className="h-px flex-1 bg-border" />o<span className="h-px flex-1 bg-border" />
       </div>
       <BotonGoogle prendido={google} next={next} />

@@ -36,20 +36,16 @@ export function BotonGoogle({ prendido, next }: { prendido: boolean; next?: stri
       <button
         type="submit"
         disabled={!prendido}
-        aria-describedby={prendido ? undefined : "google-pronto"}
         className={cn(
-          "inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-lg border border-border bg-white text-[15px] font-semibold text-ink transition-colors",
+          "inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-lg border border-input bg-white text-[15px] font-semibold text-ink transition-colors",
           "hover:bg-brand-silver/40 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
-          "disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-white",
+          "disabled:cursor-not-allowed disabled:opacity-80 disabled:hover:bg-white",
         )}
       >
         <LogoGoogle />
         Continuar con Google
         {!prendido && (
-          <span
-            id="google-pronto"
-            className="etiqueta rounded-md bg-ink/10 px-1.5 py-0.5 text-[10px] tracking-[0.12em] text-ink/70"
-          >
+          <span className="etiqueta inline-flex h-5 items-center rounded-[7px] bg-ink/10 px-[9px] text-[10px] font-extrabold tracking-[0.12em] text-ink/80">
             Próximamente
           </span>
         )}
