@@ -138,12 +138,13 @@ describe("lo que muestran las pantallas", () => {
     expect(m.refereeId).toBe(usuario("jorge-mendoza").id);
   });
 
-  it("J14: Halcones 1–2 Portales con la roja de La Roca al 71'", () => {
+  it("J14: Halcones 1–2 Portales, roja de La Roca al 71' y cédula de L. Ortega", () => {
     const m = partidosDe(14).find((x) => x.awayTeamId === equipo("dep-portales").id)!;
     expect(m.homeTeamId).toBe(equipo("halcones-iztapalapa").id);
     expect([m.homeScore, m.awayScore]).toEqual([1, 2]);
     const roja = eventosDe(m.id).find((e) => e.type === "ROJA")!;
     expect([roja.playerId, roja.minute]).toEqual([usuario("la-roca").id, 71]);
+    expect(m.refereeId).toBe(usuario("luis-ortega").id); // "árbitro L. Ortega ya firmó"
   });
 
   it("rol de la J16 del panel de la liga, con Narvarte–Pensil sin árbitro", () => {

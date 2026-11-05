@@ -54,6 +54,8 @@ const RESULTADOS_FIJOS: Record<string, Resultado> = {
   "12:DP-SN": "L", // doblete del Chícharo vs Narvarte
 };
 const MARCADORES_FIJOS: Record<string, [number, number]> = { "15:DP-RC": [3, 2], "14:HI-DP": [1, 2] };
+/** Árbitros que el deck nombra fuera de la J15 y J16 ("Cédula J14 · árbitro L. Ortega ya firmó") */
+const ARBITROS_FIJOS: Record<string, ClaveArbitro> = { "14:HI-DP": "ortega" };
 
 /** Cédula de la J15 Portales–Condesa tal cual el deck (7 eventos, sin nada más) */
 const CEDULA_J15: {
@@ -291,8 +293,10 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
     return cruces.map(([local, visita], k) => {
       // J15 y J16 en el orden de horarios del deck; las demás rotan para que nadie juegue siempre a las 9
       const horario = jornada >= 15 ? k : (k + jornada) % TORNEO.horarios.length;
-      const arbitro =
-        jornada === 15
+      const fijo = ARBITROS_FIJOS[clavePartido(jornada, local, visita)];
+      const arbitro = fijo
+        ? fijo
+        : jornada === 15
           ? ARBITROS_J15[horario]
           : jornada === 16
             ? ARBITROS_J16[horario]
@@ -760,6 +764,8 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
         if (golesEn(p) === 0) break;
         rachaGoles++;
       }
+      // PROVISIONAL: "domingos sin faltar" = jornadas seguidas en las que jugó (el PRD no lo define;
+      // un suplente que fue y no entró cuenta como falta). Ajustar cuando el PRD lo diga.
       let rachaAsistencia = 0;
       for (let n = TORNEO.jornadasJugadas; n >= 1; n--) {
         if (!suyos.some((p) => p.jornada === n)) break;
