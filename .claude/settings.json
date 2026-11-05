@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(pnpm dev:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm format:*)",
+      "Bash(pnpm db:generate:*)",
+      "Bash(pnpm db:seed:*)",
+      "Bash(pnpm exec playwright:*)",
+      "Bash(pnpm prisma validate:*)",
+      "Bash(pnpm prisma generate:*)",
+      "Bash(pnpm prisma format:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git checkout -b:*)",
+      "Bash(git switch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ],
+    "ask": [
+      "Edit(prisma/schema.prisma)",
+      "Write(prisma/schema.prisma)",
+      "Bash(pnpm db:migrate:*)",
+      "Bash(pnpm prisma migrate:*)",
+      "Bash(pnpm add:*)",
+      "Bash(git push:*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.local)",
+      "Read(./.env.*.local)",
+      "Bash(pnpm prisma migrate reset:*)",
+      "Bash(git push --force:*)",
+      "Bash(git reset --hard:*)"
+    ]
+  }
+}

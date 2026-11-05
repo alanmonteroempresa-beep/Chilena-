@@ -1,0 +1,184 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* =============================================================================
+   CHILENA — tokens de diseño (docs/DISENO.md)
+   - Modo oscuro = clase .dark en <html> (next-themes, Automático por defecto)
+   - Acento por rol = atributo data-role en <body>
+   ========================================================================== */
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* shadcn */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* marca */
+  --color-brand-blue: #0250b0;
+  --color-brand-lime: #d0ff41;
+  --color-brand-silver: #c6d0dd;
+  --color-ink: #07090c;
+  --color-gold: #e8c46a;
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-whatsapp: #25d366;
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+
+  /* rol activo */
+  --color-role: var(--role-accent);
+  --color-role-card: var(--role-card);
+
+  /* tipografía (next/font en src/app/layout.tsx) */
+  --font-sans: var(--font-barlow);
+  --font-condensed: var(--font-barlow-condensed);
+  --font-display: var(--font-big-shoulders);
+  --font-heading: var(--font-big-shoulders);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+}
+
+/* ---------- Modo claro ---------- */
+:root {
+  --radius: 0.75rem;
+
+  --background: #f4f7fa;
+  --foreground: #07090c;
+  --surface: #ffffff;
+  --surface-2: #e3e8ee;
+  --card: #ffffff;
+  --card-foreground: #07090c;
+  --popover: #ffffff;
+  --popover-foreground: #07090c;
+  /* acción principal = lima con texto oscuro (nunca lima como texto en claro) */
+  --primary: #d0ff41;
+  --primary-foreground: #07090c;
+  --secondary: #e3e8ee;
+  --secondary-foreground: #07090c;
+  --muted: #e3e8ee;
+  --muted-foreground: #4a5666;
+  --accent: #e3e8ee;
+  --accent-foreground: #07090c;
+  --border: #e3e8ee;
+  --input: #d5dce5;
+  --ring: #0250b0;
+  --warning: #b86e00; /* ámbar con contraste AA sobre blanco */
+  --danger: #c8102e;
+  --destructive: #c8102e;
+
+  /* acento por rol (variante "Fondo" de la lámina 23) */
+  --role-accent: #5b6675;
+  --role-card: #262b33;
+}
+
+/* ---------- Modo oscuro ---------- */
+.dark {
+  --background: #07090c;
+  --foreground: #f4f7fa;
+  --surface: #11151b;
+  --surface-2: #262b33;
+  --card: #11151b;
+  --card-foreground: #f4f7fa;
+  --popover: #11151b;
+  --popover-foreground: #f4f7fa;
+  --primary: #d0ff41;
+  --primary-foreground: #07090c;
+  --secondary: #262b33;
+  --secondary-foreground: #f4f7fa;
+  --muted: #262b33;
+  --muted-foreground: #9aa7b8;
+  --accent: #262b33;
+  --accent-foreground: #f4f7fa;
+  --border: #262b33;
+  --input: #262b33;
+  --ring: #5b9bff;
+  --warning: #ffb020;
+  --danger: #ff4d4f;
+  --destructive: #ff4d4f;
+
+  --role-accent: #c6d0dd;
+  --role-card: #262b33;
+}
+
+/* ---------- Acento por rol ---------- */
+[data-role="jugador"] { --role-accent: #0250b0; --role-card: #0250b0; }
+[data-role="delegado"] { --role-accent: #6b2fd6; --role-card: #6b2fd6; }
+[data-role="arbitro"] { --role-accent: #08716d; --role-card: #08716d; }
+[data-role="aficionado"] { --role-accent: #b8228f; --role-card: #b8228f; }
+[data-role="liga"] { --role-accent: #5b6675; --role-card: #262b33; }
+
+.dark [data-role="jugador"], .dark[data-role="jugador"] { --role-accent: #5b9bff; }
+.dark [data-role="delegado"], .dark[data-role="delegado"] { --role-accent: #b38cff; }
+.dark [data-role="arbitro"], .dark[data-role="arbitro"] { --role-accent: #3fe0d0; }
+.dark [data-role="aficionado"], .dark[data-role="aficionado"] { --role-accent: #ff7ad9; }
+.dark [data-role="liga"], .dark[data-role="liga"] { --role-accent: #c6d0dd; }
+
+/* ---------- Alto contraste (cédula del árbitro) ---------- */
+.alto-contraste {
+  --background: #000000;
+  --foreground: #ffffff;
+  --surface: #000000;
+  --card: #000000;
+  --border: #ffffff;
+  --muted-foreground: #e6e6e6;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  /* Línea de 2 px del rol arriba de la app */
+  body[data-role]::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 2px;
+    background: var(--role-accent);
+    z-index: 60;
+  }
+}
+
+@layer components {
+  /* Titulares de MOMENTO: GOLAZO, ¡CAMPEONES!, TE TOCA EL DOMINGO */
+  .titular-momento {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    line-height: 0.9;
+  }
+  /* Chips, etiquetas, marcadores y números de la carta */
+  .etiqueta {
+    font-family: var(--font-condensed);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+}

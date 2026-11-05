@@ -1,0 +1,1908 @@
+// =============================================================================
+// CHILENA — Esquema de base de datos (Prisma 7 + Supabase Postgres)
+// Fuente funcional: docs/PRD.md · Carta e insignias: docs/CARTA_E_INSIGNIAS.md
+// Convenciones:
+//   - Tablas en snake_case vía @@map; campos camelCase.
+//   - User.id es propio (uuid). User.authId = auth.users.id de Supabase cuando
+//     la persona reclama su perfil. Un perfil puede existir SIN reclamar
+//     (lo crea el delegado o la liga) — PRD §4.3 "Reclama tu perfil".
+//   - Dinero SIEMPRE en centavos (Int), MXN. La app NO mueve dinero en la beta.
+//   - Equipos: los partidos apuntan a Team (sirve para torneo y para retas);
+//     la inscripción a torneo es TournamentTeam.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// -----------------------------------------------------------------------------
+// ENUMS
+// -----------------------------------------------------------------------------
+
+enum RoleType {
+  AFICIONADO
+  JUGADOR
+  DELEGADO
+  ARBITRO
+  LIGA
+  SUPERADMIN
+}
+
+enum Sexo {
+  HOMBRE
+  MUJER
+  OTRO
+}
+
+enum Zona {
+  NORTE
+  SUR
+  ORIENTE
+  PONIENTE
+  CENTRO
+}
+
+enum TipoFutbol {
+  SOCCER
+  RAPIDO
+  FUT7
+  FUT8
+  FUT9
+  SALON
+}
+
+/// INFANTIL queda fuera de la beta (PRD §11). Se agrega con migración cuando
+/// exista el flujo de tutor.
+enum Categoria {
+  LIBRE
+  VETERANOS
+  FEMENIL
+  MIXTA
+}
+
+enum Rama {
+  VARONIL
+  FEMENIL
+  MIXTA
+}
+
+enum Posicion {
+  POR
+  DFC
+  LAT
+  MCD
+  MC
+  MCO
+  EXT
+  DC
+}
+
+enum PositionGroup {
+  PORTERO
+  DEFENSA
+  MEDIO
+  DELANTERO
+}
+
+enum PieHabil {
+  DERECHO
+  IZQUIERDO
+  AMBIDIESTRO
+}
+
+enum RangoEquiposJugados {
+  DE_1_A_10
+  DE_10_A_20
+  DE_20_A_30
+  MAS_DE_30
+}
+
+enum Superficie {
+  PASTO_NATURAL
+  SINTETICO
+  CONCRETO
+  TIERRA
+  DUELA
+}
+
+// ---- Carta
+enum CardTier {
+  BRONCE
+  PLATA
+  ORO
+  LEYENDA
+}
+
+// ---- Social
+enum PostType {
+  NORMAL
+  AUTO_GOL
+  AUTO_RESULTADO
+  AUTO_CRONICA
+  AUTO_PORTADA
+  AUTO_ONCE_JORNADA
+  AUTO_MVP
+  AUTO_INSIGNIA
+  AUTO_CAMPEON
+  AUTO_FICHAJE
+  AUTO_TABLA
+  AUTO_TORNEO
+  AUTO_RACHA
+  AUTO_CIERRE_TEMPORADA
+}
+
+enum PostAuthorAs {
+  USER
+  TEAM
+  LEAGUE
+  SYSTEM
+}
+
+enum ContentSource {
+  HUMANO
+  PLANTILLA // titulares y crónicas por plantilla (beta)
+  IA        // post-beta
+}
+
+enum Visibility {
+  PUBLICO
+  SEGUIDORES
+  EQUIPO
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+/// Reacciones del deck: 🔥 Fuego · ⚽ Golazo · 🏆 Trofeo
+enum ReactionType {
+  FUEGO
+  GOLAZO
+  TROFEO
+}
+
+enum ReportTarget {
+  POST
+  COMMENT
+  USER
+  TEAM
+  BOARD_POST
+}
+
+enum ReportStatus {
+  ABIERTO
+  OCULTADO
+  MANTENIDO
+  AVISADO
+}
+
+enum PollType {
+  MVP_PARTIDO
+  GOLAZO_JORNADA
+  ONCE_JORNADA // una encuesta por posición
+  ATAJADA_JORNADA
+  EL_MURO // interna del equipo: votan compañeros
+}
+
+enum PollStatus {
+  ABIERTA
+  CERRADA
+}
+
+enum BoardPostType {
+  BUSCO_JUGADOR
+  BUSCO_EQUIPO
+  JUGADOR_LIBRE
+  FALTA_PARA_RETA
+  FICHAJE
+}
+
+enum ChallengeStatus {
+  PROPUESTA
+  ACEPTADA
+  RECHAZADA
+  JUGADA
+  CANCELADA
+}
+
+enum WhoPays {
+  RETADOR
+  RETADO
+  MITAD
+  CADA_QUIEN
+}
+
+// ---- Equipos y ligas
+enum TeamMemberRole {
+  DELEGADO_PRINCIPAL
+  DELEGADO_AUXILIAR
+  CAPITAN
+  JUGADOR
+}
+
+enum MembershipStatus {
+  SOLICITADO
+  INVITADO
+  ACTIVO
+  RECHAZADO
+  BAJA
+}
+
+enum LeagueAdminRole {
+  DUENO
+  ADMINISTRADOR
+  GESTOR
+}
+
+enum TournamentFormat {
+  LIGA
+  LIGA_LIGUILLA
+  COPA
+}
+
+enum TournamentStatus {
+  BORRADOR
+  INSCRIPCIONES_ABIERTAS
+  EN_CURSO
+  LIGUILLA
+  FINALIZADO
+  CANCELADO
+}
+
+enum RegistrationStatus {
+  SOLICITADA
+  ACEPTADA
+  RECHAZADA
+  BAJA
+}
+
+enum RosterStatus {
+  PENDIENTE_APROBACION
+  ACTIVO
+  SUSPENDIDO
+  BAJA
+}
+
+enum Fase {
+  REGULAR
+  OCTAVOS
+  CUARTOS
+  SEMIFINAL
+  TERCER_LUGAR
+  FINAL
+}
+
+// ---- Partidos
+enum MatchKind {
+  TORNEO
+  RETA // amistoso entre equipos (Challenge)
+}
+
+enum MatchStatus {
+  PROGRAMADO
+  EN_JUEGO
+  POR_FIRMAR   // cédula enviada, esperando firmas/correcciones
+  FINALIZADO   // cédula firmada (o capturada por la liga desde papel)
+  VALIDADO     // la liga validó: cuenta para tabla, carta, insignias
+  EN_DISPUTA
+  SUSPENDIDO
+  REPROGRAMADO
+  CANCELADO
+  DEFAULT
+}
+
+enum ScoreSource {
+  ARBITRO
+  DELEGADO
+  AFICIONADO
+  LIGA
+}
+
+enum AssignmentStatus {
+  ASIGNADO
+  ACEPTADO
+  RECHAZADO
+}
+
+enum AttendanceStatus {
+  CONVOCADO
+  VA
+  NO_VA
+  LESIONADO
+  PRESENTE
+  AUSENTE
+}
+
+enum ResponseChannel {
+  APP
+  LINK // pase de lista por WhatsApp sin cuenta
+}
+
+enum MatchEventType {
+  INICIO_PARTIDO
+  MEDIO_TIEMPO
+  FIN_PARTIDO
+  GOL
+  AUTOGOL
+  PENAL_FALLADO
+  PENAL_ATAJADO // playerId = portero que atajó
+  AMARILLA
+  ROJA
+  CAMBIO
+  LESION_GRAVE
+  CACHIRUL
+  SUSPENSION
+}
+
+enum TipoGol {
+  JUGADA
+  CABEZA
+  PENAL
+  TIRO_LIBRE
+  FUERA_DEL_AREA
+  CHILENA
+  PANENKA
+  OLIMPICO
+}
+
+enum ReportSource {
+  APP_ARBITRO // el árbitro capturó en su celular (en vivo o al final)
+  PAPEL_LIGA  // la liga capturó desde la cédula de papel
+}
+
+enum MatchReportStatus {
+  BORRADOR
+  ENVIADA
+  EN_CORRECCION
+  FIRMADA
+  VALIDADA
+}
+
+enum CorrectionKind {
+  JUGADOR_EQUIVOCADO
+  MINUTO
+  TIPO_EVENTO
+  FALTA_EVENTO
+  SOBRA_EVENTO
+}
+
+enum CorrectionStatus {
+  PENDIENTE
+  ACEPTADA
+  RECHAZADA
+}
+
+enum SanctionType {
+  SUSPENSION_PARTIDOS
+  MULTA
+  EXPULSION_TORNEO
+  PERDIDA_PARTIDO
+}
+
+enum SanctionStatus {
+  ACTIVA
+  CUMPLIDA
+  ANULADA
+}
+
+enum SuspensionRequestStatus {
+  PENDIENTE
+  CONFIRMADA
+  RECHAZADA
+}
+
+// ---- Dinero (solo control; la app no cobra en la beta)
+enum ChargeConcept {
+  INSCRIPCION
+  ARBITRAJE
+  MULTA
+  OTRO
+}
+
+enum PaymentStatus {
+  PENDIENTE
+  REPORTADO // "Ya pagué" — espera confirmación
+  CONFIRMADO
+  CONDONADO
+}
+
+// ---- Notificaciones
+enum NotificationType {
+  NUEVO_SEGUIDOR
+  REACCION
+  COMENTARIO
+  ETIQUETA
+  INSIGNIA
+  CARTA_ACTUALIZADA
+  PERFIL_CREADO // tu delegado te dio de alta (para reclamar)
+  INVITACION_EQUIPO
+  ALTA_EQUIPO
+  PASE_DE_LISTA
+  RECORDATORIO_PARTIDO
+  PARTIDO_EN_VIVO
+  RESULTADO_OFICIAL
+  CEDULA_POR_FIRMAR
+  CORRECCION_CEDULA
+  ASIGNACION_ARBITRO
+  NO_HAY_JUEGO
+  PARTIDO_SUSPENDIDO
+  SANCION
+  ALERTA_TARJETAS // "Aguas: llevas 4 amarillas"
+  CUOTA
+  PAGO_REPORTADO
+  VOTACION_ABIERTA
+  QUINIELA
+  RETA
+  PORTADA
+  LIGA
+  SISTEMA
+}
+
+enum BugStatus {
+  NUEVO
+  EN_REVISION
+  RESUELTO
+  DESCARTADO
+}
+
+enum AdminAction {
+  CREATE
+  UPDATE
+  DELETE
+  VALIDATE
+  OVERRIDE
+}
+
+// =============================================================================
+// PERSONAS Y PERFILES
+// =============================================================================
+
+model User {
+  id                    String    @id @default(uuid()) @db.Uuid
+  authId                String?   @unique @db.Uuid // auth.users.id al reclamar
+  claimedAt             DateTime?
+  createdById           String?   @db.Uuid // delegado/liga que lo dio de alta
+  username              String    @unique // slug: "el-chicharo"
+  nombre                String
+  apellidos             String?
+  sobrenombre           String? // "El Chícharo"
+  fechaNacimiento       DateTime? @db.Date
+  sexo                  Sexo?
+  celular               String?   @unique // E.164; privado
+  email                 String?   @unique
+  fotoPath              String? // única imagen permitida en la beta
+  bio                   String?   @db.VarChar(160)
+  zona                  Zona?
+  alcaldia              String?
+  facebookUrl           String?
+  instagramUrl          String?
+  contactoEmergenciaNom String?
+  contactoEmergenciaTel String?
+  activeRole            RoleType  @default(AFICIONADO)
+  profileCompletion     Int       @default(0) // 0..100 (perfil progresivo)
+  qrToken               String    @unique @default(uuid()) // credencial anticachirul
+  isPionero             Boolean   @default(false) // beta tester
+  searchable            Boolean   @default(true)
+  showCelularToTeam     Boolean   @default(true)
+  followersCount        Int       @default(0)
+  followingCount        Int       @default(0)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  lastSeenAt            DateTime?
+  deletedAt             DateTime?
+
+  createdBy             User?     @relation("UserCreatedBy", fields: [createdById], references: [id])
+  usersCreated          User[]    @relation("UserCreatedBy")
+
+  roles                 UserRole[]
+  playerProfile         PlayerProfile?
+  refereeProfile        RefereeProfile?
+  card                  PlayerCard?
+  cardSnapshots         PlayerCardSnapshot[]
+
+  following             UserFollow[]   @relation("Follower")
+  followers             UserFollow[]   @relation("Followed")
+  teamFollows           TeamFollow[]
+  leagueFollows         LeagueFollow[]
+  posts                 Post[]         @relation("PostAuthor")
+  postsAboutMe          Post[]         @relation("PostSubject")
+  postTags              PostTag[]
+  reactions             Reaction[]
+  comments              Comment[]      @relation("CommentAuthor")
+  wallComments          Comment[]      @relation("CommentWallUser")
+  badges                UserBadge[]
+  reportsMade           Report[]       @relation("Reporter")
+  reportsReviewed       Report[]       @relation("ReportReviewer")
+  blocking              Block[]        @relation("Blocker")
+  blockedBy             Block[]        @relation("Blocked")
+  predictions           Prediction[]
+  pollVotes             PollVote[]
+  pollOptions           PollOption[]
+  respectVotesCast      RespectVote[]  @relation("RespectVoter")
+  respectVotesReceived  RespectVote[]  @relation("RespectReceiver")
+  fanStats              FanStat[]
+  boardPosts            BoardPost[]
+  challengesCreated     Challenge[]
+
+  notifications         Notification[] @relation("NotificationUser")
+  notificationsActed    Notification[] @relation("NotificationActor")
+  pushSubscriptions     PushSubscription[]
+  notificationPrefs     NotificationPreference[]
+
+  teamMemberships       TeamMember[]
+  teamsCreated          Team[]          @relation("TeamCreator")
+  duePayments           TeamDuePayment[] @relation("DuePayer")
+  duesConfirmed         TeamDuePayment[] @relation("DueConfirmer")
+  duesCreated           TeamDue[]
+  leagueAdmins          LeagueAdmin[]
+  leaguesCreated        League[]        @relation("LeagueCreator")
+  leagueReferees        LeagueReferee[]
+  tournamentReferees    TournamentReferee[]
+  rosterEntries         TournamentRoster[]
+  attendances           MatchAttendance[] @relation("AttendancePlayer")
+  checkinsDone          MatchAttendance[] @relation("AttendanceCheckinBy")
+  lineupsSubmitted      Lineup[]
+  lineupPlayers         LineupPlayer[]
+  refereedMatches       Match[]         @relation("MatchReferee")
+  validatedMatches      Match[]         @relation("MatchValidator")
+  suspendedMatches      Match[]         @relation("MatchSuspender")
+  eventsAsPlayer        MatchEvent[]    @relation("EventPlayer")
+  eventsAsAssist        MatchEvent[]    @relation("EventAssist")
+  eventsAsPlayerOut     MatchEvent[]    @relation("EventPlayerOut")
+  eventsCreated         MatchEvent[]    @relation("EventCreator")
+  liveScoreUpdates      LiveScoreUpdate[]
+  reportsAsReferee      MatchReport[]   @relation("ReportReferee")
+  reportsCaptured       MatchReport[]   @relation("ReportCapturer")
+  reportsSignedHome     MatchReport[]   @relation("ReportHomeSigner")
+  reportsSignedAway     MatchReport[]   @relation("ReportAwaySigner")
+  correctionsRequested  MatchReportCorrection[] @relation("CorrectionRequester")
+  correctionsResponded  MatchReportCorrection[] @relation("CorrectionResponder")
+  sanctions             Sanction[]      @relation("SanctionedUser")
+  sanctionsCreated      Sanction[]      @relation("SanctionCreator")
+  suspensionRequests    MatchSuspensionRequest[] @relation("SuspensionRequester")
+  suspensionReviews     MatchSuspensionRequest[] @relation("SuspensionReviewer")
+  chargesRecorded       LeagueCharge[]  @relation("ChargeRecorder")
+  refereePayments       RefereePayment[]
+  venuesCreated         Venue[]
+  playerStats           PlayerTournamentStat[]
+  bugReports            BugReport[]
+  auditLogs             AuditLog[]
+
+  @@index([zona])
+  @@index([createdById])
+  @@map("users")
+}
+
+model UserRole {
+  userId    String   @db.Uuid
+  role      RoleType
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, role])
+  @@map("user_roles")
+}
+
+model PlayerProfile {
+  userId             String               @id @db.Uuid
+  posiciones         Posicion[]
+  posicionPrincipal  Posicion?
+  pieHabil           PieHabil?
+  numeroFavorito     Int?
+  tallaCalzado       Decimal?             @db.Decimal(3, 1)
+  tallaPantalon      String?
+  tallaPlayera       String?
+  tiposFutbol        TipoFutbol[]
+  categoriasInteres  Categoria[]
+  equiposJugados     RangoEquiposJugados?
+  superficieFavorita Superficie?
+  disponibleFichar   Boolean              @default(false)
+  // Carrera (cache; se recalcula al validar partidos)
+  partidos           Int                  @default(0)
+  goles              Int                  @default(0)
+  asistencias        Int                  @default(0)
+  amarillas          Int                  @default(0)
+  rojas              Int                  @default(0)
+  titulos            Int                  @default(0)
+  updatedAt          DateTime             @updatedAt
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("player_profiles")
+}
+
+/// El árbitro solo guarda tallas (uniforme) — PRD §3.4
+model RefereeProfile {
+  userId           String       @id @db.Uuid
+  tiposFutbol      TipoFutbol[]
+  categorias       Categoria[]
+  zonasInteres     Zona[]
+  temporadas       Int?
+  tallaPlayera     String?
+  tallaPantalon    String?
+  partidosPitados  Int          @default(0)
+  updatedAt        DateTime     @updatedAt
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("referee_profiles")
+}
+
+// =============================================================================
+// LA CARTA (docs/CARTA_E_INSIGNIAS.md)
+// =============================================================================
+
+model PlayerCard {
+  userId            String        @id @db.Uuid
+  positionGroup     PositionGroup @default(MEDIO)
+  tier              CardTier      @default(BRONCE)
+  media             Int? // null mientras está "en construcción"
+  enConstruccion    Boolean       @default(true)
+  partidosValidados Int           @default(0)
+  /// Campo: {def,pas,con,dis,crk,res} · Portero: {val,seg,pen,con,dis,crk}
+  atributos         Json?
+  // Frente de la carta
+  goles             Int           @default(0)
+  partidos          Int           @default(0)
+  asistencias       Int           @default(0)
+  deltaUltimaJornada Int          @default(0) // "↑ +2 esta jornada"
+  recalculadaAt     DateTime?
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([media(sort: Desc)])
+  @@map("player_cards")
+}
+
+/// Foto semanal de la carta (para el delta, rankings históricos y cierre de temporada)
+model PlayerCardSnapshot {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  roundId    String?  @db.Uuid
+  semana     DateTime @db.Date // lunes de la semana
+  media      Int?
+  tier       CardTier
+  atributos  Json?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  round      Round?   @relation(fields: [roundId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, semana])
+  @@map("player_card_snapshots")
+}
+
+// =============================================================================
+// RED SOCIAL
+// =============================================================================
+
+model UserFollow {
+  followerId String   @db.Uuid
+  followedId String   @db.Uuid
+  createdAt  DateTime @default(now())
+  follower   User     @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followed   User     @relation("Followed", fields: [followedId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followedId])
+  @@index([followedId])
+  @@map("user_follows")
+}
+
+model TeamFollow {
+  userId    String   @db.Uuid
+  teamId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@id([userId, teamId])
+  @@index([teamId])
+  @@map("team_follows")
+}
+
+model LeagueFollow {
+  userId    String   @db.Uuid
+  leagueId  String   @db.Uuid
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  league    League   @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+
+  @@id([userId, leagueId])
+  @@index([leagueId])
+  @@map("league_follows")
+}
+
+/// Publicaciones humanas y automáticas. Portada, crónica, once ideal, MVP,
+/// tabla, cierre de temporada… son Post con type AUTO_* y su payload en `data`.
+model Post {
+  id             String        @id @default(uuid()) @db.Uuid
+  type           PostType      @default(NORMAL)
+  source         ContentSource @default(HUMANO)
+  authorId       String?       @db.Uuid // null en posts del sistema
+  authorAs       PostAuthorAs  @default(USER)
+  subjectUserId  String?       @db.Uuid // protagonista (goleador, MVP…) → aparece en su perfil
+  teamId         String?       @db.Uuid
+  leagueId       String?       @db.Uuid
+  matchId        String?       @db.Uuid
+  tournamentId   String?       @db.Uuid
+  roundId        String?       @db.Uuid
+  body           String?       @db.VarChar(2000)
+  headline       String?       @db.VarChar(140) // titular de portada/crónica
+  visibility     Visibility    @default(PUBLICO)
+  zona           Zona?
+  data           Json?
+  reactionsCount Int           @default(0)
+  commentsCount  Int           @default(0)
+  sharesCount    Int           @default(0)
+  editedByLeague Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  deletedAt      DateTime?
+  hidden         Boolean       @default(false) // moderación
+
+  author         User?         @relation("PostAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  subjectUser    User?         @relation("PostSubject", fields: [subjectUserId], references: [id], onDelete: SetNull)
+  team           Team?         @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  league         League?       @relation(fields: [leagueId], references: [id], onDelete: SetNull)
+  match          Match?        @relation(fields: [matchId], references: [id], onDelete: SetNull)
+  tournament     Tournament?   @relation(fields: [tournamentId], references: [id], onDelete: SetNull)
+  round          Round?        @relation(fields: [roundId], references: [id], onDelete: SetNull)
+  media          PostMedia[]
+  tags           PostTag[]
+  reactions      Reaction[]
+  anonReactions  AnonymousReaction[]
+  comments       Comment[]
+
+  @@index([createdAt(sort: Desc)])
+  @@index([authorId, createdAt(sort: Desc)])
+  @@index([subjectUserId, createdAt(sort: Desc)])
+  @@index([teamId, createdAt(sort: Desc)])
+  @@index([leagueId, createdAt(sort: Desc)])
+  @@index([type, createdAt(sort: Desc)])
+  @@map("posts")
+}
+
+/// Apagado en la beta (flag media.posts). Se deja listo para fotos/videos.
+model PostMedia {
+  id        String    @id @default(uuid()) @db.Uuid
+  postId    String    @db.Uuid
+  type      MediaType
+  path      String
+  width     Int?
+  height    Int?
+  durationS Int?
+  orden     Int       @default(0)
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@map("post_media")
+}
+
+model PostTag {
+  postId       String  @db.Uuid
+  userId       String  @db.Uuid
+  hiddenByUser Boolean @default(false) // "quitar etiqueta"
+  post         Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([postId, userId])
+  @@index([userId])
+  @@map("post_tags")
+}
+
+model Reaction {
+  postId    String       @db.Uuid
+  userId    String       @db.Uuid
+  type      ReactionType
+  createdAt DateTime     @default(now())
+  post      Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([postId, userId])
+  @@map("reactions")
+}
+
+/// Visitante sin cuenta "echa 🔥" (PRD §3.7). Al registrarse se migran a Reaction.
+model AnonymousReaction {
+  postId     String       @db.Uuid
+  deviceHash String // hash de un id aleatorio guardado en el navegador
+  type       ReactionType
+  createdAt  DateTime     @default(now())
+  post       Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([postId, deviceHash])
+  @@map("anonymous_reactions")
+}
+
+/// "La porra": comentarios en un post o en el muro de un jugador/equipo.
+/// Exactamente uno de postId / wallUserId / wallTeamId (CHECK en SQL).
+model Comment {
+  id          String    @id @default(uuid()) @db.Uuid
+  authorId    String    @db.Uuid
+  postId      String?   @db.Uuid
+  wallUserId  String?   @db.Uuid
+  wallTeamId  String?   @db.Uuid
+  parentId    String?   @db.Uuid
+  body        String    @db.VarChar(1000)
+  reactionsCount Int    @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  hidden      Boolean   @default(false) // ocultado por la liga o el dueño del muro
+
+  author      User      @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  post        Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  wallUser    User?     @relation("CommentWallUser", fields: [wallUserId], references: [id], onDelete: Cascade)
+  wallTeam    Team?     @relation(fields: [wallTeamId], references: [id], onDelete: Cascade)
+  parent      Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies     Comment[] @relation("CommentReplies")
+
+  @@index([postId, createdAt])
+  @@index([wallUserId, createdAt])
+  @@index([wallTeamId, createdAt])
+  @@map("comments")
+}
+
+model Badge {
+  id          String      @id @default(uuid()) @db.Uuid
+  code        String      @unique // HAT_TRICK, DE_CHILENA, PIONERO…
+  categoria   String // GOLES | PORTERO | CONSTANCIA | VOTADAS | EQUIPO | FAIR_PLAY | AFICIONADO | ESPECIAL
+  nombre      String
+  descripcion String
+  icon        String? // emoji o ruta de ícono
+  repetible   Boolean     @default(false) // MVP, Golazo de la jornada…
+  criteria    Json // ver docs/CARTA_E_INSIGNIAS.md §4
+  active      Boolean     @default(true)
+  orden       Int         @default(0)
+  users       UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  userId        String   @db.Uuid
+  badgeId       String   @db.Uuid
+  veces         Int      @default(1)
+  firstAwardedAt DateTime @default(now())
+  lastAwardedAt DateTime @default(now())
+  progreso      Int? // para las no ganadas: "12 de 15 domingos" (se guarda aunque veces=0)
+  meta          Int?
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge         Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, badgeId])
+  @@map("user_badges")
+}
+
+model Report {
+  id           String       @id @default(uuid()) @db.Uuid
+  reporterId   String       @db.Uuid
+  leagueId     String?      @db.Uuid // se enruta a la moderación de esa liga
+  targetType   ReportTarget
+  targetId     String       @db.Uuid
+  motivo       String
+  detalle      String?
+  status       ReportStatus @default(ABIERTO)
+  reviewedById String?      @db.Uuid
+  reviewedAt   DateTime?
+  createdAt    DateTime     @default(now())
+  reporter     User         @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reviewedBy   User?        @relation("ReportReviewer", fields: [reviewedById], references: [id])
+  league       League?      @relation(fields: [leagueId], references: [id], onDelete: SetNull)
+
+  @@index([leagueId, status, createdAt])
+  @@map("reports")
+}
+
+model Block {
+  blockerId String   @db.Uuid
+  blockedId String   @db.Uuid
+  createdAt DateTime @default(now())
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@id([blockerId, blockedId])
+  @@map("blocks")
+}
+
+/// Quiniela sin dinero: 3 pts marcador exacto, 1 pt ganador
+model Prediction {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  matchId   String   @db.Uuid
+  homeGoals Int
+  awayGoals Int
+  points    Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, matchId])
+  @@map("predictions")
+}
+
+/// Votaciones: MVP, Golazo de la jornada, Once (por posición), Atajada, El Muro
+model Poll {
+  id           String     @id @default(uuid()) @db.Uuid
+  type         PollType
+  status       PollStatus @default(ABIERTA)
+  titulo       String
+  posicion     PositionGroup? // ONCE_JORNADA
+  leagueId     String?    @db.Uuid
+  tournamentId String?    @db.Uuid
+  roundId      String?    @db.Uuid
+  matchId      String?    @db.Uuid
+  teamId       String?    @db.Uuid // EL_MURO (solo compañeros)
+  closesAt     DateTime
+  votesCount   Int        @default(0)
+  winnerOptionId String?  @db.Uuid
+  createdAt    DateTime   @default(now())
+  league       League?    @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  round        Round?     @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  match        Match?     @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  team         Team?      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  options      PollOption[]
+  votes        PollVote[]
+
+  @@index([status, closesAt])
+  @@map("polls")
+}
+
+model PollOption {
+  id         String     @id @default(uuid()) @db.Uuid
+  pollId     String     @db.Uuid
+  userId     String?    @db.Uuid // candidato (jugador)
+  matchEventId String?  @db.Uuid // golazo candidato
+  etiqueta   String // "Chilena al 87'"
+  votesCount Int        @default(0)
+  poll       Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  user       User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matchEvent MatchEvent? @relation(fields: [matchEventId], references: [id], onDelete: Cascade)
+  votes      PollVote[]
+
+  @@index([pollId])
+  @@map("poll_options")
+}
+
+model PollVote {
+  pollId    String     @db.Uuid
+  voterId   String     @db.Uuid
+  optionId  String     @db.Uuid
+  createdAt DateTime   @default(now())
+  poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  voter     User       @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  option    PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@id([pollId, voterId])
+  @@map("poll_votes")
+}
+
+/// Atributo RES de la carta: SOLO votan jugadores del equipo rival (1..5)
+model RespectVote {
+  matchId    String   @db.Uuid
+  voterId    String   @db.Uuid
+  receiverId String   @db.Uuid
+  score      Int
+  createdAt  DateTime @default(now())
+  match      Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  voter      User     @relation("RespectVoter", fields: [voterId], references: [id], onDelete: Cascade)
+  receiver   User     @relation("RespectReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@id([matchId, voterId, receiverId])
+  @@index([receiverId])
+  @@map("respect_votes")
+}
+
+/// Nivel de hincha del aficionado por equipo ("Porra de Hierro de Portales")
+model FanStat {
+  userId        String   @db.Uuid
+  teamId        String   @db.Uuid
+  porraCount    Int      @default(0) // partidos en los que comentó/reaccionó
+  marcadoresReportados Int @default(0)
+  nivel         Int      @default(1)
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team          Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@id([userId, teamId])
+  @@map("fan_stats")
+}
+
+/// La bolsa del llano. El contacto siempre es por WhatsApp.
+model BoardPost {
+  id          String        @id @default(uuid()) @db.Uuid
+  type        BoardPostType
+  authorId    String        @db.Uuid
+  teamId      String?       @db.Uuid
+  titulo      String        @db.VarChar(120)
+  detalle     String?       @db.VarChar(600)
+  zona        Zona?
+  tipoFutbol  TipoFutbol?
+  posicion    Posicion?
+  urgente     Boolean       @default(false)
+  fechaPartido DateTime?
+  whatsapp    String? // número de contacto (opcional; si no, el del autor)
+  expiresAt   DateTime
+  createdAt   DateTime      @default(now())
+  deletedAt   DateTime?
+  author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  team        Team?         @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
+  @@index([type, createdAt(sort: Desc)])
+  @@index([zona, createdAt(sort: Desc)])
+  @@map("board_posts")
+}
+
+/// Reta entre equipos (amistoso). Al jugarse genera un Match kind=RETA.
+model Challenge {
+  id             String          @id @default(uuid()) @db.Uuid
+  fromTeamId     String          @db.Uuid
+  toTeamId       String          @db.Uuid
+  createdById    String          @db.Uuid
+  status         ChallengeStatus @default(PROPUESTA)
+  propuestaAt    DateTime
+  lugar          String? // texto libre o cancha
+  venueId        String?         @db.Uuid
+  quienPaga      WhoPays         @default(MITAD)
+  mensaje        String?         @db.VarChar(300)
+  matchId        String?         @unique @db.Uuid
+  createdAt      DateTime        @default(now())
+  respondedAt    DateTime?
+  fromTeam       Team            @relation("ChallengeFrom", fields: [fromTeamId], references: [id], onDelete: Cascade)
+  toTeam         Team            @relation("ChallengeTo", fields: [toTeamId], references: [id], onDelete: Cascade)
+  createdBy      User            @relation(fields: [createdById], references: [id])
+  venue          Venue?          @relation(fields: [venueId], references: [id], onDelete: SetNull)
+  match          Match?          @relation(fields: [matchId], references: [id], onDelete: SetNull)
+
+  @@index([toTeamId, status])
+  @@map("challenges")
+}
+
+// =============================================================================
+// NOTIFICACIONES (beta: in-app + push web)
+// =============================================================================
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  actorId   String?          @db.Uuid
+  type      NotificationType
+  title     String
+  body      String?
+  href      String?
+  data      Json?
+  readAt    DateTime?
+  pushedAt  DateTime?
+  createdAt DateTime         @default(now())
+  user      User             @relation("NotificationUser", fields: [userId], references: [id], onDelete: Cascade)
+  actor     User?            @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([userId, readAt, createdAt(sort: Desc)])
+  @@map("notifications")
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+model NotificationPreference {
+  userId String           @db.Uuid
+  type   NotificationType
+  inApp  Boolean          @default(true)
+  push   Boolean          @default(true)
+  user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, type])
+  @@map("notification_preferences")
+}
+
+// =============================================================================
+// EQUIPOS
+// =============================================================================
+
+model Team {
+  id              String       @id @default(uuid()) @db.Uuid
+  slug            String       @unique
+  nombre          String
+  siglas          String?      @db.VarChar(4) // "DP"
+  escudoPath      String?
+  colorPrimario   String?
+  colorSecundario String?
+  bio             String?      @db.VarChar(300)
+  fundadoAnio     Int?
+  zona            Zona?
+  alcaldia        String?
+  tipoFutbol      TipoFutbol?
+  categoria       Categoria?
+  diasJuego       Int[] // 0=domingo..6=sábado
+  whatsappGrupoUrl String? // link al grupo del equipo
+  datosPago       String? // CLABE/cuenta del delegado para cuotas (solo miembros)
+  followersCount  Int          @default(0)
+  createdById     String       @db.Uuid
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  deletedAt       DateTime?
+
+  createdBy       User         @relation("TeamCreator", fields: [createdById], references: [id])
+  members         TeamMember[]
+  followers       TeamFollow[]
+  posts           Post[]
+  wallComments    Comment[]
+  registrations   TournamentTeam[]
+  homeMatches     Match[]      @relation("HomeTeam")
+  awayMatches     Match[]      @relation("AwayTeam")
+  wonMatches      Match[]      @relation("WinnerTeam")
+  attendances     MatchAttendance[]
+  attendanceLinks AttendanceLink[]
+  lineups         Lineup[]
+  events          MatchEvent[]
+  dues            TeamDue[]
+  polls           Poll[]
+  fanStats        FanStat[]
+  boardPosts      BoardPost[]
+  challengesSent     Challenge[] @relation("ChallengeFrom")
+  challengesReceived Challenge[] @relation("ChallengeTo")
+
+  @@index([zona, categoria, tipoFutbol])
+  @@map("teams")
+}
+
+model TeamMember {
+  id          String           @id @default(uuid()) @db.Uuid
+  teamId      String           @db.Uuid
+  userId      String           @db.Uuid
+  role        TeamMemberRole   @default(JUGADOR)
+  status      MembershipStatus
+  numero      Int?
+  posicion    Posicion?
+  invitedById String?          @db.Uuid
+  joinedAt    DateTime?
+  leftAt      DateTime?
+  createdAt   DateTime         @default(now())
+  team        Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId, status])
+  @@map("team_members")
+}
+
+/// Cuota del equipo (la cobra el delegado; la app solo lleva el control)
+model TeamDue {
+  id          String           @id @default(uuid()) @db.Uuid
+  teamId      String           @db.Uuid
+  concepto    String // "Cuota de octubre"
+  amountCents Int
+  dueDate     DateTime         @db.Date
+  createdById String           @db.Uuid
+  createdAt   DateTime         @default(now())
+  team        Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdBy   User             @relation(fields: [createdById], references: [id])
+  payments    TeamDuePayment[]
+
+  @@index([teamId, dueDate])
+  @@map("team_dues")
+}
+
+model TeamDuePayment {
+  dueId         String        @db.Uuid
+  userId        String        @db.Uuid
+  status        PaymentStatus @default(PENDIENTE)
+  reportedAt    DateTime?
+  confirmedAt   DateTime?
+  confirmedById String?       @db.Uuid
+  nota          String?
+  due           TeamDue       @relation(fields: [dueId], references: [id], onDelete: Cascade)
+  user          User          @relation("DuePayer", fields: [userId], references: [id], onDelete: Cascade)
+  confirmedBy   User?         @relation("DueConfirmer", fields: [confirmedById], references: [id])
+
+  @@id([dueId, userId])
+  @@index([userId, status])
+  @@map("team_due_payments")
+}
+
+// =============================================================================
+// LIGAS, CANCHAS, TORNEOS
+// =============================================================================
+
+model League {
+  id               String       @id @default(uuid()) @db.Uuid
+  slug             String       @unique
+  nombre           String
+  siglas           String?      @db.VarChar(5) // "LDI"
+  codigoAcceso     String       @unique // "TLAH-26" para que delegados se unan
+  descripcion      String?
+  logoPath         String?
+  zona             Zona?
+  alcaldia         String?
+  tiposFutbol      TipoFutbol[]
+  categorias       Categoria[]
+  whatsappContacto String?
+  datosPago        String? // CLABE/cuenta para inscripciones y arbitrajes (solo delegados)
+  verificada       Boolean      @default(false)
+  // Configuración
+  requiereAprobacionJugadores Boolean @default(true)
+  rankingsConHumor Boolean      @default(false) // PRD §6.5 (opcional por liga)
+  followersCount   Int          @default(0)
+  createdById      String       @db.Uuid
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  deletedAt        DateTime?
+
+  createdBy        User         @relation("LeagueCreator", fields: [createdById], references: [id])
+  admins           LeagueAdmin[]
+  followers        LeagueFollow[]
+  venues           LeagueVenue[]
+  referees         LeagueReferee[]
+  tournaments      Tournament[]
+  posts            Post[]
+  polls            Poll[]
+  reports          Report[]
+  charges          LeagueCharge[]
+  refereePayments  RefereePayment[]
+
+  @@index([zona])
+  @@map("leagues")
+}
+
+model LeagueAdmin {
+  leagueId  String          @db.Uuid
+  userId    String          @db.Uuid
+  role      LeagueAdminRole
+  createdAt DateTime        @default(now())
+  league    League          @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([leagueId, userId])
+  @@index([userId])
+  @@map("league_admins")
+}
+
+model Venue {
+  id              String        @id @default(uuid()) @db.Uuid
+  slug            String        @unique
+  nombre          String // "Deportivo Cuitláhuac"
+  direccion       String
+  alcaldia        String?
+  zona            Zona?
+  lat             Float?
+  lng             Float?
+  vestidores      Boolean       @default(false)
+  estacionamiento Boolean       @default(false)
+  createdById     String        @db.Uuid
+  createdAt       DateTime      @default(now())
+  createdBy       User          @relation(fields: [createdById], references: [id])
+  fields          Field[]
+  leagues         LeagueVenue[]
+  challenges      Challenge[]
+
+  @@index([zona])
+  @@map("venues")
+}
+
+model Field {
+  id         String     @id @default(uuid()) @db.Uuid
+  venueId    String     @db.Uuid
+  nombre     String // "Cancha 3"
+  superficie Superficie
+  tipoFutbol TipoFutbol
+  venue      Venue      @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  matches    Match[]
+
+  @@unique([venueId, nombre])
+  @@map("fields")
+}
+
+model LeagueVenue {
+  leagueId String @db.Uuid
+  venueId  String @db.Uuid
+  league   League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  venue    Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@id([leagueId, venueId])
+  @@map("league_venues")
+}
+
+model LeagueReferee {
+  leagueId  String           @db.Uuid
+  userId    String           @db.Uuid
+  status    MembershipStatus
+  tarifaCents Int? // cobro por partido
+  createdAt DateTime         @default(now())
+  league    League           @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([leagueId, userId])
+  @@index([userId])
+  @@map("league_referees")
+}
+
+model Tournament {
+  id                      String           @id @default(uuid()) @db.Uuid
+  leagueId                String           @db.Uuid
+  slug                    String
+  nombre                  String // "Apertura 2026"
+  categoria               Categoria
+  tipoFutbol              TipoFutbol
+  rama                    Rama
+  formato                 TournamentFormat @default(LIGA_LIGUILLA)
+  idaYVuelta              Boolean          @default(false)
+  equiposLiguilla         Int?
+  status                  TournamentStatus @default(BORRADOR)
+  fechaInicio             DateTime?        @db.Date
+  numJornadas             Int?
+  diasSemana              Int[]
+  horarios                String[] // ["09:00","11:00","14:00","16:00"]
+  duracionPartidoMin      Int              @default(60)
+  costoInscripcionCents   Int              @default(0)
+  costoArbitrajeCents     Int              @default(0)
+  minJugadores            Int              @default(7)
+  maxJugadores            Int              @default(25)
+  puntosVictoria          Int              @default(3)
+  puntosEmpate            Int              @default(1)
+  partidosPorRoja         Int              @default(1)
+  amarillasParaSuspension Int              @default(5)
+  ventanaFichajesAbierta  Boolean          @default(true)
+  reglamento              String?
+  campeonId               String?          @db.Uuid // TournamentTeam.id
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+
+  league                  League           @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  teams                   TournamentTeam[] @relation("TournamentTeams")
+  campeon                 TournamentTeam?  @relation("TournamentChampion", fields: [campeonId], references: [id])
+  rosters                 TournamentRoster[]
+  referees                TournamentReferee[]
+  rounds                  Round[]
+  matches                 Match[]
+  sanctions               Sanction[]
+  charges                 LeagueCharge[]
+  standings               StandingRow[]
+  playerStats             PlayerTournamentStat[]
+  posts                   Post[]
+
+  @@unique([leagueId, slug])
+  @@index([status])
+  @@map("tournaments")
+}
+
+model TournamentTeam {
+  id                String             @id @default(uuid()) @db.Uuid
+  tournamentId      String             @db.Uuid
+  teamId            String             @db.Uuid
+  status            RegistrationStatus @default(SOLICITADA)
+  seed              Int?
+  requestedAt       DateTime           @default(now())
+  decidedAt         DateTime?
+  tournament        Tournament         @relation("TournamentTeams", fields: [tournamentId], references: [id], onDelete: Cascade)
+  team              Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  championOf        Tournament[]       @relation("TournamentChampion")
+  roster            TournamentRoster[]
+  charges           LeagueCharge[]
+  standing          StandingRow?
+  sanctions         Sanction[]
+
+  @@unique([tournamentId, teamId])
+  @@map("tournament_teams")
+}
+
+/// @@unique([tournamentId, userId]): un jugador NO puede estar en dos equipos
+/// del mismo torneo (PRD §7.4, F-088)
+model TournamentRoster {
+  id               String       @id @default(uuid()) @db.Uuid
+  tournamentId     String       @db.Uuid
+  tournamentTeamId String       @db.Uuid
+  userId           String       @db.Uuid
+  numero           Int?
+  status           RosterStatus @default(PENDIENTE_APROBACION)
+  registeredAt     DateTime     @default(now())
+  approvedAt       DateTime?
+  leftAt           DateTime?
+  tournament       Tournament     @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentTeam   TournamentTeam @relation(fields: [tournamentTeamId], references: [id], onDelete: Cascade)
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId, userId])
+  @@index([tournamentTeamId])
+  @@map("tournament_rosters")
+}
+
+model TournamentReferee {
+  tournamentId String           @db.Uuid
+  userId       String           @db.Uuid
+  status       MembershipStatus @default(INVITADO)
+  createdAt    DateTime         @default(now())
+  tournament   Tournament       @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([tournamentId, userId])
+  @@map("tournament_referees")
+}
+
+model Round {
+  id                   String     @id @default(uuid()) @db.Uuid
+  tournamentId         String     @db.Uuid
+  numero               Int
+  nombre               String? // "Jornada 15", "Semifinal ida"
+  fase                 Fase       @default(REGULAR)
+  fechaInicio          DateTime?  @db.Date
+  publicada            Boolean    @default(false) // horarios publicados
+  cerrada              Boolean    @default(false) // todos los partidos validados
+  portadaPostId        String?    @unique @db.Uuid
+  tournament           Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  matches              Match[]
+  posts                Post[]
+  polls                Poll[]
+  cardSnapshots        PlayerCardSnapshot[]
+
+  @@unique([tournamentId, numero])
+  @@map("rounds")
+}
+
+// =============================================================================
+// PARTIDOS
+// =============================================================================
+
+model Match {
+  id                String           @id @default(uuid()) @db.Uuid
+  kind              MatchKind        @default(TORNEO)
+  tournamentId      String?          @db.Uuid
+  roundId           String?          @db.Uuid
+  homeTeamId        String           @db.Uuid
+  awayTeamId        String           @db.Uuid
+  fieldId           String?          @db.Uuid
+  lugarTexto        String? // retas sin cancha registrada
+  scheduledAt       DateTime?
+  status            MatchStatus      @default(PROGRAMADO)
+  // Marcador OFICIAL (cédula firmada / liga)
+  homeScore         Int?
+  awayScore         Int?
+  homePenalties     Int?
+  awayPenalties     Int?
+  winnerTeamId      String?          @db.Uuid
+  // Marcador en vivo NO OFICIAL ("desde la banda")
+  liveHomeScore     Int              @default(0)
+  liveAwayScore     Int              @default(0)
+  liveMinute        Int?
+  liveUpdatedAt     DateTime?
+  liveViewers       Int              @default(0)
+  // Árbitro
+  refereeId         String?          @db.Uuid
+  refereeStatus     AssignmentStatus?
+  arbitrajeCents    Int? // "se paga al cerrar cédula"
+  // Validación
+  validatedAt       DateTime?
+  validatedById     String?          @db.Uuid
+  // Suspensión
+  suspendedAt       DateTime?
+  suspendedById     String?          @db.Uuid
+  suspensionReason  String?
+  rescheduledFromId String?          @db.Uuid
+  startedAt         DateTime?
+  endedAt           DateTime?
+  streamUrl         String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  tournament        Tournament?      @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  round             Round?           @relation(fields: [roundId], references: [id], onDelete: SetNull)
+  homeTeam          Team             @relation("HomeTeam", fields: [homeTeamId], references: [id], onDelete: Cascade)
+  awayTeam          Team             @relation("AwayTeam", fields: [awayTeamId], references: [id], onDelete: Cascade)
+  winnerTeam        Team?            @relation("WinnerTeam", fields: [winnerTeamId], references: [id])
+  field             Field?           @relation(fields: [fieldId], references: [id], onDelete: SetNull)
+  referee           User?            @relation("MatchReferee", fields: [refereeId], references: [id], onDelete: SetNull)
+  validatedBy       User?            @relation("MatchValidator", fields: [validatedById], references: [id])
+  suspendedBy       User?            @relation("MatchSuspender", fields: [suspendedById], references: [id])
+  rescheduledFrom   Match?           @relation("Reschedule", fields: [rescheduledFromId], references: [id])
+  rescheduledTo     Match[]          @relation("Reschedule")
+  challenge         Challenge?
+
+  attendanceLinks   AttendanceLink[]
+  attendances       MatchAttendance[]
+  lineups           Lineup[]
+  events            MatchEvent[]
+  liveScoreUpdates  LiveScoreUpdate[]
+  report            MatchReport?
+  suspensionRequests MatchSuspensionRequest[]
+  sanctions         Sanction[]
+  charges           LeagueCharge[]
+  refereePayments   RefereePayment[]
+  posts             Post[]
+  predictions       Prediction[]
+  polls             Poll[]
+  respectVotes      RespectVote[]
+
+  @@index([tournamentId, scheduledAt])
+  @@index([homeTeamId, scheduledAt])
+  @@index([awayTeamId, scheduledAt])
+  @@index([refereeId, scheduledAt])
+  @@index([status, scheduledAt])
+  @@map("matches")
+}
+
+/// Link de pase de lista para el grupo de WhatsApp (sin cuenta) — pantalla 20
+model AttendanceLink {
+  token     String   @id // corto, no adivinable
+  matchId   String   @db.Uuid
+  teamId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, teamId])
+  @@map("attendance_links")
+}
+
+model MatchAttendance {
+  matchId       String           @db.Uuid
+  userId        String           @db.Uuid
+  teamId        String           @db.Uuid
+  status        AttendanceStatus @default(CONVOCADO)
+  channel       ResponseChannel?
+  nota          String? // "le toca trabajar"
+  respondedAt   DateTime?
+  checkedInAt   DateTime?
+  checkedInById String?          @db.Uuid
+  match         Match            @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user          User             @relation("AttendancePlayer", fields: [userId], references: [id], onDelete: Cascade)
+  team          Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  checkedInBy   User?            @relation("AttendanceCheckinBy", fields: [checkedInById], references: [id])
+
+  @@id([matchId, userId])
+  @@index([teamId, matchId])
+  @@map("match_attendances")
+}
+
+model Lineup {
+  id                   String         @id @default(uuid()) @db.Uuid
+  matchId              String         @db.Uuid
+  teamId               String         @db.Uuid
+  submittedById        String         @db.Uuid
+  submittedAt          DateTime       @default(now())
+  alerts               Json? // F-087/088/089 + cuota pendiente
+  match                Match          @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  team                 Team           @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  submittedBy          User           @relation(fields: [submittedById], references: [id])
+  players              LineupPlayer[]
+
+  @@unique([matchId, teamId])
+  @@map("lineups")
+}
+
+model LineupPlayer {
+  lineupId String    @db.Uuid
+  userId   String    @db.Uuid
+  numero   Int?
+  titular  Boolean   @default(true)
+  posicion Posicion?
+  capitan  Boolean   @default(false)
+  jugo     Boolean? // lo marca el árbitro en la cédula ("marca quién jugó")
+  lineup   Lineup    @relation(fields: [lineupId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([lineupId, userId])
+  @@map("lineup_players")
+}
+
+/// Eventos oficiales y no oficiales. Fuente de goleo, tarjetas, carta e insignias.
+model MatchEvent {
+  id             String         @id @default(uuid()) @db.Uuid
+  matchId        String         @db.Uuid
+  type           MatchEventType
+  minute         Int? // opcional (cédula al final)
+  teamId         String?        @db.Uuid
+  playerId       String?        @db.Uuid
+  assistPlayerId String?        @db.Uuid
+  playerOutId    String?        @db.Uuid
+  tipoGol        TipoGol?
+  source         ScoreSource    @default(ARBITRO)
+  oficial        Boolean        @default(true)
+  voided         Boolean        @default(false)
+  nota           String?
+  clientId       String?        @unique // idempotencia offline
+  createdById    String         @db.Uuid
+  createdAt      DateTime       @default(now())
+  match          Match          @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  team           Team?          @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  player         User?          @relation("EventPlayer", fields: [playerId], references: [id], onDelete: SetNull)
+  assistPlayer   User?          @relation("EventAssist", fields: [assistPlayerId], references: [id], onDelete: SetNull)
+  playerOut      User?          @relation("EventPlayerOut", fields: [playerOutId], references: [id], onDelete: SetNull)
+  createdBy      User           @relation("EventCreator", fields: [createdById], references: [id])
+  corrections    MatchReportCorrection[]
+  pollOptions    PollOption[]
+
+  @@index([matchId, minute])
+  @@index([playerId, type])
+  @@map("match_events")
+}
+
+/// Marcador en vivo desde la banda (aficionados y delegados) — NO oficial
+model LiveScoreUpdate {
+  id         String   @id @default(uuid()) @db.Uuid
+  matchId    String   @db.Uuid
+  reporterId String   @db.Uuid
+  homeScore  Int
+  awayScore  Int
+  minute     Int?
+  nota       String?  @db.VarChar(140) // "87' El Brujo, de chilena"
+  createdAt  DateTime @default(now())
+  match      Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  reporter   User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([matchId, createdAt])
+  @@map("live_score_updates")
+}
+
+/// Cédula (pantallas 02, 08b, 19, 46, 56)
+model MatchReport {
+  id             String            @id @default(uuid()) @db.Uuid
+  matchId        String            @unique @db.Uuid
+  source         ReportSource      @default(APP_ARBITRO)
+  refereeId      String?           @db.Uuid
+  capturedById   String?           @db.Uuid // liga, si fue desde papel
+  status         MatchReportStatus @default(BORRADOR)
+  observaciones  String?
+  homeScore      Int?
+  awayScore      Int?
+  submittedAt    DateTime?
+  homeSignedById String?           @db.Uuid
+  homeSignedAt   DateTime?
+  awaySignedById String?           @db.Uuid
+  awaySignedAt   DateTime?
+  snapshot       Json? // copia inmutable al enviar
+  match          Match             @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  referee        User?             @relation("ReportReferee", fields: [refereeId], references: [id])
+  capturedBy     User?             @relation("ReportCapturer", fields: [capturedById], references: [id])
+  homeSignedBy   User?             @relation("ReportHomeSigner", fields: [homeSignedById], references: [id])
+  awaySignedBy   User?             @relation("ReportAwaySigner", fields: [awaySignedById], references: [id])
+  corrections    MatchReportCorrection[]
+
+  @@index([status])
+  @@map("match_reports")
+}
+
+/// El delegado señala un error antes de firmar; el árbitro acepta o rechaza (pantalla 19)
+model MatchReportCorrection {
+  id            String           @id @default(uuid()) @db.Uuid
+  reportId      String           @db.Uuid
+  eventId       String?          @db.Uuid // null si FALTA_EVENTO
+  kind          CorrectionKind
+  propuesta     Json // { playerId, minute, type, tipoGol… }
+  comentario    String?          @db.VarChar(500)
+  status        CorrectionStatus @default(PENDIENTE)
+  requestedById String           @db.Uuid
+  respondedById String?          @db.Uuid
+  respondedAt   DateTime?
+  createdAt     DateTime         @default(now())
+  report        MatchReport      @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  event         MatchEvent?      @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  requestedBy   User             @relation("CorrectionRequester", fields: [requestedById], references: [id])
+  respondedBy   User?            @relation("CorrectionResponder", fields: [respondedById], references: [id])
+
+  @@index([reportId, status])
+  @@map("match_report_corrections")
+}
+
+model MatchSuspensionRequest {
+  id            String                  @id @default(uuid()) @db.Uuid
+  matchId       String                  @db.Uuid
+  requestedById String                  @db.Uuid
+  motivo        String
+  status        SuspensionRequestStatus @default(PENDIENTE)
+  reviewedById  String?                 @db.Uuid
+  reviewedAt    DateTime?
+  createdAt     DateTime                @default(now())
+  match         Match                   @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  requestedBy   User                    @relation("SuspensionRequester", fields: [requestedById], references: [id])
+  reviewedBy    User?                   @relation("SuspensionReviewer", fields: [reviewedById], references: [id])
+
+  @@index([matchId])
+  @@map("match_suspension_requests")
+}
+
+// =============================================================================
+// SANCIONES Y ESTADÍSTICAS
+// =============================================================================
+
+model Sanction {
+  id                String          @id @default(uuid()) @db.Uuid
+  tournamentId      String          @db.Uuid
+  userId            String?         @db.Uuid
+  tournamentTeamId  String?         @db.Uuid
+  matchId           String?         @db.Uuid
+  type              SanctionType
+  partidos          Int?
+  partidosCumplidos Int             @default(0)
+  multaCents        Int?
+  motivo            String
+  automatica        Boolean         @default(false)
+  status            SanctionStatus  @default(ACTIVA)
+  createdById       String?         @db.Uuid
+  createdAt         DateTime        @default(now())
+  tournament        Tournament      @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  user              User?           @relation("SanctionedUser", fields: [userId], references: [id], onDelete: Cascade)
+  tournamentTeam    TournamentTeam? @relation(fields: [tournamentTeamId], references: [id], onDelete: Cascade)
+  match             Match?          @relation(fields: [matchId], references: [id], onDelete: SetNull)
+  createdBy         User?           @relation("SanctionCreator", fields: [createdById], references: [id])
+
+  @@index([tournamentId, userId, status])
+  @@map("sanctions")
+}
+
+model StandingRow {
+  tournamentTeamId String         @id @db.Uuid
+  tournamentId     String         @db.Uuid
+  pj               Int            @default(0)
+  pg               Int            @default(0)
+  pe               Int            @default(0)
+  pp               Int            @default(0)
+  gf               Int            @default(0)
+  gc               Int            @default(0)
+  dg               Int            @default(0)
+  pts              Int            @default(0)
+  posicion         Int?
+  posicionAnterior Int? // "subimos al 2º"
+  racha            String? // "GGEGP"
+  updatedAt        DateTime       @updatedAt
+  tournamentTeam   TournamentTeam @relation(fields: [tournamentTeamId], references: [id], onDelete: Cascade)
+  tournament       Tournament     @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@index([tournamentId, pts(sort: Desc)])
+  @@map("standings")
+}
+
+model PlayerTournamentStat {
+  tournamentId     String     @db.Uuid
+  userId           String     @db.Uuid
+  partidos         Int        @default(0)
+  goles            Int        @default(0)
+  asistencias      Int        @default(0)
+  amarillas        Int        @default(0)
+  rojas            Int        @default(0)
+  mvps             Int        @default(0)
+  // Portero
+  golesRecibidos   Int        @default(0)
+  vallasInvictas   Int        @default(0)
+  penalesAtajados  Int        @default(0)
+  // Rachas
+  rachaGoles       Int        @default(0) // partidos seguidos anotando
+  rachaAsistencia  Int        @default(0) // domingos seguidos sin faltar
+  updatedAt        DateTime   @updatedAt
+  tournament       Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([tournamentId, userId])
+  @@index([tournamentId, goles(sort: Desc)])
+  @@map("player_tournament_stats")
+}
+
+// =============================================================================
+// DINERO DE LA LIGA (solo control — la app no cobra en la beta)
+// =============================================================================
+
+model LeagueCharge {
+  id               String         @id @default(uuid()) @db.Uuid
+  leagueId         String         @db.Uuid
+  tournamentId     String?        @db.Uuid
+  tournamentTeamId String         @db.Uuid
+  matchId          String?        @db.Uuid
+  concept          ChargeConcept
+  descripcion      String?
+  amountCents      Int
+  dueDate          DateTime?      @db.Date
+  status           PaymentStatus  @default(PENDIENTE)
+  reportedAt       DateTime?
+  confirmedAt      DateTime?
+  recordedById     String         @db.Uuid
+  createdAt        DateTime       @default(now())
+  league           League         @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  tournament       Tournament?    @relation(fields: [tournamentId], references: [id], onDelete: SetNull)
+  tournamentTeam   TournamentTeam @relation(fields: [tournamentTeamId], references: [id], onDelete: Cascade)
+  match            Match?         @relation(fields: [matchId], references: [id], onDelete: SetNull)
+  recordedBy       User           @relation("ChargeRecorder", fields: [recordedById], references: [id])
+
+  @@index([tournamentTeamId, status])
+  @@index([leagueId, status])
+  @@map("league_charges")
+}
+
+model RefereePayment {
+  id          String        @id @default(uuid()) @db.Uuid
+  leagueId    String        @db.Uuid
+  refereeId   String        @db.Uuid
+  matchId     String?       @db.Uuid
+  amountCents Int
+  status      PaymentStatus @default(PENDIENTE)
+  paidAt      DateTime?
+  createdAt   DateTime      @default(now())
+  league      League        @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  referee     User          @relation(fields: [refereeId], references: [id], onDelete: Cascade)
+  match       Match?        @relation(fields: [matchId], references: [id], onDelete: SetNull)
+
+  @@index([refereeId, status])
+  @@map("referee_payments")
+}
+
+// =============================================================================
+// PLATAFORMA (beta)
+// =============================================================================
+
+/// Interruptores por módulo/función, editables sin desplegar (docs/MODULOS.md §4)
+model FeatureFlag {
+  key         String   @id // "media.posts", "social.quiniela", "pro.futbol"…
+  enabled     Boolean  @default(false)
+  descripcion String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("feature_flags")
+}
+
+/// Cola de trabajos en segundo plano (recalcular cartas, insignias, auto-posts,
+/// notificaciones masivas). La procesa /api/cron/trabajos cada minuto (pg_cron).
+model Job {
+  id          String    @id @default(uuid()) @db.Uuid
+  type        String // "card.recalculate", "badges.evaluate", "posts.auto_match"…
+  payload     Json
+  status      JobStatus @default(PENDIENTE)
+  runAt       DateTime  @default(now())
+  attempts    Int       @default(0)
+  lastError   String?
+  dedupeKey   String?   @unique // evita encolar dos veces lo mismo
+  createdAt   DateTime  @default(now())
+  finishedAt  DateTime?
+
+  @@index([status, runAt])
+  @@map("jobs")
+}
+
+enum JobStatus {
+  PENDIENTE
+  CORRIENDO
+  HECHO
+  FALLIDO
+}
+
+/// Botón "Reportar falla" (pantalla 42)
+model BugReport {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String?   @db.Uuid
+  path       String
+  descripcion String   @db.VarChar(2000)
+  device     Json? // userAgent, viewport, rol activo, versión
+  status     BugStatus @default(NUEVO)
+  createdAt  DateTime  @default(now())
+  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@map("bug_reports")
+}
+
+model AuditLog {
+  id         String      @id @default(uuid()) @db.Uuid
+  actorId    String?     @db.Uuid
+  action     AdminAction
+  entityType String
+  entityId   String
+  before     Json?
+  after      Json?
+  motivo     String?
+  createdAt  DateTime    @default(now())
+  actor      User?       @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
