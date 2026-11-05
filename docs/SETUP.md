@@ -23,6 +23,23 @@ En cada uno:
 5. **Project Settings → Database:** copia la cadena del **pooler** (puerto 6543) → `DATABASE_URL` y la **directa** (puerto 5432) → `DIRECT_URL`.
 6. **Project Settings → API:** copia la URL, la `anon key` y la `service_role key`.
 
+**Con el CLI en lugar del dashboard** (así se montó `chilena-dev`): `scripts/supabase-dev.mjs` hace los pasos 1, 4, 5 y 6 sin mostrar secretos. Carga `.env.local` por dentro, solo imprime nombres de variables y tapa cualquier secreto en los errores. Necesita `SUPABASE_DB_PASSWORD` en `.env.local` y una sesión del CLI (`pnpm dlx supabase login`).
+```bash
+node scripts/supabase-dev.mjs contrasena    # opcional: guarda la contraseña copiada al portapapeles y lo vacía
+SUPABASE_PROJECT_REF=<ref> node scripts/supabase-dev.mjs link
+node scripts/supabase-dev.mjs env           # llaves publishable/secret, DATABASE_URL (6543) y DIRECT_URL (5432)
+node scripts/supabase-dev.mjs ping          # SELECT 1 por las dos
+node scripts/supabase-dev.mjs extensiones
+node scripts/supabase-dev.mjs cron-secret   # solo si falta
+# … migraciones (§4) y semilla …
+node scripts/supabase-dev.mjs bucket
+node scripts/supabase-dev.mjs conteos
+node scripts/supabase-dev.mjs app           # con pnpm dev corriendo
+```
+- `DIRECT_URL` usa el pooler en **modo sesión** (puerto 5432 del mismo host del pooler), no `db.<ref>.supabase.co`: esa conexión directa solo tiene IPv6.
+- `pg_cron` va en `pg_catalog` y `pg_net` crea su schema `net` (docs de Supabase). `pg_trgm` y `unaccent` van en `public` porque `immutable_unaccent()` usa `public.unaccent`.
+- Si la contraseña falla con `password authentication failed`, resetéala en Settings → Database y confirma el diálogo; el reseteo tarda unos segundos en aplicarse.
+
 > El plan Free **pausa el proyecto tras ~7 días sin actividad**. Si pasa, se reactiva con un clic en el dashboard. Para la beta con uso semanal no debería pasar.
 
 ## 3. Variables y llaves

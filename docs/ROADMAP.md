@@ -19,10 +19,11 @@ Ya hecho (base técnica):
 - [x] Manifest de la PWA, `vercel.json` con crons, CI en GitHub Actions, Vitest (17 tests) y Playwright (390 px oscuro/claro)
 
 Falta:
-- [ ] Repo en GitHub (`main` protegido) y deploy en Vercel con variables (`docs/SETUP.md`)
-- [ ] Migración inicial + migración `extras` contra `chilena-dev` (`docs/SETUP.md` §4) — **dueño del schema**
+- [ ] Repo en GitHub (`main` protegido) y deploy en Vercel con variables (`docs/SETUP.md`) — *el repo ya existe y está subido; falta proteger `main` y Vercel*
+- [x] Migración inicial + migración `extras` contra `chilena-dev` (`docs/SETUP.md` §4) — **dueño del schema**
+- [x] Supabase `chilena-dev` montado con el CLI (`scripts/supabase-dev.mjs`): proyecto vinculado, `.env.local` completo (llaves, `DATABASE_URL`, `DIRECT_URL`, `CRON_SECRET`), extensiones `pg_trgm`, `unaccent`, `pg_cron` y `pg_net`, bucket público `avatars` (1 MB, webp y jpeg), liga demo cargada y la app conectada (`/api/cron/trabajos` lee la base)
 - [x] Componentes de marca: Botón lima, ChipMarcador, CartaCrack (estática), Header con selector de rol, Barra inferior con botón central por rol (pantallas 03, 07b, 23, 24) → `src/shared/ui/`, vitrina en `/componentes` (fuera de producción)
-- [x] Semilla demo (`SEED_DEMO=1`, `prisma/demo/`, probada en Postgres con `prisma dev`): Liga Dominical Iztapalapa, Apertura 2026, 8 equipos (Dep. Portales, Tigres del Llano, Real Condesa, Juventud Tepito, Atlético Pensil, Unión Doctores, Sporting Narvarte, Halcones Iztapalapa), 16 jugadores por equipo con los apodos del deck (El Chícharo, El Brujo, El Gato, La Roca, La Pulga, Memo…), árbitros (J. Mendoza, R. Pacheco, L. Ortega), Deportivo Cuitláhuac con 3 canchas y **15 jornadas validadas** con eventos realistas
+- [x] Semilla demo (`SEED_DEMO=1`, `prisma/demo/`, probada en Postgres con `prisma dev` y cargada en `chilena-dev`): Liga Dominical Iztapalapa, Apertura 2026, 8 equipos (Dep. Portales, Tigres del Llano, Real Condesa, Juventud Tepito, Atlético Pensil, Unión Doctores, Sporting Narvarte, Halcones Iztapalapa), 16 jugadores por equipo con los apodos del deck (El Chícharo, El Brujo, El Gato, La Roca, La Pulga, Memo…), árbitros (J. Mendoza, R. Pacheco, L. Ortega), Deportivo Cuitláhuac con 3 canchas y **15 jornadas validadas** con eventos realistas
 - [ ] Auth: pantalla Entrar (01) con Google + link mágico y callback
 - [ ] PWA completa: Serwist (service worker, página sin conexión) e íconos desde el logo (`public/brand/`)
 - [ ] Sentry y PostHog conectados
