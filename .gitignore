@@ -42,6 +42,8 @@ next-env.d.ts
 !.env.example
 
 # chilena
+# Contraseñas de las cuentas de prueba (scripts/cuentas-de-prueba.ts): NUNCA se suben
+CUENTAS-DE-PRUEBA.md
 src/generated/
 # Supabase CLI: estado local del link (ref, pooler, versiones)
 supabase/.temp/

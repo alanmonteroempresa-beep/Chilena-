@@ -40,6 +40,15 @@ node scripts/supabase-dev.mjs app           # con pnpm dev corriendo
 - `pg_cron` va en `pg_catalog` y `pg_net` crea su schema `net` (docs de Supabase). `pg_trgm` y `unaccent` van en `public` porque `immutable_unaccent()` usa `public.unaccent`.
 - Si la contraseña falla con `password authentication failed`, resetéala en Settings → Database y confirma el diálogo; el reseteo tarda unos segundos en aplicarse.
 
+**Cuentas de prueba (beta interna, solo `chilena-dev`):** con el flag `auth.demo_login` prendido (`node scripts/supabase-dev.mjs flag auth.demo_login on`), la pantalla Entrar muestra "Entrar con cuenta de prueba".
+```bash
+npx tsx scripts/cuentas-de-prueba.ts           # crea las que falten y las liga a la semilla demo
+npx tsx scripts/cuentas-de-prueba.ts --rotar   # contraseñas nuevas para todas
+```
+- Las contraseñas solo se guardan en `CUENTAS-DE-PRUEBA.md`, en la raíz. Está en `.gitignore`: **nunca se sube**; compártelo por fuera de GitHub.
+- Solo entran cuentas `@prueba.chilena` que traen la marca `app_metadata.cuenta_de_prueba`, que solo pone la API de administración. Nadie puede registrarse con contraseña.
+- Si vuelves a correr `pnpm db:seed:demo`, los perfiles ligados se conservan (son perfiles reclamados).
+
 > El plan Free **pausa el proyecto tras ~7 días sin actividad**. Si pasa, se reactiva con un clic en el dashboard. Para la beta con uso semanal no debería pasar.
 
 ## 3. Variables y llaves

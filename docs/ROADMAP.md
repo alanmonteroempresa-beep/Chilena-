@@ -26,6 +26,7 @@ Falta:
 - [x] Componentes de marca: Botón lima, ChipMarcador, CartaCrack (estática), Header con selector de rol, Barra inferior con botón central por rol (pantallas 03, 07b, 23, 24) → `src/shared/ui/`, vitrina en `/componentes` (fuera de producción)
 - [x] Semilla demo (`SEED_DEMO=1`, `prisma/demo/`, probada en Postgres con `prisma dev` y cargada en `chilena-dev`): Liga Dominical Iztapalapa, Apertura 2026, 8 equipos (Dep. Portales, Tigres del Llano, Real Condesa, Juventud Tepito, Atlético Pensil, Unión Doctores, Sporting Narvarte, Halcones Iztapalapa), 16 jugadores por equipo con los apodos del deck (El Chícharo, El Brujo, El Gato, La Roca, La Pulga, Memo…), árbitros (J. Mendoza, R. Pacheco, L. Ortega), Deportivo Cuitláhuac con 3 canchas y **15 jornadas validadas** con eventos realistas
 - [x] Auth: pantalla Entrar (01) con link mágico al correo y callback (`/auth/confirm`): crea el `User` y manda a Completa tu perfil o a su inicio. Google listo pero apagado (`auth.google`) hasta configurar Google Cloud
+- [x] Cuentas de prueba para la beta interna (flag `auth.demo_login`, `scripts/cuentas-de-prueba.ts`): entrar con correo y contraseña, sin registro con contraseña; ligadas a los perfiles de la semilla (jugador, delegado, árbitro, liga, aficionada) y tres del equipo con todos los roles
 - [ ] PWA completa: Serwist (service worker, página sin conexión) e íconos desde el logo (`public/brand/`)
 - [ ] Sentry y PostHog conectados
 

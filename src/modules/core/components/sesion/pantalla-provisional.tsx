@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { LogOut } from "lucide-react";
+import { ETIQUETA_ROL, rolDesdeRoleType, type Rol } from "@/shared/lib/roles";
 import { buttonVariants } from "@/shared/ui/button";
 import { Logo } from "@/shared/ui/logo";
 import { Skeleton } from "@/shared/ui/skeleton";
@@ -55,12 +56,36 @@ async function QuienEntro({ variante }: { variante: Variante }) {
     );
   }
   const nombre = usuario.sobrenombre || usuario.nombre || "crack";
+  const activo = rolDesdeRoleType(usuario.activeRole);
+  const roles = usuario.roles.map((r) => rolDesdeRoleType(r.role)).filter((r): r is Rol => r !== null);
   return (
     <div className="flex max-w-[440px] flex-col gap-3">
-      <p className="rounded-xl bg-surface p-4 text-sm">
-        Entraste como <strong className="font-semibold">{nombre}</strong>{" "}
-        <span className="text-muted-foreground">(@{usuario.username})</span>
-      </p>
+      <div className="flex flex-col gap-2 rounded-xl bg-surface p-4 text-sm">
+        <p>
+          Entraste como <strong className="font-semibold">{nombre}</strong>{" "}
+          <span className="text-muted-foreground">(@{usuario.username})</span>
+        </p>
+        {activo && (
+          <p className="flex flex-wrap items-center gap-1.5">
+            <span className="text-muted-foreground">Rol:</span>
+            <span
+              data-role={activo}
+              className="etiqueta rounded-md bg-role/15 px-2 py-0.5 text-[11px] tracking-[0.12em] text-role"
+            >
+              {ETIQUETA_ROL[activo]}
+            </span>
+            {roles.length > 1 && (
+              <span className="text-muted-foreground">
+                · también{" "}
+                {roles
+                  .filter((r) => r !== activo)
+                  .map((r) => ETIQUETA_ROL[r])
+                  .join(", ")}
+              </span>
+            )}
+          </p>
+        )}
+      </div>
       {variante === "completar" && (
         <Link href="/inicio" className={buttonVariants({ variant: "lima", size: "cta" })}>
           Ir a mi inicio

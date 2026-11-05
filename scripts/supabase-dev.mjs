@@ -10,6 +10,7 @@
 //   node scripts/supabase-dev.mjs bucket        # bucket público avatars (1 MB, webp y jpeg)
 //   node scripts/supabase-dev.mjs conteos       # conteos de la liga demo
 //   node scripts/supabase-dev.mjs sql "select …" # consulta de solo lectura (no consultes tablas con secretos)
+//   node scripts/supabase-dev.mjs flag <clave> on|off  # prende o apaga un flag en chilena-dev
 //   node scripts/supabase-dev.mjs cron-secret   # genera CRON_SECRET si falta
 //   node scripts/supabase-dev.mjs app [url]     # con pnpm dev corriendo: /api/cron/trabajos llega a la base
 //
@@ -91,7 +92,9 @@ function cli(args, { capturar = false } = {}) {
   }
   if (r.status !== 0) {
     // Con `capturar` el stdout puede traer llaves: en un error solo se muestra stderr
-    fallar(`supabase ${args[0]} terminó con código ${r.status}${capturar ? `: ${(r.stderr ?? "").trim()}` : ""}`);
+    fallar(
+      `supabase ${args[0]} terminó con código ${r.status}${capturar ? `: ${(r.stderr ?? "").trim()}` : ""}`,
+    );
   }
   return r.stdout;
 }
@@ -132,7 +135,11 @@ const comandos = {
     extraSecretos.push(pw, encodeURIComponent(pw));
     const igual = pw === env.SUPABASE_DB_PASSWORD;
     escribirEnv({ SUPABASE_DB_PASSWORD: pw });
-    decir(igual ? "Es la misma contraseña que ya estaba." : `✓ Contraseña nueva guardada (${pw.length} caracteres).`);
+    decir(
+      igual
+        ? "Es la misma contraseña que ya estaba."
+        : `✓ Contraseña nueva guardada (${pw.length} caracteres).`,
+    );
   },
 
   async link() {
@@ -155,7 +162,9 @@ const comandos = {
     decir(`Pooler: ${host} (usuario ${usuario})`);
 
     // Llaves: publishable y secret (sin imprimirlas)
-    const salida = cli(["projects", "api-keys", `--remote=${r}`, "--reveal", "-o", "json"], { capturar: true });
+    const salida = cli(["projects", "api-keys", `--remote=${r}`, "--reveal", "-o", "json"], {
+      capturar: true,
+    });
     let llaves;
     try {
       const json = JSON.parse(salida);
@@ -169,7 +178,8 @@ const comandos = {
       llaves.find((k) => k.name === legado && k.api_key)?.api_key;
     const publishable = deTipo("publishable", "anon");
     const secret = deTipo("secret", "service_role");
-    if (!publishable || !secret) fallar(`No encontré las llaves (tipos: ${llaves.map((k) => k.type ?? k.name).join(", ")})`);
+    if (!publishable || !secret)
+      fallar(`No encontré las llaves (tipos: ${llaves.map((k) => k.type ?? k.name).join(", ")})`);
 
     const pw = encodeURIComponent(env.SUPABASE_DB_PASSWORD);
     const base = `postgresql://${encodeURIComponent(usuario)}:${pw}@${host}`;
@@ -198,10 +208,14 @@ const comandos = {
     ]) {
       try {
         const fila = await conPg(url, (c) =>
-          c.query("select 1 as uno, current_database() as base, current_user as usuario, version() as version"),
+          c.query(
+            "select 1 as uno, current_database() as base, current_user as usuario, version() as version",
+          ),
         );
         const { uno, base, usuario, version } = fila.rows[0];
-        decir(`✓ ${nombre}: SELECT 1 = ${uno} · base ${base} · usuario ${usuario} · ${version.split(" on ")[0]}`);
+        decir(
+          `✓ ${nombre}: SELECT 1 = ${uno} · base ${base} · usuario ${usuario} · ${version.split(" on ")[0]}`,
+        );
       } catch (e) {
         fallas++;
         decir(`✗ ${nombre}: ${e.message}`);
@@ -234,6 +248,22 @@ const comandos = {
     }).catch((e) => fallar(e.message));
   },
 
+  /** Prende o apaga un flag en feature_flags: `flag auth.demo_login on` */
+  async flag() {
+    necesito("DIRECT_URL");
+    const [clave, valor] = process.argv.slice(3);
+    if (!/^[a-z]+\.[a-z_]+$/.test(clave ?? "") || !["on", "off"].includes(valor ?? ""))
+      fallar("Uso: node scripts/supabase-dev.mjs flag <clave> on|off");
+    await conPg(env.DIRECT_URL, async (c) => {
+      const r = await c.query('update feature_flags set enabled = $1, "updatedAt" = now() where key = $2', [
+        valor === "on",
+        clave,
+      ]);
+      if (!r.rowCount) fallar(`No existe el flag ${clave} (¿ya corriste pnpm db:seed?).`);
+      decir(`✓ ${clave}: ${valor}`);
+    }).catch((e) => fallar(e.message));
+  },
+
   /** Una consulta de solo lectura para verificar (imprime filas: no consultes tablas con secretos) */
   async sql() {
     necesito("DIRECT_URL");
@@ -257,8 +287,11 @@ const comandos = {
   /** ¿La app (pnpm dev) llega a la base? Llama /api/cron/trabajos, que lee la cola de trabajos con DATABASE_URL */
   async app() {
     const base = process.argv[3] ?? "http://localhost:3000";
-    if (!env.CRON_SECRET) fallar(`CRON_SECRET está vacía en ${ENV_FILE} (docs/SETUP.md §3: openssl rand -hex 32).`);
-    const sinAuth = await fetch(`${base}/api/cron/trabajos`).catch((e) => fallar(`No responde ${base}: ${e.message}`));
+    if (!env.CRON_SECRET)
+      fallar(`CRON_SECRET está vacía en ${ENV_FILE} (docs/SETUP.md §3: openssl rand -hex 32).`);
+    const sinAuth = await fetch(`${base}/api/cron/trabajos`).catch((e) =>
+      fallar(`No responde ${base}: ${e.message}`),
+    );
     decir(`Sin secreto: HTTP ${sinAuth.status} (debe ser 401)`);
     const r = await fetch(`${base}/api/cron/trabajos`, {
       method: "POST",
@@ -275,7 +308,11 @@ const comandos = {
       auth: { persistSession: false },
     });
     // CLAUDE.md: foto de perfil comprimida en el cliente (512 px, WebP); límite del bucket 1 MB
-    const opciones = { public: true, fileSizeLimit: 1024 * 1024, allowedMimeTypes: ["image/webp", "image/jpeg"] };
+    const opciones = {
+      public: true,
+      fileSizeLimit: 1024 * 1024,
+      allowedMimeTypes: ["image/webp", "image/jpeg"],
+    };
     const existe = await supabase.storage.getBucket("avatars");
     const r = existe.data
       ? await supabase.storage.updateBucket("avatars", opciones)
@@ -299,11 +336,21 @@ const comandos = {
       const t = torneo.id;
       const n = async (sql) => Number((await uno(sql)).n);
       decir(`Liga: ${liga.nombre} · ${torneo.nombre}`);
-      decir(`  · Equipos inscritos: ${await n(`select count(*) n from tournament_teams where "tournamentId" = '${t}'`)}`);
-      decir(`  · Jugadores registrados: ${await n(`select count(*) n from tournament_rosters where "tournamentId" = '${t}'`)}`);
-      decir(`  · Partidos validados: ${await n(`select count(*) n from matches where "tournamentId" = '${t}' and status = 'VALIDADO'`)}`);
-      decir(`  · Partidos programados: ${await n(`select count(*) n from matches where "tournamentId" = '${t}' and status = 'PROGRAMADO'`)}`);
-      decir(`  · Eventos de cédula: ${await n(`select count(*) n from match_events e join matches m on m.id = e."matchId" where m."tournamentId" = '${t}'`)}`);
+      decir(
+        `  · Equipos inscritos: ${await n(`select count(*) n from tournament_teams where "tournamentId" = '${t}'`)}`,
+      );
+      decir(
+        `  · Jugadores registrados: ${await n(`select count(*) n from tournament_rosters where "tournamentId" = '${t}'`)}`,
+      );
+      decir(
+        `  · Partidos validados: ${await n(`select count(*) n from matches where "tournamentId" = '${t}' and status = 'VALIDADO'`)}`,
+      );
+      decir(
+        `  · Partidos programados: ${await n(`select count(*) n from matches where "tournamentId" = '${t}' and status = 'PROGRAMADO'`)}`,
+      );
+      decir(
+        `  · Eventos de cédula: ${await n(`select count(*) n from match_events e join matches m on m.id = e."matchId" where m."tournamentId" = '${t}'`)}`,
+      );
       const s = await uno(
         `select count(*) n, count(*) filter (where status = 'ACTIVA') activas from sanctions where "tournamentId" = '${t}'`,
       );
