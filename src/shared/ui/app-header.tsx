@@ -21,6 +21,8 @@ const botonIcono =
 /**
  * Header del celular — docs/PRD.md §5: logo, chip del rol activo, búsqueda, campana y avatar.
  * Medidas del export (Mi liga, 03·05·10 claro): alto 54–56 px, botones 40 px con radio 12 (aquí 44 px por área táctil).
+ * El degradado del rol (14 % en la lámina 23; 10 % claro · 18 % oscuro en el export) cubre solo el header:
+ * si Inicio lo quiere más largo, lo pinta la página.
  */
 export function AppHeader({ children, avisos = 0, avatar, degradado = false, className }: AppHeaderProps) {
   return (
@@ -29,14 +31,14 @@ export function AppHeader({ children, avisos = 0, avatar, degradado = false, cla
       {degradado && (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-linear-to-b from-role/14 to-role/0"
+          className="pointer-events-none absolute inset-0 bg-linear-to-b from-role/10 to-role/0 dark:from-role/18"
         />
       )}
-      <div className="relative flex h-16 items-center gap-1.5 px-4">
+      <div className="relative flex h-14 items-center gap-1.5 px-4">
         <Link
           href="/inicio"
           aria-label="Inicio"
-          className="shrink-0 rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <Logo tamano={40} />
         </Link>
@@ -60,7 +62,7 @@ export function AppHeader({ children, avisos = 0, avatar, degradado = false, cla
           <Link
             href={avatar.href ?? "/perfil"}
             aria-label="Mi perfil"
-            className="shrink-0 rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             {/* Aro de 2 px del rol (pantalla 23) */}
             <span className="flex size-10 items-center justify-center overflow-hidden rounded-full bg-surface-2 ring-2 ring-role ring-offset-2 ring-offset-background">

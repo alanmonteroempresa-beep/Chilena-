@@ -16,6 +16,8 @@ type EscudoProps = ColoresEquipo & {
   forma?: "escudo" | "cuadro";
   /** Muestra las siglas dentro (si caben) */
   conSiglas?: boolean;
+  /** Contorno de 1 px en modo claro para que la franja blanca no se pierda sobre blanco (pantalla 05 claro) */
+  contorno?: boolean;
   className?: string;
 };
 
@@ -30,6 +32,7 @@ export function Escudo({
   tamano = 30,
   forma = "cuadro",
   conSiglas = true,
+  contorno = true,
   className,
 }: EscudoProps) {
   const alto = forma === "escudo" ? Math.round(tamano * 1.075) : tamano;
@@ -43,7 +46,11 @@ export function Escudo({
   return (
     <span
       aria-hidden
-      className={cn("etiqueta inline-flex shrink-0 items-center justify-center box-border", className)}
+      className={cn(
+        "etiqueta inline-flex shrink-0 items-center justify-center box-border",
+        contorno && "shadow-[0_0_0_1px_var(--border)] dark:shadow-none",
+        className,
+      )}
       style={{
         width: tamano,
         height: alto,

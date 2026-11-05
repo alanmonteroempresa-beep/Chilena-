@@ -14,6 +14,8 @@ export type OpcionRol = {
   rol: Rol;
   /** Equipo o liga: "Dep. Portales" */
   titulo: string;
+  /** Versión corta para el chip del header (a 390 px caben ~13 caracteres): "Dominical" */
+  tituloCorto?: string;
   /** Siglas de la liga para el chip: "LDI" */
   ligaCorta?: string;
   /** Segunda línea en la lista: "Liga Dominical Iztapalapa · J15" */
@@ -49,7 +51,7 @@ export function RoleSwitcher({ opciones, activoId, onCambiar, hrefUnirme, classN
   const etiquetaChip = [ETIQUETA_ROL[activo.rol].toUpperCase(), activo.ligaCorta, activo.extra]
     .filter(Boolean)
     .join(" · ");
-  const contexto = activo.titulo;
+  const contexto = activo.tituloCorto ?? activo.titulo;
   const puedeCambiar = opciones.length > 1 || Boolean(hrefUnirme);
 
   const chip = (

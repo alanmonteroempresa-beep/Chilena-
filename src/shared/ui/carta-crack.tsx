@@ -174,11 +174,14 @@ export function CartaCrack({
                     {iniciales(nombre)}
                   </div>
                 )}
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-x-0 bottom-0 h-[60px]"
-                  style={{ background: `linear-gradient(0deg,${m.difuminado},rgba(0,0,0,0))` }}
-                />
+                {/* El difuminado funde la foto con el nombre; sin foto se veía como un rectángulo */}
+                {fotoUrl && (
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-x-0 bottom-0 h-[60px]"
+                    style={{ background: `linear-gradient(0deg,${m.difuminado},rgba(0,0,0,0))` }}
+                  />
+                )}
               </div>
 
               {/* Columna izquierda: media, posición, escudo, zona */}
@@ -199,7 +202,7 @@ export function CartaCrack({
                 <span className="font-display text-[22px] leading-none font-black">{posicion}</span>
                 <span className="h-[1.5px] w-[30px] opacity-40" style={{ background: m.tinta }} />
                 <span className="rounded-[6px_6px_14px_14px]" style={{ boxShadow: `0 0 0 1.5px ${m.tinta}` }}>
-                  <Escudo {...escudo} tamano={30} forma="escudo" />
+                  <Escudo {...escudo} tamano={30} forma="escudo" contorno={false} />
                 </span>
                 {zona && (
                   <span className="font-condensed text-[8.5px] font-extrabold tracking-[0.06em] whitespace-nowrap uppercase">
@@ -255,7 +258,7 @@ export function CartaCrack({
                   </div>
                 </div>
                 <span className="rounded-[5px_5px_11px_11px]" style={{ boxShadow: `0 0 0 1.5px ${m.tinta}` }}>
-                  <Escudo {...escudo} tamano={24} forma="escudo" conSiglas={false} />
+                  <Escudo {...escudo} tamano={24} forma="escudo" conSiglas={false} contorno={false} />
                 </span>
               </div>
               <div

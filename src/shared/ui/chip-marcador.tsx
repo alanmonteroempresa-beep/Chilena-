@@ -102,13 +102,13 @@ export function ChipMarcador({
       >
         <Escudo {...local} tamano={24} />
         {conNombres && (
-          <span className="etiqueta text-xs font-extrabold tracking-[0.1em]">{local.nombre}</span>
+          <span className="etiqueta text-[13px] font-extrabold tracking-[0.1em]">{local.nombre}</span>
         )}
-        <span className="etiqueta rounded-md bg-foreground px-1.5 py-0.5 text-base leading-none font-extrabold text-background">
+        <span className="etiqueta rounded-[3px] bg-foreground px-[5px] py-[3px] text-[13px] leading-none font-extrabold text-background">
           {marcador}
         </span>
         {conNombres && (
-          <span className="etiqueta text-xs font-extrabold tracking-[0.1em]">{visitante.nombre}</span>
+          <span className="etiqueta text-[13px] font-extrabold tracking-[0.1em]">{visitante.nombre}</span>
         )}
         <Escudo {...visitante} tamano={24} />
       </span>

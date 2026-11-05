@@ -30,12 +30,14 @@ const ICONO_CENTRAL: Record<ClaveAccionCentral, LucideIcon> = {
   "programar-jornada": CalendarPlus,
 };
 
+// `relleno`: el activo se rellena como el FILL de Material del diseño (solo figuras cerradas;
+// los arcos de "En vivo" se verían rotos con relleno)
 const ITEMS = [
-  { href: "/inicio", etiqueta: "Inicio", Icono: House },
-  { href: "/en-vivo", etiqueta: "En vivo", Icono: Radio },
+  { href: "/inicio", etiqueta: "Inicio", Icono: House, relleno: true },
+  { href: "/en-vivo", etiqueta: "En vivo", Icono: Radio, relleno: false },
   null, // botón central
-  { href: "/mi-liga", etiqueta: "Mi liga", Icono: IconoEstadio },
-  { href: "/perfil", etiqueta: "Perfil", Icono: UserRound },
+  { href: "/mi-liga", etiqueta: "Mi liga", Icono: IconoEstadio, relleno: true },
+  { href: "/perfil", etiqueta: "Perfil", Icono: UserRound, relleno: true },
 ] as const;
 
 function estaActivo(pathname: string | null, href: string) {
@@ -71,7 +73,7 @@ export function BarraInferior({
           if (!item) {
             const contenido = (
               <>
-                <span className="flex size-[52px] items-center justify-center rounded-full bg-brand-lime text-ink shadow-[0_0_0_5px_var(--barra)]">
+                <span className="flex size-[52px] items-center justify-center rounded-full bg-brand-lime text-ink shadow-[0_0_0_5px_var(--barra),0_4px_10px_5px_rgba(7,9,12,0.06)] dark:shadow-[0_0_0_5px_var(--barra)]">
                   <IconoCentral aria-hidden className="size-7" strokeWidth={2.5} />
                 </span>
                 <span className="whitespace-nowrap">{accion.etiqueta}</span>
@@ -94,7 +96,7 @@ export function BarraInferior({
             );
           }
           const activo = estaActivo(pathname, item.href);
-          const { Icono } = item;
+          const { Icono, relleno } = item;
           return (
             <li key={item.href} className="flex justify-center">
               <Link
@@ -105,7 +107,11 @@ export function BarraInferior({
                   activo ? "font-bold text-role" : "font-semibold text-muted-foreground",
                 )}
               >
-                <Icono aria-hidden className="size-6" strokeWidth={activo ? 2.5 : 2} />
+                <Icono
+                  aria-hidden
+                  className={cn("size-6", activo && relleno && "fill-current/25")}
+                  strokeWidth={activo ? 2.5 : 2}
+                />
                 {item.etiqueta}
               </Link>
             </li>
