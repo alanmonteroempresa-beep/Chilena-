@@ -81,6 +81,7 @@ src/
 | `media.posts` | off | Fotos y videos en publicaciones |
 | `media.goal_video` | off | Video ligado al gol |
 | `auth.whatsapp_otp` | off | Entrar con código por WhatsApp |
+| `auth.google` | off | Entrar con Google (se prende al configurar Google Cloud en Supabase) |
 | `ai.texts` | off | Crónica y titulares con IA (si está off → plantillas) |
 | `pro.futbol` | off | Sección Fútbol Pro |
 | `social.quiniela` | on | Quiniela |

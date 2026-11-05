@@ -5,6 +5,7 @@ export const FLAG_DEFAULTS = {
   "media.posts": { enabled: false, descripcion: "Fotos y videos en publicaciones" },
   "media.goal_video": { enabled: false, descripcion: "Video ligado al gol" },
   "auth.whatsapp_otp": { enabled: false, descripcion: "Entrar con código por WhatsApp" },
+  "auth.google": { enabled: false, descripcion: "Entrar con Google (falta configurar Google Cloud)" },
   "ai.texts": { enabled: false, descripcion: "Crónica y titulares con IA (off = plantillas)" },
   "pro.futbol": { enabled: false, descripcion: "Sección Fútbol Pro" },
   "social.quiniela": { enabled: true, descripcion: "Quiniela" },

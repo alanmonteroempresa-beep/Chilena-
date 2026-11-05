@@ -1,0 +1,84 @@
+import Link from "next/link";
+import { Suspense } from "react";
+import { LogOut } from "lucide-react";
+import { buttonVariants } from "@/shared/ui/button";
+import { Logo } from "@/shared/ui/logo";
+import { Skeleton } from "@/shared/ui/skeleton";
+import { salir } from "../../server/actions";
+import { getCurrentUser } from "../../server/auth";
+
+type Variante = "completar" | "inicio";
+
+const TEXTOS: Record<Variante, { titulo: string; cuerpo: string }> = {
+  completar: {
+    titulo: "Completa tu perfil",
+    cuerpo:
+      "Registro en 30 segundos: nombre, apodo y foto. Esta pantalla llega en la siguiente fase de la beta.",
+  },
+  inicio: {
+    titulo: "¡Ya entraste!",
+    cuerpo: "Tu inicio (tu equipo, la porra y tu carta) llega en la siguiente fase de la beta.",
+  },
+};
+
+/**
+ * PROVISIONAL (Fase 0): destino después de entrar mientras no existen la pantalla 40 (Completa tu perfil,
+ * core) ni las 03/05 (inicio, social). Confirma la sesión y deja salir.
+ */
+export function PantallaProvisional({ variante }: { variante: Variante }) {
+  const t = TEXTOS[variante];
+  return (
+    <main className="flex min-h-dvh flex-col gap-8 bg-background px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-10">
+      <Logo tamano={44} />
+      <div className="flex flex-col gap-3">
+        <h1 className="titular-momento text-[52px] leading-[0.9]">{t.titulo}</h1>
+        <p className="max-w-[440px] text-[15px] leading-snug text-muted-foreground">{t.cuerpo}</p>
+      </div>
+      <Suspense fallback={<Skeleton className="h-24 w-full max-w-[440px] rounded-xl" />}>
+        <QuienEntro variante={variante} />
+      </Suspense>
+    </main>
+  );
+}
+
+async function QuienEntro({ variante }: { variante: Variante }) {
+  // src/proxy.ts ya manda a /entrar a quien no tiene sesión; aquí no se redirige dentro del Suspense
+  const usuario = await getCurrentUser();
+  if (!usuario) {
+    return (
+      <Link
+        href="/entrar"
+        className={buttonVariants({ variant: "lima", size: "cta", className: "max-w-[440px]" })}
+      >
+        Entrar
+      </Link>
+    );
+  }
+  const nombre = usuario.sobrenombre || usuario.nombre || "crack";
+  return (
+    <div className="flex max-w-[440px] flex-col gap-3">
+      <p className="rounded-xl bg-surface p-4 text-sm">
+        Entraste como <strong className="font-semibold">{nombre}</strong>{" "}
+        <span className="text-muted-foreground">(@{usuario.username})</span>
+      </p>
+      {variante === "completar" && (
+        <Link href="/inicio" className={buttonVariants({ variant: "lima", size: "cta" })}>
+          Ir a mi inicio
+        </Link>
+      )}
+      <form action={salir}>
+        <button
+          type="submit"
+          className={buttonVariants({
+            variant: "quieto",
+            size: "cta",
+            className: "w-full border border-border",
+          })}
+        >
+          <LogOut aria-hidden />
+          Salir
+        </button>
+      </form>
+    </div>
+  );
+}
