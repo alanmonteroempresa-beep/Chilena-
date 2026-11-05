@@ -1757,6 +1757,7 @@ model StandingRow {
   pts              Int            @default(0)
   posicion         Int?
   posicionAnterior Int? // "subimos al 2º"
+  ordenManual      Int? // sorteo de la liga (PRD §7.13): 1 va arriba de 2 entre los empatados; siempre con AuditLog
   racha            String? // "GGEGP"
   updatedAt        DateTime       @updatedAt
   tournamentTeam   TournamentTeam @relation(fields: [tournamentTeamId], references: [id], onDelete: Cascade)

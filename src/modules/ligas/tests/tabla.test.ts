@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { calcularTabla, type PartidoTabla } from "@/modules/ligas";
+import { DomainError } from "@/modules/core";
+import { calcularTabla, marcarSorteo, type PartidoTabla } from "@/modules/ligas";
 
 // PRD §7.13: puntos → diferencia → goles a favor → entre ellos → juego limpio → sorteo
 const REGLAS = { puntosVictoria: 3, puntosEmpate: 1 };
@@ -74,6 +75,9 @@ describe("tabla: puntos y regla 2", () => {
   });
 });
 
+// A y B empatados en todo (no jugaron entre ellos)
+const EMPATADOS = partidos(["A", "Z", 1, 0], ["B", "Z", 1, 0]);
+
 describe("tabla: desempate", () => {
   it("1. diferencia de goles", () => {
     const tabla = calcularTabla({
@@ -140,21 +144,54 @@ describe("tabla: desempate", () => {
     expect(fila(tabla, "Z").juegoLimpio).toBe(1);
   });
 
-  it("5. sorteo de la liga; sin sorteo, el empate queda sin resolver", () => {
-    const empatados = partidos(["A", "Z", 1, 0], ["B", "Z", 1, 0]);
-    const sinSorteo = calcularTabla({ equipos: equipos("B", "A", "Z"), reglas: REGLAS, partidos: empatados });
-    expect(orden(sinSorteo).slice(0, 2)).toEqual(["A", "B"]); // provisional, por nombre
-    expect(sinSorteo.slice(0, 2).every((f) => f.empateSinResolver)).toBe(true);
-    expect(fila(sinSorteo, "Z").empateSinResolver).toBe(false);
+  it("5. sin orden manual, el empate queda sin resolver y se identifica para el sorteo", () => {
+    const sinSorteo = calcularTabla({ equipos: equipos("B", "A", "Z"), reglas: REGLAS, partidos: EMPATADOS });
+    expect(orden(sinSorteo)).toEqual(["A", "B", "Z"]); // provisional, por nombre
+    expect(sinSorteo.slice(0, 2).every((f) => f.empateSinResolver && f.grupoEmpate === 1)).toBe(true);
+    expect(fila(sinSorteo, "Z")).toMatchObject({ empateSinResolver: false, grupoEmpate: null });
+  });
 
-    const conSorteo = calcularTabla({
-      equipos: equipos("A", "B", "Z"),
+  it("6. el ordenManual de StandingRow es el último criterio (sorteo de la liga)", () => {
+    const tabla = calcularTabla({
+      equipos: [
+        { id: "A", nombre: "Equipo A", ordenManual: 2 },
+        { id: "B", nombre: "Equipo B", ordenManual: 1 },
+        { id: "Z", nombre: "Equipo Z" },
+      ],
       reglas: REGLAS,
-      partidos: empatados,
-      sorteo: ["B", "A"],
+      partidos: EMPATADOS,
     });
-    expect(orden(conSorteo).slice(0, 2)).toEqual(["B", "A"]);
-    expect(fila(conSorteo, "B")).toMatchObject({ desempate: "SORTEO", empateSinResolver: false });
+    expect(orden(tabla)).toEqual(["B", "A", "Z"]);
+    expect(fila(tabla, "B")).toMatchObject({ desempate: "SORTEO", empateSinResolver: false, ordenManual: 1 });
+  });
+
+  it("el orden manual no le gana a los otros criterios", () => {
+    // A tiene mejor diferencia: aunque B tenga ordenManual 1, A va arriba
+    const tabla = calcularTabla({
+      equipos: [
+        { id: "A", nombre: "Equipo A", ordenManual: 2 },
+        { id: "B", nombre: "Equipo B", ordenManual: 1 },
+        { id: "Z", nombre: "Equipo Z" },
+      ],
+      reglas: REGLAS,
+      partidos: partidos(["A", "Z", 3, 0], ["B", "Z", 1, 0]),
+    });
+    expect(orden(tabla).slice(0, 2)).toEqual(["A", "B"]);
+    expect(fila(tabla, "A").desempate).toBe("DIFERENCIA");
+  });
+
+  it("si a algún empatado le falta su orden manual, sigue sin resolver", () => {
+    const tabla = calcularTabla({
+      equipos: [
+        { id: "A", nombre: "Equipo A", ordenManual: 1 },
+        { id: "B", nombre: "Equipo B" },
+        { id: "C", nombre: "Equipo C", ordenManual: 2 },
+        { id: "Z", nombre: "Equipo Z" },
+      ],
+      reglas: REGLAS,
+      partidos: [...EMPATADOS, ...partidos(["C", "Z", 1, 0])].map((p, i) => ({ ...p, orden: i + 1 })),
+    });
+    expect(tabla.filter((f) => f.empateSinResolver).map((f) => f.equipoId)).toEqual(["A", "B", "C"]);
   });
 
   it("el orden de los criterios es el de la Liga MX: la diferencia gana al resultado entre ellos", () => {
@@ -165,5 +202,42 @@ describe("tabla: desempate", () => {
       partidos: partidos(["A", "B", 0, 1], ["A", "C", 5, 0], ["D", "B", 1, 0]),
     });
     expect(orden(tabla).indexOf("A")).toBeLessThan(orden(tabla).indexOf("B"));
+  });
+});
+
+describe("la liga marca el sorteo (PRD §7.13)", () => {
+  const sinResolver = () =>
+    calcularTabla({ equipos: equipos("A", "B", "Z"), reglas: REGLAS, partidos: EMPATADOS });
+
+  it("da el ordenManual de cada empatado y la bitácora; con eso la tabla queda resuelta", () => {
+    const r = marcarSorteo(sinResolver(), ["B", "A"], "  Volado en la junta de delegados  ");
+    expect(r.cambios).toEqual([
+      { equipoId: "B", ordenManual: 1 },
+      { equipoId: "A", ordenManual: 2 },
+    ]);
+    expect(r.bitacora).toEqual({
+      action: "OVERRIDE",
+      before: { B: null, A: null },
+      after: { B: 1, A: 2 },
+      motivo: "Volado en la junta de delegados",
+    });
+    const manual = new Map(r.cambios.map((c) => [c.equipoId, c.ordenManual]));
+    const resuelta = calcularTabla({
+      equipos: equipos("A", "B", "Z").map((e) => ({ ...e, ordenManual: manual.get(e.id) ?? null })),
+      reglas: REGLAS,
+      partidos: EMPATADOS,
+    });
+    expect(orden(resuelta)).toEqual(["B", "A", "Z"]);
+    expect(resuelta.some((f) => f.empateSinResolver)).toBe(false);
+  });
+
+  it("pide motivo, a todos los empatados y solo a ellos", () => {
+    const tabla = sinResolver();
+    expect(() => marcarSorteo(tabla, ["B", "A"], "  ")).toThrow(DomainError);
+    expect(() => marcarSorteo(tabla, ["B"], "x")).toThrow(/todos los empatados/);
+    expect(() => marcarSorteo(tabla, ["B", "B"], "x")).toThrow(/todos los empatados/);
+    expect(() => marcarSorteo(tabla, ["A", "B", "Z"], "x")).toThrow(/todos los empatados/);
+    expect(() => marcarSorteo(tabla, ["Z"], "x")).toThrow(/no tiene un empate/);
+    expect(() => marcarSorteo(tabla, ["X", "A"], "x")).toThrow(/no está en la tabla/);
   });
 });

@@ -3,9 +3,16 @@
  * Solo cuentan los partidos VALIDADOS de la fase regular (regla 2).
  * Desempate fijo en la beta (estilo Liga MX):
  *   puntos → diferencia → goles a favor → resultado entre ellos → juego limpio → sorteo de la liga.
+ * El sorteo lo marca la liga en `StandingRow.ordenManual` (con `marcarSorteo` y bitácora).
  */
+import { DomainError } from "@/modules/core";
 
-export type EquipoTabla = { id: string; nombre: string };
+export type EquipoTabla = {
+  id: string;
+  nombre: string;
+  /** `StandingRow.ordenManual`: lo llena la liga al resolver un sorteo (1 va arriba de 2) */
+  ordenManual?: number | null;
+};
 
 export type PartidoTabla = {
   localId: string;
@@ -46,6 +53,9 @@ export type FilaTabla = {
   desempate: CriterioDesempate | null;
   /** Empate que solo resuelve el sorteo de la liga y todavía no se marca */
   empateSinResolver: boolean;
+  /** Posición donde empieza su empate sin resolver (identifica a los empatados para el sorteo) */
+  grupoEmpate: number | null;
+  ordenManual: number | null;
 };
 
 const cuenta = (p: PartidoTabla) =>
@@ -54,7 +64,7 @@ const cuenta = (p: PartidoTabla) =>
   p.golesLocal != null &&
   p.golesVisitante != null;
 
-type Ctx = { partidos: PartidoTabla[]; reglas: ReglasTabla; sorteo: string[] };
+type Ctx = { partidos: PartidoTabla[]; reglas: ReglasTabla; sinResolver: FilaTabla[][] };
 type Clave = (f: FilaTabla, grupo: FilaTabla[], ctx: Ctx) => number[];
 
 /** Puntos y diferencia solo en los partidos entre los del grupo */
@@ -74,7 +84,7 @@ const entreEllos: Clave = (f, grupo, { partidos, reglas }) => {
   return [pts, dg];
 };
 
-const CRITERIOS: { nombre: CriterioDesempate; clave: Clave }[] = [
+const CRITERIOS: { nombre: CriterioDesempate; clave: Clave; aplica?: (grupo: FilaTabla[]) => boolean }[] = [
   { nombre: "PUNTOS", clave: (f) => [f.pts] },
   { nombre: "DIFERENCIA", clave: (f) => [f.dg] },
   { nombre: "GOLES_A_FAVOR", clave: (f) => [f.gf] },
@@ -82,14 +92,13 @@ const CRITERIOS: { nombre: CriterioDesempate; clave: Clave }[] = [
   { nombre: "JUEGO_LIMPIO", clave: (f) => [-f.juegoLimpio] },
   {
     nombre: "SORTEO",
-    clave: (f, _g, { sorteo }) => {
-      const i = sorteo.indexOf(f.equipoId);
-      return [i === -1 ? -Infinity : -i];
-    },
+    clave: (f) => [-(f.ordenManual ?? 0)],
+    // Solo resuelve si la liga ordenó a TODOS los empatados
+    aplica: (grupo) => grupo.every((f) => f.ordenManual != null),
   },
 ];
 
-/** Mayor primero. Sin restas: el sorteo usa -Infinity para "sin marcar" */
+/** Mayor primero */
 function comparar(a: number[], b: number[]) {
   for (let i = 0; i < Math.max(a.length, b.length); i++) {
     const x = a[i] ?? 0;
@@ -105,7 +114,8 @@ const porNombre = (a: FilaTabla, b: FilaTabla) => a.nombre.localeCompare(b.nombr
 function ordenar(grupo: FilaTabla[], desde: number, ctx: Ctx): FilaTabla[] {
   if (grupo.length < 2) return grupo;
   for (let i = desde; i < CRITERIOS.length; i++) {
-    const { nombre, clave } = CRITERIOS[i];
+    const { nombre, clave, aplica } = CRITERIOS[i];
+    if (aplica && !aplica(grupo)) continue;
     const claves = new Map(grupo.map((f) => [f.equipoId, clave(f, grupo, ctx)]));
     const ordenado = [...grupo].sort((a, b) => comparar(claves.get(a.equipoId)!, claves.get(b.equipoId)!));
     const subgrupos: FilaTabla[][] = [];
@@ -118,25 +128,21 @@ function ordenar(grupo: FilaTabla[], desde: number, ctx: Ctx): FilaTabla[] {
     if (i > 0) for (const f of grupo) f.desempate = nombre;
     return subgrupos.flatMap((s) => ordenar(s, i, ctx));
   }
-  // Ni el sorteo lo separa: falta que la liga lo marque
+  // Ni el sorteo lo separa: falta que la liga lo marque (provisional, por nombre)
   for (const f of grupo) f.empateSinResolver = true;
+  ctx.sinResolver.push(grupo);
   return [...grupo].sort(porNombre);
 }
 
-/**
- * Calcula la tabla. `sorteo`: orden que marcó la liga a mano (ids de equipo, del mejor al peor),
- * solo para los empates que nada más separa.
- */
+/** Calcula la tabla. `ordenManual` de cada equipo solo pesa como último criterio (sorteo). */
 export function calcularTabla({
   equipos,
   partidos,
   reglas,
-  sorteo = [],
 }: {
   equipos: EquipoTabla[];
   partidos: PartidoTabla[];
   reglas: ReglasTabla;
-  sorteo?: string[];
 }): FilaTabla[] {
   const validos = partidos.filter(cuenta).sort((a, b) => a.orden - b.orden);
   const filas = new Map<string, FilaTabla & { resultados: string[] }>(
@@ -158,6 +164,8 @@ export function calcularTabla({
         posicion: 0,
         desempate: null,
         empateSinResolver: false,
+        grupoEmpate: null,
+        ordenManual: e.ordenManual ?? null,
         resultados: [],
       },
     ]),
@@ -193,5 +201,45 @@ export function calcularTabla({
     racha: resultados.slice(-5).join(""),
   }));
 
-  return ordenar(base, 0, { partidos: validos, reglas, sorteo }).map((f, i) => ({ ...f, posicion: i + 1 }));
+  const ctx: Ctx = { partidos: validos, reglas, sinResolver: [] };
+  const tabla = ordenar(base, 0, ctx);
+  tabla.forEach((f, i) => (f.posicion = i + 1));
+  for (const grupo of ctx.sinResolver) {
+    const inicio = Math.min(...grupo.map((f) => f.posicion));
+    for (const f of grupo) f.grupoEmpate = inicio;
+  }
+  return tabla;
+}
+
+/**
+ * La liga resuelve un empate sin resolver por sorteo (PRD §7.13). `orden`: todos los empatados,
+ * del que queda arriba al de abajo. Devuelve el `ordenManual` de cada uno y la bitácora (siempre).
+ */
+export function marcarSorteo(tabla: FilaTabla[], orden: string[], motivo: string) {
+  const m = motivo.trim();
+  if (!m) throw new DomainError("Escribe el motivo del sorteo.", "SORTEO_SIN_MOTIVO");
+  const filas = orden.map((id) => tabla.find((f) => f.equipoId === id));
+  if (!filas.length || filas.some((f) => !f))
+    throw new DomainError("Ese equipo no está en la tabla.", "SORTEO_EQUIPO_DESCONOCIDO");
+  const grupo = filas[0]!.grupoEmpate;
+  if (grupo == null)
+    throw new DomainError("Ese equipo no tiene un empate por resolver.", "SORTEO_SIN_EMPATE");
+  const empatados = tabla.filter((f) => f.grupoEmpate === grupo).map((f) => f.equipoId);
+  const completo =
+    new Set(orden).size === orden.length &&
+    orden.length === empatados.length &&
+    empatados.every((id) => orden.includes(id));
+  if (!completo)
+    throw new DomainError("El sorteo tiene que ordenar a todos los empatados.", "SORTEO_INCOMPLETO");
+
+  const despues = orden.map((equipoId, i) => ({ equipoId, ordenManual: i + 1 }));
+  return {
+    cambios: despues,
+    bitacora: {
+      action: "OVERRIDE" as const,
+      before: Object.fromEntries(filas.map((f) => [f!.equipoId, f!.ordenManual])),
+      after: Object.fromEntries(despues.map((d) => [d.equipoId, d.ordenManual])),
+      motivo: m,
+    },
+  };
 }

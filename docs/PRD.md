@@ -356,7 +356,7 @@ Estados: `BORRADOR → INSCRIPCIONES_ABIERTAS → EN_CURSO → LIGUILLA → FINA
      - **No registrado en el torneo**, o su inscripción no está aprobada. La liga lo puede registrar en ese momento.
    - **Ámbar = ojo** (puede jugar; el delegado decide):
      - **Cuota pendiente** con el equipo: es asunto interno del equipo.
-     - **A una amarilla de la suspensión** (§7.8).
+     - **A una amarilla de la suspensión** (pantalla 53): lleva 4 de 5 en su acumulado (§7.8). Juega, pero si le sacan otra se sienta un partido.
    - El servidor valida la alineación (`assertCan()`): si trae a alguien en rojo, no se guarda. Las alertas quedan en `Lineup.alerts`.
 3. **Marcador en vivo desde la banda** (pantalla 32):
    - Aficionados y delegados lo actualizan ("¿Cambió el marcador?") y lo narran ("87' El Brujo, de chilena").
@@ -396,7 +396,12 @@ Estados: `BORRADOR → INSCRIPCIONES_ABIERTAS → EN_CURSO → LIGUILLA → FINA
 
 **Amarillas acumuladas:**
 - Al llegar a 5 se crea la suspensión y el **acumulado vuelve a 0**: la siguiente suspensión sale con 5 más.
-- **Doble amarilla en un partido:** se captura como expulsión (`ROJA`) y vale 1 partido, como la roja. Esas 2 amarillas **no** suman al acumulado.
+- **Doble amarilla en un partido:** la cédula guarda las dos amarillas y la expulsión (`ROJA`), pero cuenta como **una sola expulsión**:
+  - Sanción: 1 partido, como la roja.
+  - Juego limpio (§7.13): 3 puntos, como roja, no 5.
+  - Acumulado: esas 2 amarillas **no** suman.
+  - Carta (DIS) y estadísticas del jugador: cuenta como 1 roja y 0 amarillas, no como roja + 2 amarillas.
+- **Amarilla y luego roja directa** en el mismo partido: la roja suspende y la amarilla **sí** suma al acumulado y a DIS (4 puntos de juego limpio).
 - **Liguilla:** el acumulado vuelve a 0 al empezar la liguilla. Las suspensiones pendientes sí se cumplen.
 - **Alerta preventiva al jugador:** usa el acumulado, no el total del torneo: "Aguas: llevas 4 amarillas. Una más y te sientas un partido."
 
@@ -404,6 +409,7 @@ Estados: `BORRADOR → INSCRIPCIONES_ABIERTAS → EN_CURSO → LIGUILLA → FINA
 - Una sanción puede llevar partidos **y** multa a la vez (`partidos` y `multaCents`).
 - Si trae multa, se crea su cargo a la liga (`LeagueCharge` tipo `MULTA`, ligado por `sanctionId`) por el mismo monto, en centavos (regla 7). Así se ve en la pantalla 47 y en el "Por pagar a la liga" del delegado ("Multa · roja de La Roca · $300").
 - Condonar la multa se hace en el cargo (`CONDONADO`), con bitácora. Un cargo ya confirmado no se condona.
+- Una multa que ya tiene su cargo no se cambia ni se quita desde la sanción: se condona en el cargo.
 
 ### 7.9 "No hay juego", suspensión y reprogramación
 - El **delegado no suspende**: avisa "No hay juego" y **la liga confirma**.
@@ -431,8 +437,8 @@ Los **reportes de la porra** llegan al panel de la liga dueña del contenido. Ac
 2. Diferencia de goles.
 3. Goles a favor.
 4. **Resultado entre ellos:** puntos y luego diferencia, solo en los partidos entre los empatados. Si siguen empatados algunos, se vuelve a aplicar solo entre ellos.
-5. **Juego limpio:** menos puntos de tarjetas en el torneo (amarilla 1, roja 3; la doble amarilla vale como roja).
-6. **Sorteo:** lo marca la liga a mano, con motivo y bitácora. Mientras no lo marque, la tabla avisa que el empate sigue sin resolver.
+5. **Juego limpio:** menos puntos de tarjetas en el torneo (amarilla 1, roja 3; la doble amarilla vale 3, como roja).
+6. **Sorteo:** lo marca la liga a mano en `StandingRow.ordenManual` (1 va arriba de 2), siempre con motivo y bitácora (`AuditLog`). Tiene que ordenar a **todos** los empatados; si a alguno le falta, la tabla avisa que el empate sigue sin resolver. El orden manual solo cuenta como último criterio: nunca le gana a los puntos ni a los otros desempates.
 
 **Liguilla:**
 - Al terminar la fase regular se proponen los cruces desde la tabla (editable).

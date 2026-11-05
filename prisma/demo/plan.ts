@@ -16,6 +16,7 @@ import { TZ } from "../../src/shared/lib/dates";
 import { calcularTabla, cargoDeMulta, descripcionMulta } from "../../src/modules/ligas";
 import {
   ajustarSancion,
+  conteoDeTarjetas,
   partidosCumplidos,
   puntosJuegoLimpio,
   rachaAsistencia,
@@ -817,6 +818,8 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
   const tabla = tablaHasta(TORNEO.jornadasJugadas);
   const tablaAnterior = tablaHasta(TORNEO.jornadasJugadas - 1);
 
+  // Tarjetas de la estadística y de DIS: la doble amarilla cuenta como 1 roja (PRD §7.8)
+  const tarjetasDelTorneo = conteoDeTarjetas(jugados.map(tarjetasDe));
   const estadisticas = new Map(
     [...jugadores.values()].map((j) => {
       const suyos = jugados
@@ -858,8 +861,8 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
             (s, p) => s + p.eventos.filter((e) => e.asistencia?.id === j.id).length,
             0,
           ),
-          amarillas: cuenta("AMARILLA"),
-          rojas: cuenta("ROJA"),
+          amarillas: tarjetasDelTorneo.get(j.id)?.amarillas ?? 0,
+          rojas: tarjetasDelTorneo.get(j.id)?.rojas ?? 0,
           golesRecibidos: recibidos.reduce((s, g) => s + g, 0),
           vallasInvictas: recibidos.filter((g) => g === 0).length,
           penalesAtajados: cuenta("PENAL_ATAJADO"),

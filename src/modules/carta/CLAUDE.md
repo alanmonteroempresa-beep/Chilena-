@@ -14,6 +14,7 @@ La carta (fórmula, fotos semanales, delta), insignias (motor por `criteria`, pr
 ## Reglas clave
 - Toda la fórmula en `server/formula.ts` como funciones puras con tests de cada tramo (`docs/CARTA_E_INSIGNIAS.md`).
 - Solo partidos VALIDADO cuentan.
+- DIS usa `conteoDeTarjetas` de `partidos`: la doble amarilla es 1 roja y 0 amarillas (PRD §7.8).
 - Media entre 40 y 99; en construcción hasta 3 partidos.
 
 ## Estructura

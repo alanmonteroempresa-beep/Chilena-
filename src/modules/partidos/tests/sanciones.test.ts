@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { disciplina } from "@/modules/carta";
 import { DomainError } from "@/modules/core";
 import {
   ajustarSancion,
   alertaPreventiva,
   amarillasAcumuladas,
+  conteoDeTarjetas,
   partidosCumplidos,
   puntosJuegoLimpio,
   sancionesAutomaticas,
@@ -144,6 +146,34 @@ describe("juego limpio", () => {
 
   it("amarilla y luego roja directa: 4", () => {
     expect(puntosJuegoLimpio([amarilla(), roja()]).get("RC")).toBe(4);
+  });
+});
+
+describe("doble amarilla = una sola expulsión (PRD §7.8)", () => {
+  // La cédula guarda las dos amarillas y la ROJA
+  const doble = [amarilla("guero", 30), amarilla("guero", 80), roja("guero", 80)];
+
+  it("juego limpio: 3 puntos (como roja), no 5", () => {
+    expect(puntosJuegoLimpio(doble).get("RC")).toBe(3);
+  });
+
+  it("no suma al acumulado de amarillas y genera una sola sanción", () => {
+    const partidos = jornadas([amarilla()], [amarilla()], doble);
+    expect(amarillasAcumuladas(partidos, REGLAS).get("guero")).toBe(2);
+    expect(sancionesAutomaticas(partidos, REGLAS)).toHaveLength(1);
+  });
+
+  it("en la carta (DIS) resta como 1 roja, no como roja + 2 amarillas", () => {
+    const conteo = conteoDeTarjetas([doble]).get("guero")!;
+    expect(conteo).toEqual({ amarillas: 0, rojas: 1 });
+    expect(disciplina(conteo)).toBe(83); // 95 − 12, no 95 − 8 − 12
+  });
+
+  it("amarilla y luego roja directa sigue igual: la amarilla suma y son 4 puntos", () => {
+    const tarjetas = [amarilla("guero", 10), roja("guero", 60)];
+    expect(puntosJuegoLimpio(tarjetas).get("RC")).toBe(4);
+    expect(amarillasAcumuladas(jornadas(tarjetas), REGLAS).get("guero")).toBe(1);
+    expect(conteoDeTarjetas([tarjetas]).get("guero")).toEqual({ amarillas: 1, rojas: 1 });
   });
 });
 

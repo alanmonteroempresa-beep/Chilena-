@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { calcularTabla } from "@/modules/ligas";
 import {
   amarillasAcumuladas,
+  conteoDeTarjetas,
   puntosJuegoLimpio,
   rachaAsistencia,
   revisarAlineacion,
@@ -407,6 +408,7 @@ describe("tabla con el desempate de la PRD §7.13", () => {
 
   it("ningún empate queda sin resolver (no hace falta sorteo)", () => {
     expect([...tablaHasta(15), ...tablaHasta(14)].some((f) => f.empateSinResolver)).toBe(false);
+    expect(plan.standings.every((s) => s.ordenManual == null)).toBe(true);
   });
 });
 
@@ -480,6 +482,14 @@ describe("cédulas coherentes", () => {
       const asist = plan.matchEvents.filter((e) => e.assistPlayerId === s.userId).length;
       expect([s.goles, s.asistencias]).toEqual([goles, asist]);
     }
+  });
+
+  it("amarillas y rojas de la estadística cuentan la doble amarilla como 1 roja (PRD §7.8)", () => {
+    const conteo = conteoDeTarjetas(validados().map((m) => tarjetasDe(m.id)));
+    for (const s of plan.playerTournamentStats)
+      expect({ amarillas: s.amarillas, rojas: s.rojas }).toEqual(
+        conteo.get(s.userId) ?? { amarillas: 0, rojas: 0 },
+      );
   });
 });
 

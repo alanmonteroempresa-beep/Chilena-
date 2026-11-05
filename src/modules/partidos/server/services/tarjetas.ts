@@ -2,8 +2,10 @@
  * Tarjetas de la cédula, ya resumidas por jugador y partido (PRD §7.8 y §7.13).
  * Servicio puro: sin base de datos ni Next.
  *
- * Doble amarilla: la cédula trae sus dos amarillas y la expulsión (ROJA). Vale como roja
- * y esas dos amarillas no suman al acumulado. Basta con ver dos amarillas para tratarla así.
+ * Doble amarilla: la cédula trae sus dos amarillas y la expulsión (ROJA), pero cuenta como UNA
+ * sola expulsión: 1 partido, 3 puntos de juego limpio, no suma al acumulado y en la carta (DIS y
+ * estadísticas) es 1 roja y 0 amarillas. Basta con ver dos amarillas para tratarla así.
+ * Amarilla y luego roja directa: la amarilla sí cuenta (4 puntos de juego limpio).
  */
 
 export type TarjetaCedula = {
@@ -57,4 +59,23 @@ export function puntosJuegoLimpio(tarjetas: TarjetaCedula[]): Map<string, number
     puntos.set(t.equipoId, (puntos.get(t.equipoId) ?? 0) + suyos);
   }
   return puntos;
+}
+
+/**
+ * Tarjetas que cuentan para la estadística del jugador y para DIS (docs/CARTA_E_INSIGNIAS.md §1.2).
+ * Recibe las tarjetas de cada partido por separado: la doble amarilla es 1 roja y 0 amarillas.
+ */
+export function conteoDeTarjetas(
+  porPartido: TarjetaCedula[][],
+): Map<string, { amarillas: number; rojas: number }> {
+  const conteo = new Map<string, { amarillas: number; rojas: number }>();
+  for (const tarjetas of porPartido) {
+    for (const t of tarjetasPorJugador(tarjetas)) {
+      const c = conteo.get(t.jugadorId) ?? { amarillas: 0, rojas: 0 };
+      c.amarillas += t.amarillasQueSuman;
+      c.rojas += t.expulsado ? 1 : 0;
+      conteo.set(t.jugadorId, c);
+    }
+  }
+  return conteo;
 }

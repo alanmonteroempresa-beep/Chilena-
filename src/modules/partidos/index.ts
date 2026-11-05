@@ -3,6 +3,7 @@ export { registerListeners } from "./server/listeners";
 
 // Servicios puros (PRD §7.6 y §7.8)
 export {
+  conteoDeTarjetas,
   PUNTOS_JUEGO_LIMPIO,
   puntosJuegoLimpio,
   tarjetasPorJugador,

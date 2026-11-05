@@ -26,7 +26,7 @@ Interpolación lineal entre los puntos de cada tabla (fuera de rango se toma el 
 | **DEF** Definición | goles / partido | 0 → 45 · 0.25 → 60 · 0.5 → 70 · 1.0 → 85 · 1.5 → 95 |
 | **PAS** Pase | asistencias / partido | 0 → 45 · 0.2 → 62 · 0.4 → 75 · 0.8 → 90 |
 | **CON** Constancia | % de convocatorias en que fue y jugó | 0% → 40 · 50% → 65 · 80% → 82 · 100% → 95 |
-| **DIS** Disciplina | tarjetas en la ventana | 95 − 4 × amarillas − 12 × rojas (mín. 40) |
+| **DIS** Disciplina | tarjetas en la ventana (la doble amarilla cuenta como 1 roja y 0 amarillas, PRD §7.8) | 95 − 4 × amarillas − 12 × rojas (mín. 40) |
 | **CRK** Crack | MVP ganados + % de votos promedio | 55 + 10 × MVP + 0.2 × %votos (máx. 99) |
 | **RES** Respeto | promedio de `RespectVote` (1–5), **solo de rivales** | 1 → 40 · 3 → 68 · 5 → 95 · con menos de 5 votos = 70 |
 

@@ -43,6 +43,8 @@ ALTER TABLE team_dues ADD CONSTRAINT team_dues_amount_positive CHECK ("amountCen
 ALTER TABLE league_charges ADD CONSTRAINT league_charges_amount_positive CHECK ("amountCents" > 0);
 -- El cargo ligado a una sanción es su multa (PRD §7.8)
 ALTER TABLE league_charges ADD CONSTRAINT league_charges_sanction_is_multa CHECK ("sanctionId" IS NULL OR "concept" = 'MULTA');
+-- Orden del sorteo de la liga (PRD §7.13): 1, 2, 3…
+ALTER TABLE standings ADD CONSTRAINT standings_orden_manual_positive CHECK ("ordenManual" IS NULL OR "ordenManual" > 0);
 ALTER TABLE referee_payments ADD CONSTRAINT referee_payments_amount_positive CHECK ("amountCents" > 0);
 ALTER TABLE user_follows ADD CONSTRAINT user_follows_not_self CHECK ("followerId" <> "followedId");
 ALTER TABLE blocks ADD CONSTRAINT blocks_not_self CHECK ("blockerId" <> "blockedId");
