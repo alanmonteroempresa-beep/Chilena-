@@ -43,6 +43,8 @@ next-env.d.ts
 
 # chilena
 src/generated/
+# Supabase CLI: estado local del link (ref, pooler, versiones)
+supabase/.temp/
 playwright-report/
 test-results/
 public/sw.js
