@@ -22,7 +22,7 @@ Falta:
 - [ ] Repo en GitHub (`main` protegido) y deploy en Vercel con variables (`docs/SETUP.md`)
 - [ ] Migración inicial + migración `extras` contra `chilena-dev` (`docs/SETUP.md` §4) — **dueño del schema**
 - [x] Componentes de marca: Botón lima, ChipMarcador, CartaCrack (estática), Header con selector de rol, Barra inferior con botón central por rol (pantallas 03, 07b, 23, 24) → `src/shared/ui/`, vitrina en `/componentes` (fuera de producción)
-- [ ] Semilla demo (`SEED_DEMO=1`): Liga Dominical Iztapalapa, Apertura 2026, 8 equipos (Dep. Portales, Tigres del Llano, Real Condesa, Juventud Tepito, Atlético Pensil, Unión Doctores, Sporting Narvarte, Halcones Iztapalapa), 16 jugadores por equipo con los apodos del deck (El Chícharo, El Brujo, El Gato, La Roca, La Pulga, Memo…), árbitros (J. Mendoza, R. Pacheco, L. Ortega), Deportivo Cuitláhuac con 3 canchas y **15 jornadas validadas** con eventos realistas
+- [x] Semilla demo (`SEED_DEMO=1`, `prisma/demo/`, probada en Postgres con `prisma dev`): Liga Dominical Iztapalapa, Apertura 2026, 8 equipos (Dep. Portales, Tigres del Llano, Real Condesa, Juventud Tepito, Atlético Pensil, Unión Doctores, Sporting Narvarte, Halcones Iztapalapa), 16 jugadores por equipo con los apodos del deck (El Chícharo, El Brujo, El Gato, La Roca, La Pulga, Memo…), árbitros (J. Mendoza, R. Pacheco, L. Ortega), Deportivo Cuitláhuac con 3 canchas y **15 jornadas validadas** con eventos realistas
 - [ ] Auth: pantalla Entrar (01) con Google + link mágico y callback
 - [ ] PWA completa: Serwist (service worker, página sin conexión) e íconos desde el logo (`public/brand/`)
 - [ ] Sentry y PostHog conectados
