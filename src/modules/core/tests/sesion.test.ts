@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { cuentaDePruebaSchema } from "../schemas";
 import {
   aSlug,
   candidatosUsername,
   destinoTrasEntrar,
   errorDeSupabase,
+  esCuentaDePrueba,
   necesitaCompletarPerfil,
   nombreDesdeAuth,
   rutaSegura,
@@ -107,5 +109,25 @@ describe("errores de Supabase → mensajes de la pantalla", () => {
     expect(errorDeSupabase({ code: "otp_expired" })).toBe("LINK_VENCIDO");
     expect(errorDeSupabase({ code: "algo_raro" })).toBe("FALLA");
     expect(errorDeSupabase(null)).toBe("FALLA");
+  });
+});
+
+describe("cuentas de prueba (flag auth.demo_login)", () => {
+  it("solo entran las cuentas con la marca de la API de administración", () => {
+    expect(esCuentaDePrueba({ cuenta_de_prueba: true })).toBe(true);
+    // Alguien que se registra por fuera no trae la marca (app_metadata solo lo escribe el admin)
+    expect(esCuentaDePrueba({ provider: "email" })).toBe(false);
+    expect(esCuentaDePrueba({ cuenta_de_prueba: "true" })).toBe(false);
+    expect(esCuentaDePrueba(null)).toBe(false);
+  });
+
+  it("el esquema solo acepta correos @prueba.chilena y pide contraseña", () => {
+    expect(
+      cuentaDePruebaSchema.safeParse({ email: " Alan@Prueba.Chilena ", password: "x" }).data?.email,
+    ).toBe("alan@prueba.chilena");
+    expect(cuentaDePruebaSchema.safeParse({ email: "alan@gmail.com", password: "x" }).success).toBe(false);
+    expect(cuentaDePruebaSchema.safeParse({ email: "alan@prueba.chilena", password: "" }).success).toBe(
+      false,
+    );
   });
 });

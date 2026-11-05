@@ -4,6 +4,7 @@ import { Logo } from "@/shared/ui/logo";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { isEnabled } from "../../server/flags";
 import { MENSAJE_ERROR_ENTRADA, rutaSegura, type ErrorDeEntrada } from "../../server/services/sesion";
+import { AccesoPrueba } from "./acceso-prueba";
 import { BotonGoogle } from "./boton-google";
 import { FormularioCorreo } from "./formulario-correo";
 
@@ -71,7 +72,10 @@ async function TarjetaEntrar({ parametros }: { parametros: Parametros }) {
   const next = rutaSegura(primero(p.next)) ?? undefined;
   const codigo = primero(p.error) as ErrorDeEntrada | undefined;
   const aviso = codigo && codigo in MENSAJE_ERROR_ENTRADA ? MENSAJE_ERROR_ENTRADA[codigo] : null;
-  const google = await isEnabled("auth.google");
+  const [google, cuentasDePrueba] = await Promise.all([
+    isEnabled("auth.google"),
+    isEnabled("auth.demo_login"),
+  ]);
 
   return (
     <div className="flex flex-col gap-5 lg:rounded-2xl lg:border lg:border-border lg:bg-card lg:p-8 lg:shadow-sm">
@@ -88,6 +92,7 @@ async function TarjetaEntrar({ parametros }: { parametros: Parametros }) {
         <span className="h-px flex-1 bg-border" />o<span className="h-px flex-1 bg-border" />
       </div>
       <BotonGoogle prendido={google} next={next} />
+      {cuentasDePrueba && <AccesoPrueba next={next} />}
 
       <p className="hidden gap-2.5 rounded-xl border border-brand-blue/30 bg-brand-blue/10 p-4 text-[13px] leading-snug lg:flex">
         <Info aria-hidden className="mt-0.5 size-4 shrink-0 text-brand-blue dark:text-brand-silver" />

@@ -82,7 +82,14 @@ export function nombreDesdeAuth(metadata: Record<string, unknown> | null | undef
 }
 
 export type ErrorDeEntrada =
-  "LINK_VENCIDO" | "SIN_SESION" | "CORREO_INVALIDO" | "SIN_PERMISO_CORREO" | "MUCHOS_INTENTOS" | "FALLA";
+  | "LINK_VENCIDO"
+  | "SIN_SESION"
+  | "CORREO_INVALIDO"
+  | "SIN_PERMISO_CORREO"
+  | "MUCHOS_INTENTOS"
+  | "CREDENCIALES"
+  | "PRUEBA_APAGADA"
+  | "FALLA";
 
 /** Mensajes amables de la pantalla 01 (español de México) */
 export const MENSAJE_ERROR_ENTRADA: Record<ErrorDeEntrada, string> = {
@@ -92,6 +99,8 @@ export const MENSAJE_ERROR_ENTRADA: Record<ErrorDeEntrada, string> = {
   SIN_PERMISO_CORREO: "Por ahora la beta solo manda links a los correos invitados. Pídele acceso a tu liga.",
   MUCHOS_INTENTOS:
     "Ya te mandamos un link hace poquito. Revisa tu correo (y la carpeta de spam) o intenta en unos minutos.",
+  CREDENCIALES: "Correo o contraseña incorrectos.",
+  PRUEBA_APAGADA: "Las cuentas de prueba no están prendidas aquí.",
   FALLA: "Se fue la señal con el servidor. Intenta otra vez.",
 };
 
@@ -112,4 +121,12 @@ export function errorDeSupabase(
   )
     return "LINK_VENCIDO";
   return "FALLA";
+}
+
+/**
+ * ¿Es una cuenta de prueba creada por el equipo? La marca va en `app_metadata`, que solo escribe la API de
+ * administración (scripts/cuentas-de-prueba.ts): nadie puede registrarse con contraseña y entrar por aquí.
+ */
+export function esCuentaDePrueba(appMetadata: Record<string, unknown> | null | undefined): boolean {
+  return appMetadata?.cuenta_de_prueba === true;
 }

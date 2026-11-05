@@ -4,9 +4,16 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { logger } from "@/shared/lib/logger";
 import { createSupabaseServerClient } from "@/shared/lib/supabase/server";
-import { entrarSchema } from "../schemas";
+import { cuentaDePruebaSchema, entrarSchema } from "../schemas";
+import { asegurarUsuario } from "./entrada";
 import { isEnabled } from "./flags";
-import { errorDeSupabase, MENSAJE_ERROR_ENTRADA, rutaSegura } from "./services/sesion";
+import {
+  destinoTrasEntrar,
+  errorDeSupabase,
+  esCuentaDePrueba,
+  MENSAJE_ERROR_ENTRADA,
+  rutaSegura,
+} from "./services/sesion";
 
 export type EstadoEntrar =
   | { estado: "inicial" }
@@ -66,6 +73,48 @@ export async function entrarConGoogle(formData: FormData) {
     redirect("/entrar?error=FALLA");
   }
   redirect(data.url);
+}
+
+export type EstadoCuentaDePrueba =
+  { estado: "inicial" } | { estado: "error"; mensaje: string; email?: string };
+
+/**
+ * Entrar con cuenta de prueba (flag `auth.demo_login`, solo dev y beta interna). Solo inicia sesión:
+ * no hay registro con contraseña. Además del dominio @prueba.chilena, exige la marca de `app_metadata`
+ * que pone la API de administración, así una cuenta creada por fuera no entra por aquí.
+ */
+export async function entrarConCuentaDePrueba(
+  _previo: EstadoCuentaDePrueba,
+  formData: FormData,
+): Promise<EstadoCuentaDePrueba> {
+  if (!(await isEnabled("auth.demo_login")))
+    return { estado: "error", mensaje: MENSAJE_ERROR_ENTRADA.PRUEBA_APAGADA };
+  const datos = cuentaDePruebaSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+    next: formData.get("next") || undefined,
+  });
+  if (!datos.success) {
+    return { estado: "error", mensaje: datos.error.issues[0]?.message ?? MENSAJE_ERROR_ENTRADA.FALLA };
+  }
+  const { email, password, next } = datos.data;
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error || !data.user) {
+    const tipo = errorDeSupabase(error);
+    logger.warn("entrar con cuenta de prueba falló", { code: error?.code, status: error?.status });
+    return {
+      estado: "error",
+      mensaje: MENSAJE_ERROR_ENTRADA[tipo === "MUCHOS_INTENTOS" ? tipo : "CREDENCIALES"],
+      email,
+    };
+  }
+  if (!esCuentaDePrueba(data.user.app_metadata)) {
+    await supabase.auth.signOut();
+    return { estado: "error", mensaje: MENSAJE_ERROR_ENTRADA.CREDENCIALES, email };
+  }
+  const { usuario } = await asegurarUsuario(data.user);
+  redirect(destinoTrasEntrar(usuario, next));
 }
 
 /** Cerrar sesión */
