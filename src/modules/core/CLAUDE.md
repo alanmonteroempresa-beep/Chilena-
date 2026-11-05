@@ -15,6 +15,8 @@ Auth (Supabase), sesión, personas (`User`), roles y selector de rol, reclamar p
 - Permisos por relación, no por rol activo (`docs/PERMISOS.md`).
 - Perfil sin reclamar = `authId` null. Reclamar liga `authId` y migra reacciones anónimas.
 - Nunca serialices datos privados: usa `publicUserSelect`.
+- Entrar (pantalla 01): link mágico al correo; Google con el flag `auth.google`. `/auth/confirm` (`server/entrada.ts`) abre la sesión, crea el `User` la primera vez y manda a Completa tu perfil (sin nombre o apodo) o a su inicio (`server/services/sesion.ts`). `src/proxy.ts` protege `/inicio` y `/perfil`.
+- `createSupabaseServerClient()` llama `connection()`: con `cacheComponents` + `partialPrefetching`, auth-js usa `Date.now()` y no puede correr al prerenderizar.
 
 ## Estructura
 - `index.ts`: **API pública**. Lo único que otros módulos pueden importar (`@/modules/core`).

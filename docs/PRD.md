@@ -86,9 +86,10 @@ Todo lo que se apaga en la beta se controla con **interruptores** (`FeatureFlag`
 - El jugador recibe un link: *"Chícharo, ya llevas 19 goles. Tu perfil ya te estaba esperando."* → **"ES MÍO, RECLAMAR PERFIL"** → entra y el perfil queda ligado a su cuenta.
 - "No soy yo" → avisa al delegado.
 - Un perfil sin reclamar se ve y se sigue igual ("214 personas ya te siguen sin que tú supieras").
+- Si un perfil sin reclamar ya tiene el correo con el que alguien entra (y lo acaba de comprobar con el link), se liga a esa cuenta en lugar de crear otra persona.
 
 ### 4.4 Perfil progresivo (pantalla 40)
-**Registro en 30 segundos**: nombre, apodo y foto. Todo lo demás se pide después con incentivo: *"Tu perfil va al 40% · complétalo y tu carta sube de nivel"*. Un paso por pantalla. El delegado o la liga pueden pedir lo que les falte cuando lo necesiten.
+**Registro en 30 segundos**: nombre, apodo y foto. Al entrar, quien no tiene nombre o apodo va a Completa tu perfil; la foto se puede saltar ("SALTAR" en la pantalla 40). Todo lo demás se pide después con incentivo: *"Tu perfil va al 40% · complétalo y tu carta sube de nivel"*. Un paso por pantalla. El delegado o la liga pueden pedir lo que les falte cuando lo necesiten.
 
 ### 4.5 Datos por rol (de la hoja "Perfiles" del Excel)
 | Dato (Excel) | En Chilena | Quién lo ve |

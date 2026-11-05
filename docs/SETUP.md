@@ -15,9 +15,9 @@ Crea **dos proyectos** en la región más cercana (por ejemplo `us-east-1`):
 En cada uno:
 1. **Database → Extensions:** activa `pg_trgm`, `unaccent`, `pg_cron` y `pg_net`.
 2. **Authentication → Providers:**
-   - **Google:** crea credenciales OAuth en Google Cloud Console y pega Client ID y Secret.
+   - **Google:** crea credenciales OAuth en Google Cloud Console y pega Client ID y Secret. En Google Cloud, el **Authorized redirect URI** es `https://<ref>.supabase.co/auth/v1/callback` y los **orígenes** `https://chilena.vercel.app` y `http://localhost:3000`. Al terminar se prende el flag `auth.google` (tabla `feature_flags`).
    - **Email:** activa el link mágico.
-   - *El correo de Supabase gratis manda muy pocos correos por hora.* Para la beta conecta **Resend** (plan gratis) en Authentication → SMTP.
+   - *El correo de Supabase gratis manda muy pocos correos por hora y solo a los miembros de la organización de Supabase.* Para la beta conecta **Resend** (plan gratis) en Authentication → SMTP. Con SMTP propio ya se pueden editar las plantillas: en **Magic link** y **Confirm sign up** cambia el link a `{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email`. Así el link funciona aunque se abra en otro navegador (`/auth/confirm` acepta `token_hash` y `code`).
 3. **Authentication → URL Configuration:** Site URL = tu URL de Vercel; agrega `http://localhost:3000` en Redirect URLs.
 4. **Storage:** crea el bucket público `avatars` (límite de 1 MB por archivo, solo `image/webp` e `image/jpeg`).
 5. **Project Settings → Database:** copia la cadena del **pooler** (puerto 6543) → `DATABASE_URL` y la **directa** (puerto 5432) → `DIRECT_URL`.
@@ -79,6 +79,19 @@ $$);
 1. New Project → importa el repo de GitHub.
 2. Agrega las variables de `.env.example`: en **Production** las de `chilena-beta`, en **Preview** las de `chilena-dev`.
 3. Cada PR genera su URL de vista previa; `main` se publica en `chilena-xxxx.vercel.app`.
+
+**Así quedó `chilena` (con el CLI, sin mostrar secretos):**
+- Proyecto `alan-montero/chilena`, conectado al repo, rama de producción `main`, URL **https://chilena.vercel.app**.
+- Variables con `scripts/vercel-env.mjs` (lee `.env.local` por dentro y manda cada valor por stdin):
+  ```bash
+  node scripts/vercel-env.mjs vapid https://chilena.vercel.app   # llaves VAPID si faltan + VAPID_SUBJECT
+  node scripts/vercel-env.mjs subir                              # Production y Preview
+  node scripts/vercel-env.mjs app-url https://chilena.vercel.app # NEXT_PUBLIC_APP_URL solo en Production
+  node scripts/vercel-env.mjs nombres                            # qué hay en Vercel (solo nombres)
+  ```
+- Por ahora Production y Preview usan `chilena-dev`; cuando exista `chilena-beta`, Production se cambia a ese proyecto.
+- Las vistas previas piden sesión de Vercel (protección estándar); `chilena.vercel.app` es pública.
+- Supabase → Authentication → URL Configuration: Site URL `https://chilena.vercel.app`; Redirect URLs `https://chilena.vercel.app/**`, `http://localhost:3000/**` y `https://*-alan-montero.vercel.app/**` (vistas previas).
 4. Crons diarios en `vercel.json`:
 ```json
 { "crons": [
