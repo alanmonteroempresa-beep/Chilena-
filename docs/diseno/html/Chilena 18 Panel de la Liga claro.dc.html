@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&family=Big+Shoulders+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0&display=block" rel="stylesheet">
+<style>body{margin:0;background:#03070F;}a{color:#0250B0;}a:hover{color:#07090C;}</style>
+</helmet>
+<div style="display:flex;flex-direction:column;align-items:center;padding:40px;">
+<section id="18-claro" data-screen-label="18 Panel de la Liga claro" style="width:1440px;height:810px;background:#0250B0;padding:34px 48px;box-sizing:border-box;position:relative;font-family:'Barlow',sans-serif;color:#fff;overflow:hidden;">
+  <div style="display:flex;align-items:flex-end;gap:18px;">
+    <span style="font-family:'Big Shoulders Display';font-weight:900;font-size:56px;line-height:.82;color:#d0ff41;">18</span>
+    <span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:56px;line-height:.82;">LIGA · MODO CLARO</span>
+    <span style="font-size:15px;line-height:1.3;max-width:440px;">Quien administra y paga · herramienta operativa · el panel vive dentro de Mi liga · acento gris plata oscuro</span>
+  </div>
+
+  <div style="position:absolute;left:48px;top:112px;width:1344px;border-radius:14px;overflow:hidden;background:#E3E8EE;box-shadow:0 30px 60px rgba(0,0,0,.35);">
+    <div style="height:34px;display:flex;align-items:center;gap:7px;padding:0 14px;position:relative;">
+      <span style="width:11px;height:11px;border-radius:50%;background:#FF5F57;"></span><span style="width:11px;height:11px;border-radius:50%;background:#FEBC2E;"></span><span style="width:11px;height:11px;border-radius:50%;background:#28C840;"></span>
+      <div style="position:absolute;left:50%;top:6px;transform:translateX(-50%);width:380px;height:22px;border-radius:6px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;gap:5px;font-size:11px;color:#5B6878;"><span style="font-family:'Material Symbols Rounded';font-size:12px;">lock</span>admin.chilena.mx/ldi/resumen</div>
+    </div>
+    <div style="zoom:.84;width:1600px;height:733px;display:flex;background:#F4F7FA;border-top:2px solid #4B5868;color:#07090C;">
+      <div style="width:248px;flex:none;background:#FFFFFF;border-right:1px solid #E3E8EE;padding:18px 14px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;">
+        <img src="assets/chilena-logo-claro.png" alt="Chilena" style="width:60px;height:60px;display:block;margin-left:4px;">
+        <div style="border-radius:12px;background:#F4F7FA;border:1px solid #E3E8EE;padding:10px;display:flex;align-items:center;gap:10px;">
+          <div style="width:30px;height:30px;border-radius:7px;background:#4B5868;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;font-size:11px;flex:none;">LDI</div>
+          <div style="flex:1;min-width:0;"><div style="font-family:'Barlow Condensed';font-weight:800;font-size:10px;letter-spacing:.16em;color:#4B5868;">LIGA</div><div style="font-size:13px;font-weight:600;">Liga Dominical Iztapalapa</div></div>
+          <span style="font-family:'Material Symbols Rounded';font-size:18px;color:#5B6878;">unfold_more</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <div style="height:40px;border-radius:10px;padding:0 12px;display:flex;align-items:center;gap:12px;font-size:15px;font-weight:600;"><span style="font-family:'Material Symbols Rounded';font-size:21px;">home</span>Inicio</div>
+          <div style="height:40px;border-radius:10px;padding:0 12px;display:flex;align-items:center;gap:12px;font-size:15px;font-weight:600;"><span style="font-family:'Material Symbols Rounded';font-size:21px;">sensors</span><span style="flex:1;">En vivo</span><span style="min-width:20px;height:20px;border-radius:10px;background:#C62828;color:#FFFFFF;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;">3</span></div>
+          <div style="height:40px;border-radius:10px;padding:0 12px;display:flex;align-items:center;gap:12px;font-size:15px;font-weight:600;background:#4B5868;color:#FFFFFF;"><span style="font-family:'Material Symbols Rounded';font-size:21px;font-variation-settings:'FILL' 1;">stadium</span><span style="flex:1;">Mi liga</span><span style="font-family:'Material Symbols Rounded';font-size:18px;">expand_less</span></div>
+          <div style="margin:4px 0 4px 22px;padding-left:12px;border-left:1.5px solid #E3E8EE;display:flex;flex-direction:column;gap:1px;font-size:14px;">
+            <sc-for list="{{ subnav }}" as="n" hint-placeholder-count="8">
+              <div style="height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;border-radius:8px;background:{{ n.bg }};color:{{ n.color }};font-weight:{{ n.weight }};"><span style="flex:1;">{{ n.label }}</span><sc-if value="{{ n.badge }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px;height:18px;border-radius:9px;background:#FFF3DC;color:#9A5B00;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">{{ n.badge }}</span></sc-if></div>
+            </sc-for>
+          </div>
+          <div style="height:40px;border-radius:10px;padding:0 12px;display:flex;align-items:center;gap:12px;font-size:15px;font-weight:600;"><span style="font-family:'Material Symbols Rounded';font-size:21px;">person</span>Perfil</div>
+        </div>
+        <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:4px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:#C6D0DD;box-shadow:0 0 0 2px #FFFFFF,0 0 0 4px #4B5868;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;font-size:13px;color:#4B5868;">DT</div>
+          <div><div style="font-size:14px;font-weight:600;">Don Toño</div><div style="font-size:12px;color:#5B6878;">Plan Liga Pro · al corriente</div></div>
+        </div>
+      </div>
+
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;">
+        <div style="padding:18px 28px 14px;background:linear-gradient(180deg,rgba(75,88,104,.09),rgba(75,88,104,0));display:flex;align-items:flex-end;justify-content:space-between;gap:16px;">
+          <div><div style="font-size:13px;color:#5B6878;margin-bottom:6px;">Jornada 16 · domingo 18 de octubre · Deportivo Cuitláhuac</div><div style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:56px;line-height:.85;">PANEL DE LA LIGA</div></div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <div style="width:260px;height:42px;border-radius:12px;background:#FFFFFF;border:1px solid #E3E8EE;display:flex;align-items:center;gap:8px;padding:0 12px;box-sizing:border-box;font-size:14px;color:#5B6878;"><span style="font-family:'Material Symbols Rounded';font-size:20px;">search</span>Buscar equipo, jugador o cédula</div>
+            <div style="width:42px;height:42px;border-radius:12px;background:#FFFFFF;border:1px solid #E3E8EE;display:flex;align-items:center;justify-content:center;position:relative;box-sizing:border-box;"><span style="font-family:'Material Symbols Rounded';font-size:21px;">notifications</span><span style="position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:#C62828;color:#FFFFFF;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">5</span></div>
+            <div style="height:42px;padding:0 16px;border-radius:12px;border:1.5px solid #C6D0DD;background:#FFFFFF;display:flex;align-items:center;gap:6px;font-family:'Barlow Condensed';font-weight:800;font-size:13px;letter-spacing:.14em;box-sizing:border-box;white-space:nowrap;"><span style="font-family:'Material Symbols Rounded';font-size:18px;letter-spacing:0;">download</span>EXPORTAR PDF</div>
+            <div style="height:42px;padding:0 16px;border-radius:12px;background:#D0FF41;color:#07090C;box-shadow:inset 0 -3px 0 rgba(7,9,12,.14);display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:13px;letter-spacing:.14em;white-space:nowrap;">+ PROGRAMAR JORNADA</div>
+          </div>
+        </div>
+
+        <div style="padding:0 28px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;">
+          <div style="border-radius:16px;background:#FFFFFF;border:1px solid #E3E8EE;box-shadow:0 1px 2px rgba(7,9,12,.05);padding:14px 16px;display:flex;flex-direction:column;gap:6px;">
+            <span style="font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.16em;color:#5B6878;">COBRADO EN OCTUBRE</span>
+            <div style="display:flex;align-items:baseline;gap:8px;white-space:nowrap;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-size:38px;line-height:.9;">$18,400</span><span style="font-size:13px;color:#5B6878;">de $21,000</span></div>
+            <div style="height:6px;border-radius:3px;background:#EEF2F6;overflow:hidden;"><div style="width:88%;height:100%;background:#4B5868;"></div></div>
+          </div>
+          <div style="border-radius:16px;background:#FFFFFF;border:1px solid #E3E8EE;box-shadow:0 1px 2px rgba(7,9,12,.05);padding:14px 16px;display:flex;flex-direction:column;gap:6px;">
+            <span style="font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.16em;color:#5B6878;">PARTIDOS J16</span>
+            <div style="display:flex;align-items:baseline;gap:8px;white-space:nowrap;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-size:38px;line-height:.9;">4</span><span style="font-size:13px;font-weight:600;color:#9A5B00;">1 sin árbitro</span></div>
+          </div>
+          <div style="border-radius:16px;background:#FFFFFF;border:1px solid #E3E8EE;box-shadow:0 1px 2px rgba(7,9,12,.05);padding:14px 16px;display:flex;flex-direction:column;gap:6px;">
+            <span style="font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.16em;color:#5B6878;">CÉDULAS POR REVISAR</span>
+            <div style="display:flex;align-items:baseline;gap:8px;white-space:nowrap;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-size:38px;line-height:.9;">2</span><span style="font-size:13px;font-weight:600;color:#9A5B00;">1 con corrección</span></div>
+          </div>
+          <div style="border-radius:16px;background:#FFFFFF;border:1px solid #E3E8EE;box-shadow:0 1px 2px rgba(7,9,12,.05);padding:14px 16px;display:flex;flex-direction:column;gap:6px;">
+            <span style="font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.16em;color:#5B6878;">REPORTES DE LA PORRA</span>
+            <div style="display:flex;align-items:baseline;gap:8px;white-space:nowrap;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-size:38px;line-height:.9;color:#C62828;">3</span><span style="font-size:13px;font-weight:600;color:#C62828;">sin atender</span></div>
+          </div>
+        </div>
+
+        <div style="flex:1;min-height:0;padding:14px 28px 22px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:minmax(0,1.3fr) minmax(0,1fr);gap:14px;">
+          <div style="grid-column:span 2;border-radius:16px;background:#FFFFFF;border:1px solid #E3E8EE;box-shadow:0 1px 2px rgba(7,9,12,.05);padding:14px 16px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:26px;line-height:1;flex:1;">CALENDARIO · J16</span>
+              <div style="display:flex;padding:3px;border-radius:10px;background:#EEF2F6;font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.12em;">
+                <span style="height:26px;padding:0 10px;border-radius:7px;display:flex;align-items:center;color:#5B6878;">J15 · CERRADA</span>
+                <span style="height:26px;padding:0 10px;border-radius:7px;display:flex;align-items:center;background:#4B5868;color:#FFFFFF;">J16 · ESTA SEMANA</span>
+                <span style="height:26px;padding:0 10px;border-radius:7px;display:flex;align-items:center;color:#5B6878;">J17</span>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:70px 90px minmax(0,1fr) 130px 120px;gap:8px;padding:6px 8px;font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.14em;color:#5B6878;border-bottom:1px solid #E3E8EE;"><span>HORA</span><span>CANCHA</span><span>PARTIDO</span><span>ÁRBITRO</span><span>ESTADO</span></div>
+            <sc-for list="{{ calendario }}" as="m" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:70px 90px minmax(0,1fr) 130px 120px;gap:8px;align-items:center;height:36px;padding:0 8px;border-bottom:1px solid #EEF2F6;font-size:14px;">
+                <b style="font-family:'Big Shoulders Display';font-size:20px;">{{ m.hora }}</b><span style="color:#5B6878;">{{ m.cancha }}</span><span style="font-weight:600;">{{ m.partido }}</span><span style="color:{{ m.arbColor }};font-weight:{{ m.arbWeight }};">{{ m.arbitro }}</span>
+                <span style="justify-self:start;height:22px;padding:0 8px;border-radius:6px;background:{{ m.chipBg }};color:{{ m.chipFg }};display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:10px;letter-spacing:.12em;">{{ m.estado }}</span>
+              </div>
+            </sc-for>
+            <div style="margin-top:auto;border-radius:12px;background:#FFF3DC;padding:8px 8px 8px 14px;display:flex;align-items:center;gap:10px;font-size:14px;"><span style="font-family:'Material Symbols Rounded';font-size:20px;color:#9A5B00;">warning</span><span style="flex:1;"><b style="color:#9A5B00;">Narvarte vs Pensil sin árbitro.</b> R. Pacheco está libre a las 16:00.</span><span style="height:36px;padding:0 14px;border-radius:10px;background:#D0FF41;color:#07090C;display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:12px;letter-spacing:.14em;">ASIGNAR A R. PACHECO</span></div>
+          </div>
+
+          <div style="border-radius:16px;background:#FFFFFF;border:1px solid #E3E8EE;box-shadow:0 1px 2px rgba(7,9,12,.05);padding:14px 16px;display:flex;flex-direction:column;gap:4px;">
+            <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:26px;line-height:1;flex:1;">EQUIPOS Y PAGOS</span><span style="font-size:12px;color:#5B6878;">8 inscritos</span></div>
+            <sc-for list="{{ pagos }}" as="p" hint-placeholder-count="8">
+              <div style="display:flex;align-items:center;gap:8px;height:30px;border-bottom:1px solid #EEF2F6;font-size:13px;">
+                <span style="width:14px;height:14px;border-radius:3px;background:{{ p.crest }};flex:none;"></span><span style="flex:1;font-weight:600;">{{ p.team }}</span><span style="width:56px;text-align:right;font-weight:600;">{{ p.monto }}</span>
+                <span style="width:80px;display:flex;justify-content:flex-end;"><span style="height:20px;padding:0 7px;border-radius:6px;background:{{ p.chipBg }};color:{{ p.chipFg }};display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:10px;letter-spacing:.12em;">{{ p.estado }}</span></span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="border-radius:16px;background:#FFFFFF;border:1px solid #E3E8EE;box-shadow:0 1px 2px rgba(7,9,12,.05);padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:26px;line-height:1;flex:1;">APLICAR SANCIÓN</span><span style="font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.12em;color:#5B6878;">DESDE LA CÉDULA J14</span></div>
+            <div style="display:flex;align-items:center;gap:10px;border-radius:12px;background:#F4F7FA;padding:10px;"><div style="width:36px;height:36px;border-radius:50%;background:#5B6878;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;font-size:13px;">LR</div><div style="flex:1;"><div style="font-size:14px;font-weight:700;">#4 La Roca · Dep. Portales</div><div style="font-size:12px;color:#5B6878;">Roja directa al 71' · reporte de J. Mendoza</div></div><span style="width:16px;height:22px;border-radius:3px;background:#C62828;"></span></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;"><span style="color:#5B6878;">Partidos</span>
+              <span style="width:34px;height:34px;border-radius:9px;border:1.5px solid #E3E8EE;display:flex;align-items:center;justify-content:center;font-weight:700;box-sizing:border-box;">1</span><span style="width:34px;height:34px;border-radius:9px;background:#4B5868;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-weight:700;">2</span><span style="width:34px;height:34px;border-radius:9px;border:1.5px solid #E3E8EE;display:flex;align-items:center;justify-content:center;font-weight:700;box-sizing:border-box;">3</span><span style="width:34px;height:34px;border-radius:9px;border:1.5px solid #E3E8EE;display:flex;align-items:center;justify-content:center;font-weight:700;box-sizing:border-box;">4</span>
+              <span style="margin-left:auto;color:#5B6878;white-space:nowrap;">Regresa en <b style="color:#07090C;">J17</b></span></div>
+            <div style="margin-top:auto;display:flex;gap:8px;">
+              <span style="flex:1;height:38px;border-radius:10px;background:#C62828;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;font-size:12px;letter-spacing:.14em;">APLICAR: 2 PARTIDOS</span>
+              <span style="height:38px;padding:0 12px;border-radius:10px;background:#25D366;color:#07090C;display:flex;align-items:center;gap:5px;font-family:'Barlow Condensed';font-weight:800;font-size:12px;letter-spacing:.14em;"><span style="font-family:'Material Symbols Rounded';font-size:16px;letter-spacing:0;">chat</span>AVISAR AL DELEGADO</span>
+            </div>
+          </div>
+
+          <div style="border-radius:16px;background:#FFFFFF;border:1px solid #E3E8EE;box-shadow:0 1px 2px rgba(7,9,12,.05);padding:14px 16px;display:flex;flex-direction:column;gap:4px;">
+            <span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:26px;line-height:1;margin-bottom:4px;">CÉDULAS POR REVISAR</span>
+            <sc-for list="{{ cedulas }}" as="c" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #EEF2F6;">
+                <div style="flex:1;min-width:0;"><div style="font-size:14px;font-weight:700;">{{ c.partido }}</div><div style="font-size:12px;color:{{ c.noteColor }};font-weight:600;">{{ c.nota }}</div></div>
+                <span style="height:32px;padding:0 12px;border-radius:9px;background:{{ c.btnBg }};border:1.5px solid {{ c.btnLine }};color:#07090C;display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.14em;box-sizing:border-box;">{{ c.accion }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="border-radius:16px;background:#FFFFFF;border:1px solid #E3E8EE;box-shadow:0 1px 2px rgba(7,9,12,.05);padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:26px;line-height:1;flex:1;">COMENTARIOS REPORTADOS</span><span style="height:22px;padding:0 8px;border-radius:6px;background:#FDECEC;color:#C62828;display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:10px;letter-spacing:.12em;">3 NUEVOS</span></div>
+            <div style="border-radius:12px;background:#F4F7FA;padding:10px 12px;display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;justify-content:space-between;font-size:13px;"><b>@tigre_xx</b><span style="color:#C62828;font-weight:700;white-space:nowrap;">4 reportes</span></div>
+              <div style="font-size:14px;line-height:1.35;">“Ese árbitro está comprado, a la salida nos vemos”</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <span style="height:34px;padding:0 14px;border-radius:9px;background:#07090C;color:#FFFFFF;display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:12px;letter-spacing:.14em;">OCULTAR</span>
+              <span style="height:34px;padding:0 14px;border-radius:9px;border:1.5px solid #C6D0DD;display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:12px;letter-spacing:.14em;box-sizing:border-box;">DEJARLO</span>
+              <span style="margin-left:auto;font-size:12px;color:#5B6878;white-space:nowrap;">+2 más · <b style="color:#4B5868;">Ver todos</b></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const sub = (label, badge, active) => ({ label, badge: badge || '', bg: active ? '#EEF2F6' : 'transparent', color: active ? '#07090C' : '#5B6878', weight: active ? 700 : 500 });
+    const chip = {
+      PROGRAMADO: ['#EEF2F6', '#4B5868'], PENDIENTE: ['#FFF3DC', '#9A5B00'],
+      PAGADO: ['#E3F6EA', '#147A3D'], VENCIDO: ['#FDECEC', '#C62828']
+    };
+    const m = (hora, cancha, partido, arbitro, estado) => ({ hora, cancha, partido, arbitro, estado, arbColor: arbitro === 'Sin asignar' ? '#9A5B00' : '#07090C', arbWeight: arbitro === 'Sin asignar' ? 700 : 500, chipBg: chip[estado][0], chipFg: chip[estado][1] });
+    const p = (team, crest, monto, estado) => ({ team, crest, monto, estado, chipBg: chip[estado][0], chipFg: chip[estado][1] });
+    return {
+      subnav: [sub('Resumen', '', true), sub('Calendario'), sub('Equipos y pagos', '2'), sub('Árbitros', '1'), sub('Sanciones'), sub('Cédulas', '2'), sub('Moderación', '3'), sub('Ajustes')],
+      calendario: [
+        m('09:00', 'Cancha 1', 'Tepito vs Doctores', 'R. Pacheco', 'PROGRAMADO'),
+        m('11:00', 'Cancha 2', 'Portales vs Tigres', 'J. Mendoza', 'PROGRAMADO'),
+        m('14:00', 'Cancha 3', 'Condesa vs Halcones', 'L. Ortega', 'PROGRAMADO'),
+        m('16:00', 'Cancha 1', 'Narvarte vs Pensil', 'Sin asignar', 'PENDIENTE')
+      ],
+      pagos: [
+        p('Dep. Portales', '#0250B0', '$650', 'PAGADO'), p('Tigres del Llano', '#F28C1B', '$650', 'PAGADO'),
+        p('Real Condesa', '#8A1C2B', '$2,500', 'PENDIENTE'), p('Juventud Tepito', '#B8228F', '$650', 'PAGADO'),
+        p('Atlético Pensil', '#1F7A3A', '$650', 'PAGADO'), p('Unión Doctores', '#08716D', '$650', 'PAGADO'),
+        p('Sporting Narvarte', '#5B6878', '$650', 'VENCIDO'), p('Halcones Iztapalapa', '#2D3A4A', '$650', 'PAGADO')
+      ],
+      cedulas: [
+        { partido: 'Portales vs Condesa', nota: 'Corrección pedida: gol del 63\'', noteColor: '#9A5B00', accion: 'REVISAR', btnBg: '#FFFFFF', btnLine: '#C6D0DD' },
+        { partido: 'Tepito vs Doctores', nota: 'Falta firma del delegado visitante', noteColor: '#9A5B00', accion: 'REVISAR', btnBg: '#FFFFFF', btnLine: '#C6D0DD' },
+        { partido: 'Tigres vs Narvarte', nota: 'Firmada y lista para publicar', noteColor: '#147A3D', accion: 'PUBLICAR', btnBg: '#D0FF41', btnLine: '#D0FF41' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

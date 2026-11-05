@@ -132,5 +132,5 @@ Personas en `/j/[username]` (cualquier rol, como el deck). Panel de liga en `/ad
 | 55 | Mis asignaciones (árbitro) | `/arbitro/asignaciones` | partidos |
 | 56 | Cédula al final del partido | `/arbitro/cedula/[matchId]` | partidos |
 
-## 7. Cómo exportar los diseños para Claude Code
-En Claude Design, exporta cada pantalla como PNG (celular y escritorio) con el nombre `NN-nombre-celular.png` / `NN-nombre-escritorio.png` (ej. `03-jugador-celular.png`) y ponlas en `docs/diseno/`. Si Claude Design permite exportar HTML, guárdalo en `docs/diseno/html/`: es la mejor referencia para que Claude Code copie medidas y espaciados.
+## 7. Diseños exportados
+Ya están en `docs/diseno/`: `pantallas/` (un PNG por pantalla), `html/` (export de Claude Design con medidas exactas) e índice en `docs/diseno/README.md`. Las 01–24 vienen del deck de Pelotazo: aplica siempre el rebrand y la navegación final que se explican en ese README.

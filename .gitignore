@@ -52,3 +52,5 @@ public/swe-worker-*.js
 # Archivos pesados de referencia (compártanlos por fuera de git)
 docs/fuentes/*.pptx
 chilena-kit.zip
+docs/diseno/*.zip
+.chilena-*.tar.gz

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&family=Big+Shoulders+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0&display=block" rel="stylesheet">
+<style>body{margin:0;background:#03070F;}a{color:#D0FF41;}a:hover{color:#fff;}</style>
+</helmet>
+<div style="display:flex;flex-direction:column;align-items:center;gap:40px;padding:40px;">
+<section id="28" data-screen-label="28 Colección de insignias" style="width:1440px;height:810px;background:#0250B0;padding:34px 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:22px;font-family:'Barlow',sans-serif;color:#fff;overflow:hidden;">
+  <div style="display:flex;align-items:flex-end;gap:18px;">
+    <span style="font-family:'Big Shoulders Display';font-weight:900;font-size:56px;line-height:.82;color:#D0FF41;">28</span>
+    <span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:56px;line-height:.82;">COLECCIÓN DE INSIGNIAS</span>
+    <span style="font-size:15px;line-height:1.3;max-width:460px;">Perfil de El Chícharo · las ganadas a color con su rareza, las que faltan en gris con su progreso · 10 de 21</span>
+  </div>
+  <div style="display:flex;justify-content:space-between;">
+
+    <sc-for list="{{ phones }}" as="ph" hint-placeholder-count="3">
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:10px;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:22px;">{{ ph.title }}</span><span style="font-size:13px;">{{ ph.sub }}</span></div>
+      <div style="width:300px;height:628px;border-radius:46px;background:#000;padding:10px;box-sizing:border-box;box-shadow:0 30px 60px rgba(0,0,0,.35);">
+        <div style="width:280px;height:608px;border-radius:37px;overflow:hidden;position:relative;">
+          <div style="zoom:.7778;width:360px;height:782px;background:#07090C;color:#F4F7FA;position:relative;display:flex;flex-direction:column;">
+            <div style="position:absolute;left:0;right:0;top:0;height:240px;background:linear-gradient(180deg,rgba(91,155,255,.16),rgba(91,155,255,0));pointer-events:none;"></div>
+            <div style="height:46px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px;font-size:15px;font-weight:600;position:relative;"><span>{{ ph.time }}</span><div style="position:absolute;left:50%;top:10px;transform:translateX(-50%);width:110px;height:30px;border-radius:16px;background:#000;"></div><span style="font-family:'Material Symbols Rounded';font-size:17px;letter-spacing:2px;">signal_cellular_alt wifi battery_full</span></div>
+            <div style="height:54px;flex:none;display:flex;align-items:center;gap:10px;padding:0 16px;position:relative;">
+              <img src="assets/chilena-logo-azul.png" alt="Chilena" style="width:44px;height:44px;display:block;">
+              <span style="flex:1;"></span>
+              <div style="width:40px;height:40px;border-radius:12px;background:#10141A;border:1px solid #242C36;box-sizing:border-box;display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:21px;">search</span></div>
+              <div style="width:40px;height:40px;border-radius:12px;background:#10141A;border:1px solid #242C36;box-sizing:border-box;display:flex;align-items:center;justify-content:center;position:relative;"><span style="font-family:'Material Symbols Rounded';font-size:21px;">notifications</span><span style="position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:#FF5247;color:#060709;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">3</span></div>
+            </div>
+            <sc-if value="{{ ph.hero }}" hint-placeholder-val="{{ true }}"><div style="flex:none;display:flex;align-items:center;gap:12px;padding:4px 16px 10px;position:relative;">
+              <div style="width:52px;height:52px;border-radius:50%;background:#C6D0DD;box-shadow:0 0 0 2px #07090C,0 0 0 4px #5B9BFF;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;font-size:18px;color:#023B83;flex:none;">CH</div>
+              <div style="flex:1;min-width:0;"><div style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:28px;line-height:.9;">EL CHÍCHARO</div><div style="font-size:12px;color:#8E9AAB;">Delantero #9 · Dep. Portales · 1.8k</div></div>
+              <div style="text-align:right;"><div style="font-family:'Big Shoulders Display';font-weight:900;font-size:30px;line-height:.85;color:#D0FF41;">10<span style="color:#8E9AAB;font-size:18px;">/21</span></div><div style="font-family:'Barlow Condensed';font-weight:800;font-size:10px;letter-spacing:.14em;color:#8E9AAB;">INSIGNIAS</div></div>
+            </div></sc-if>
+            <div style="flex:none;display:flex;gap:22px;padding:0 18px;border-bottom:1px solid #242C36;font-family:'Barlow Condensed';font-weight:800;font-size:15px;letter-spacing:.1em;position:relative;">
+              <span style="padding:10px 0 9px;color:#8E9AAB;">CARTA</span><span style="padding:10px 0 9px;color:#5B9BFF;border-bottom:3px solid #5B9BFF;">INSIGNIAS</span><span style="padding:10px 0 9px;color:#8E9AAB;">GOLAZOS</span><span style="padding:10px 0 9px;color:#8E9AAB;">STATS</span>
+            </div>
+            <div style="flex:1;min-height:0;overflow:hidden;padding:{{ ph.pad }};display:flex;flex-direction:column;gap:14px;">
+              <sc-for list="{{ ph.cats }}" as="c" hint-placeholder-count="3">
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <div style="display:flex;align-items:center;gap:8px;"><span style="width:10px;height:10px;border-radius:3px;background:{{ c.color }};"></span><span style="flex:1;font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:22px;line-height:1;">{{ c.name }}</span><span style="font-family:'Barlow Condensed';font-weight:800;font-size:12px;letter-spacing:.12em;color:#8E9AAB;">{{ c.count }}</span></div>
+                  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;">
+                    <sc-for list="{{ c.items }}" as="b" hint-placeholder-count="3">
+                      <div style="border-radius:14px;background:{{ b.tile }};border:1px solid {{ b.line }};padding:8px 5px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;">
+                        <div style="width:46px;height:52px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:{{ b.medal }};display:flex;align-items:center;justify-content:center;">
+                          <span style="font-family:'Material Symbols Rounded';font-size:24px;font-variation-settings:'FILL' 1;color:{{ b.iconColor }};">{{ b.icon }}</span>
+                        </div>
+                        <span style="font-size:12px;font-weight:700;line-height:1.15;color:{{ b.nameColor }};min-height:28px;display:flex;align-items:center;">{{ b.name }}</span>
+                        <span style="height:18px;padding:0 6px;border-radius:5px;background:{{ b.chipBg }};color:{{ b.chipFg }};display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:10px;letter-spacing:.04em;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;">{{ b.sub }}</span>
+                        <div style="align-self:stretch;height:4px;border-radius:2px;background:#242C36;overflow:hidden;opacity:{{ b.barOp }};"><div style="width:{{ b.pct }};height:100%;background:#8E9AAB;border-radius:2px;"></div></div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+              <sc-if value="{{ ph.extra }}" hint-placeholder-val="{{ false }}">
+                <div style="border-radius:16px;background:linear-gradient(135deg,rgba(208,255,65,.16),#10141A 70%);border:1px solid #3B4A1A;padding:12px;display:flex;flex-direction:column;gap:8px;">
+                  <span style="font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.16em;color:#D0FF41;">LA QUE TIENES MÁS CERCA</span>
+                  <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:30px;line-height:.9;flex:1;">50 GOLES · TE FALTAN 3</span><span style="font-family:'Big Shoulders Display';font-weight:900;font-size:22px;">47/50</span></div>
+                  <div style="height:6px;border-radius:3px;background:#242C36;overflow:hidden;"><div style="width:94%;height:100%;background:#D0FF41;"></div></div>
+                  <span style="font-size:12px;color:#8E9AAB;">El domingo vs Tigres puede caer. 214 te avisarán si pasa 🔔</span>
+                </div>
+              </sc-if>
+            </div>
+            <div style="position:absolute;left:0;right:0;bottom:0;height:86px;background:#07090C;border-top:1px solid #242C36;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:8px 4px 0;box-sizing:border-box;">
+              <sc-for list="{{ navPerfil }}" as="t" hint-placeholder-count="5">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:{{ t.color }};font-size:11px;font-weight:700;margin-top:{{ t.mt }};white-space:nowrap;"><span style="width:{{ t.w }};height:{{ t.w }};border-radius:50%;background:{{ t.bg }};color:{{ t.ic }};box-shadow:{{ t.sh }};display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:{{ t.fs }};font-variation-settings:'FILL' {{ t.fill }};">{{ t.icon }}</span></span>{{ t.label }}</div>
+              </sc-for>
+              <div style="position:absolute;left:50%;bottom:7px;transform:translateX(-50%);width:120px;height:5px;border-radius:3px;background:#F4F7FA;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </sc-for>
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:10px;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:22px;">DETALLE</span><span style="font-size:13px;">Toca una insignia</span></div>
+      <div style="width:300px;height:628px;border-radius:46px;background:#000;padding:10px;box-sizing:border-box;box-shadow:0 30px 60px rgba(0,0,0,.35);">
+        <div style="width:280px;height:608px;border-radius:37px;overflow:hidden;position:relative;">
+          <div style="zoom:.7778;width:360px;height:782px;background:#030406;color:#F4F7FA;position:relative;display:flex;flex-direction:column;">
+            <div style="height:46px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px;font-size:15px;font-weight:600;position:relative;opacity:.5;"><span>21:02</span><div style="position:absolute;left:50%;top:10px;transform:translateX(-50%);width:110px;height:30px;border-radius:16px;background:#000;"></div><span style="font-family:'Material Symbols Rounded';font-size:17px;letter-spacing:2px;">signal_cellular_alt wifi battery_full</span></div>
+            <div style="position:absolute;left:0;right:0;bottom:0;top:96px;border-radius:28px 28px 0 0;background:#10141A;border-top:1px solid #242C36;padding:10px 18px 30px;display:flex;flex-direction:column;align-items:center;gap:12px;overflow:hidden;">
+              <div style="position:absolute;left:0;right:0;top:0;height:300px;background:radial-gradient(60% 60% at 50% 35%,rgba(208,255,65,.22),rgba(16,20,26,0));pointer-events:none;"></div>
+              <span style="width:44px;height:5px;border-radius:3px;background:#2D3A4A;"></span>
+              <div style="width:150px;height:168px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:linear-gradient(160deg,#E8FF9A,#D0FF41 45%,#8FB51C);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;margin-top:6px;position:relative;">
+                <span style="font-family:'Material Symbols Rounded';font-size:62px;font-variation-settings:'FILL' 1;color:#07090C;">sports_soccer</span>
+                <span style="font-family:'Big Shoulders Display';font-weight:900;font-size:30px;line-height:.8;color:#07090C;">×3</span>
+              </div>
+              <span style="font-family:'Barlow Condensed';font-weight:800;font-size:12px;letter-spacing:.16em;color:#D0FF41;position:relative;">GOLES · GANADA EN LA J11</span>
+              <span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:54px;line-height:.85;position:relative;">HAT-TRICK</span>
+              <span style="font-size:14px;line-height:1.35;color:#8E9AAB;text-align:center;position:relative;">3 goles en un partido · vs Sporting Narvarte, Cancha 1. El árbitro L. Ortega lo capturó a las 12:41.</span>
+              <div style="align-self:stretch;border-radius:16px;background:#181E26;padding:12px;display:flex;align-items:center;gap:12px;position:relative;">
+                <span style="font-family:'Big Shoulders Display';font-weight:900;font-size:44px;line-height:.85;color:#D0FF41;">8%</span>
+                <div style="flex:1;"><div style="font-size:14px;font-weight:700;">Sólo el 8% de la liga la tiene</div><div style="display:flex;align-items:center;gap:6px;margin-top:4px;"><div style="display:flex;"><span style="width:22px;height:22px;border-radius:50%;background:#F28C1B;border:2px solid #181E26;"></span><span style="width:22px;height:22px;border-radius:50%;background:#8A1C2B;border:2px solid #181E26;margin-left:-7px;"></span><span style="width:22px;height:22px;border-radius:50%;background:#2D3A4A;border:2px solid #181E26;margin-left:-7px;"></span></div><span style="font-size:12px;color:#8E9AAB;">El Tanque, El Pelón y 9 más</span></div></div>
+              </div>
+              <div style="align-self:stretch;border-radius:16px;border:1px dashed #2D3A4A;padding:10px 12px;display:flex;align-items:center;gap:10px;position:relative;">
+                <span style="font-family:'Material Symbols Rounded';font-size:22px;color:#8E9AAB;">military_tech</span>
+                <div style="flex:1;"><div style="font-size:13px;font-weight:700;">Siguiente: 50 goles</div><div style="height:6px;border-radius:3px;background:#242C36;margin-top:6px;overflow:hidden;"><div style="width:94%;height:100%;background:#D0FF41;"></div></div></div>
+                <span style="font-family:'Big Shoulders Display';font-weight:900;font-size:20px;white-space:nowrap;">47/50</span>
+              </div>
+              <div style="align-self:stretch;margin-top:auto;display:flex;gap:8px;position:relative;">
+                <div style="flex:1;height:46px;border-radius:12px;background:#D0FF41;color:#07090C;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Barlow Condensed';font-weight:800;font-size:14px;letter-spacing:.14em;"><span style="font-family:'Material Symbols Rounded';font-size:19px;letter-spacing:0;">ios_share</span>PRESUMIR</div>
+                <div style="flex:1;height:46px;border-radius:12px;background:#25D366;color:#07090C;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Barlow Condensed';font-weight:800;font-size:14px;letter-spacing:.14em;"><span style="font-family:'Material Symbols Rounded';font-size:19px;letter-spacing:0;">chat</span>A MI ESTADO</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  nav(active, role) {
+    const C = { jugador: '#5B9BFF', delegado: '#B38CFF', arbitro: '#3FE0D0', aficionado: '#FF7AD9' };
+    const center = { delegado: ['checklist', 'Pase de lista'], arbitro: ['sports', 'Capturar'] }[role] || ['add', 'Publicar'];
+    const it = (icon, label) => ({ icon, label, color: label === active ? C[role] : '#8E9AAB', fill: label === active ? 1 : 0, bg: 'transparent', ic: 'currentColor', w: '28px', fs: '24px', mt: '0px', sh: 'none' });
+    return [it('home', 'Inicio'), it('sensors', 'En vivo'),
+      { icon: center[0], label: center[1], color: '#F4F7FA', fill: 0, bg: '#D0FF41', ic: '#07090C', w: '52px', fs: '28px', mt: '-22px', sh: '0 0 0 5px #07090C' },
+      it('stadium', 'Mi liga'), it('person', 'Perfil')];
+  }
+  renderVals() {
+    const cat = (name, color, medal, iconColor, items) => {
+      const its = items.map(([icon, n, earned, sub, pct]) => earned
+        ? { icon, name: n, sub, tile: '#10141A', line: '#242C36', medal, iconColor, nameColor: '#F4F7FA', chipBg: '#D0FF41', chipFg: '#07090C', pct: '0%', barOp: 0 }
+        : { icon, name: n, sub, tile: '#0B0E12', line: '#181E26', medal: '#181E26', iconColor: '#3A4452', nameColor: '#8E9AAB', chipBg: '#181E26', chipFg: '#8E9AAB', pct: (pct || 0) + '%', barOp: 1 });
+      return { name, color, count: its.filter(i => i.chipBg === '#D0FF41').length + ' DE ' + its.length, items: its };
+    };
+    const goles = cat('GOLES', '#D0FF41', 'linear-gradient(160deg,#E8FF9A,#D0FF41 50%,#8FB51C)', '#07090C', [
+      ['sports_soccer', 'Primer gol', true, '41% LA TIENE'], ['looks_two', 'Doblete', true, '22% LA TIENE'], ['local_fire_department', 'Hat-trick', true, 'SÓLO EL 8%'],
+      ['emoji_events', 'Goleador del torneo', false, 'VAS 1º · J15/18', 83], ['military_tech', '50 goles', false, '47 DE 50', 94]]);
+    const portero = cat('PORTERO', '#3FE0D0', 'linear-gradient(160deg,#9FF5EC,#3FE0D0 50%,#08716D)', '#07090C', [
+      ['shield', 'Valla invicta', false, 'PONTE GUANTES', 0], ['back_hand', 'Penal atajado', false, '0 DE 1', 0], ['fort', 'El Muro', false, 'NI LO INTENTES 😅', 0]]);
+    const constancia = cat('CONSTANCIA', '#5B9BFF', 'linear-gradient(160deg,#B9D4FF,#5B9BFF 50%,#0250B0)', '#07090C', [
+      ['event_available', '5 domingos', true, '58% LA TIENE'], ['calendar_month', '12 domingos', true, '24% LA TIENE'], ['date_range', '25 domingos', false, '19 DE 25', 76],
+      ['stadium', '100 partidos', false, '62 DE 100', 62]]);
+    const votadas = cat('VOTADAS', '#E8C46A', 'linear-gradient(160deg,#FFF1C2,#E8C46A 50%,#B8913A)', '#2A1E05', [
+      ['star', 'MVP', true, '12% · ×3'], ['bolt', 'Golazo de la jornada', true, '6% · ×1'], ['groups', 'Once de la jornada', true, '15% · ×4']]);
+    const equipo = cat('EQUIPO', '#FFB020', 'linear-gradient(160deg,#FFDFA0,#FFB020 50%,#B87500)', '#2A1A00', [
+      ['trophy', 'Campeón', false, 'A 3 JORNADAS', 83], ['workspace_premium', 'Subcampeón', true, 'CLAUSURA 2025'], ['verified', 'Invictos', false, '8 DE 15', 53]]);
+    const fair = cat('FAIR PLAY', '#C6D0DD', 'linear-gradient(160deg,#FFFFFF,#C6D0DD 50%,#8E9AAB)', '#0B1626', [
+      ['handshake', 'Fair play', false, '4 🟨 · EN CLAUSURA', 0]]);
+    const esp = cat('ESPECIALES', '#D0FF41', 'linear-gradient(160deg,#0A63D6,#0250B0 50%,#D0FF41 140%)', '#D0FF41', [
+      ['sports_gymnastics', 'De chilena', false, 'EL BRUJO YA LA TIENE 👀', 0], ['rocket_launch', 'Pionero', true, 'SÓLO EL 1%']]);
+    return {
+      navPerfil: this.nav('Perfil', 'jugador'),
+      phones: [
+        { title: 'COLECCIÓN', sub: 'Goles y portero', time: '21:00', hero: true, pad: '12px 14px 100px', cats: [goles, portero] },
+        { title: 'SIGUE…', sub: 'Constancia y votadas', time: '21:01', hero: false, pad: '12px 14px 100px', cats: [constancia, votadas] },
+        { title: 'Y AL FINAL', sub: 'Equipo, fair play, especiales', time: '21:01', hero: false, extra: true, pad: '12px 14px 100px', cats: [equipo, { name: 'FAIR PLAY Y ESPECIALES', color: '#C6D0DD', count: '1 DE 3', items: [...fair.items, ...esp.items] }] }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&family=Big+Shoulders+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0&display=block" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>body{margin:0;background:#03070F;}a{color:#D0FF41;}a:hover{color:#fff;}</style>
+</helmet>
+<div style="display:flex;flex-direction:column;align-items:center;gap:40px;padding:40px;">
+<section id="29" data-screen-label="29 Tipo de gol" style="width:1440px;height:810px;background:#0250B0;padding:34px 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:22px;font-family:'Barlow',sans-serif;color:#fff;overflow:hidden;">
+  <div style="display:flex;align-items:flex-end;gap:18px;">
+    <span style="font-family:'Big Shoulders Display';font-weight:900;font-size:56px;line-height:.82;color:#D0FF41;">29</span>
+    <span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:56px;line-height:.82;">TIPO DE GOL</span>
+    <span style="font-size:15px;line-height:1.3;max-width:520px;">El árbitro lo marca en un toque al capturar · la etiqueta viaja al feed, a la timeline y a la plantilla para compartir</span>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+
+    <div style="width:300px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:10px;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:22px;">LAS 6 ETIQUETAS</span></div>
+      <div style="border-radius:20px;background:#07090C;padding:16px;display:flex;flex-direction:column;gap:8px;box-shadow:0 30px 60px rgba(0,0,0,.3);">
+        <sc-for list="{{ tipos }}" as="t" hint-placeholder-count="6">
+          <div style="display:flex;align-items:center;gap:10px;padding:6px;border-radius:12px;background:#10141A;">
+            <span style="width:38px;height:38px;border-radius:10px;background:{{ t.bg }};color:{{ t.fg }};display:flex;align-items:center;justify-content:center;flex:none;"><span style="font-family:'Material Symbols Rounded';font-size:22px;font-variation-settings:'FILL' 1;">{{ t.icon }}</span></span>
+            <div style="flex:1;min-width:0;"><div style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:20px;line-height:1;color:#F4F7FA;">{{ t.name }}</div><div style="font-size:11px;color:#8E9AAB;">{{ t.stat }}</div></div>
+            <span style="height:22px;padding:0 7px;border-radius:6px;background:{{ t.bg }};color:{{ t.fg }};display:flex;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:10px;letter-spacing:.12em;white-space:nowrap;">{{ t.rare }}</span>
+          </div>
+        </sc-for>
+        <div style="border-top:1px solid #242C36;margin-top:4px;padding-top:12px;display:flex;flex-direction:column;gap:8px;">
+          <span style="font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.16em;color:#3FE0D0;">ÁRBITRO · AL CAPTURAR EL GOL</span>
+          <span style="font-size:13px;color:#F4F7FA;">¿Cómo fue? <span style="color:#8E9AAB;">(opcional, un toque)</span></span>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.1em;">
+            <span style="height:30px;padding:0 10px;border-radius:99px;border:1.5px solid #242C36;color:#F4F7FA;display:flex;align-items:center;">NORMAL</span>
+            <span style="height:30px;padding:0 10px;border-radius:99px;border:1.5px solid #242C36;color:#F4F7FA;display:flex;align-items:center;">CABEZA</span>
+            <span style="height:30px;padding:0 10px;border-radius:99px;border:1.5px solid #242C36;color:#F4F7FA;display:flex;align-items:center;">PENAL</span>
+            <span style="height:30px;padding:0 10px;border-radius:99px;background:#3FE0D0;color:#07090C;display:flex;align-items:center;">CHILENA ✓</span>
+            <span style="height:30px;padding:0 10px;border-radius:99px;border:1.5px solid #242C36;color:#F4F7FA;display:flex;align-items:center;">MÁS…</span>
+          </div>
+          <span style="font-size:11px;line-height:1.35;color:#8E9AAB;">Panenka y "de fuera del área" los puede proponer el delegado; el árbitro confirma.</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:10px;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:22px;">EN EL FEED</span><span style="font-size:13px;">Tarjeta de golazo</span></div>
+      <div style="width:300px;height:628px;border-radius:46px;background:#000;padding:10px;box-sizing:border-box;box-shadow:0 30px 60px rgba(0,0,0,.35);">
+        <div style="width:280px;height:608px;border-radius:37px;overflow:hidden;position:relative;">
+          <div style="zoom:.7778;width:360px;height:782px;background:#07090C;color:#F4F7FA;position:relative;display:flex;flex-direction:column;">
+            <div style="height:46px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px;font-size:15px;font-weight:600;position:relative;"><span>15:54</span><div style="position:absolute;left:50%;top:10px;transform:translateX(-50%);width:110px;height:30px;border-radius:16px;background:#000;"></div><span style="font-family:'Material Symbols Rounded';font-size:17px;letter-spacing:2px;">signal_cellular_alt wifi battery_full</span></div>
+            <div style="height:54px;flex:none;display:flex;align-items:center;gap:10px;padding:0 16px;">
+              <img src="assets/chilena-logo-azul.png" alt="Chilena" style="width:44px;height:44px;display:block;">
+              <span style="flex:1;"></span>
+              <div style="width:40px;height:40px;border-radius:12px;background:#10141A;border:1px solid #242C36;box-sizing:border-box;display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:21px;">search</span></div>
+              <div style="width:40px;height:40px;border-radius:12px;background:#10141A;border:1px solid #242C36;box-sizing:border-box;display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:21px;">notifications</span></div>
+            </div>
+            <div style="flex:none;display:flex;gap:22px;padding:0 18px;border-bottom:1px solid #242C36;font-family:'Barlow Condensed';font-weight:800;font-size:15px;letter-spacing:.1em;">
+              <span style="padding:10px 0 9px;color:#8E9AAB;">PARA TI</span><span style="padding:10px 0 9px;color:#FF7AD9;border-bottom:3px solid #FF7AD9;">GOLAZOS</span><span style="padding:10px 0 9px;color:#8E9AAB;">SIGUIENDO</span>
+            </div>
+            <div style="flex:1;min-height:0;overflow:hidden;padding:12px 14px 100px;display:flex;flex-direction:column;gap:12px;">
+              <div style="border-radius:18px;background:#10141A;border:1px solid #242C36;overflow:hidden;">
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;"><span style="width:34px;height:34px;border-radius:50%;background:#2D3A4A;box-shadow:0 0 0 2px #10141A,0 0 0 4px #FF7AD9;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;font-size:12px;">BR</span><div style="flex:1;"><div style="font-size:14px;font-weight:700;">El Brujo <span style="color:#8E9AAB;font-weight:500;">#10 · Portales</span></div><div style="font-size:12px;color:#8E9AAB;">hace 2 min · Cancha 3</div></div></div>
+                <div style="height:250px;position:relative;background:#0B1424;">
+                  <div style="position:absolute;inset:0;"><image-slot id="tipo-feed-brujo" shape="rect" placeholder="Foto o video del golazo" style="width:330px;height:250px;color:#FFFFFF;"></image-slot></div>
+                  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,9,12,0) 35%,rgba(7,9,12,.85));pointer-events:none;"></div>
+                  <div style="position:absolute;left:12px;top:12px;display:flex;gap:6px;pointer-events:none;"><span style="height:28px;padding:0 10px;border-radius:8px;background:#D0FF41;color:#07090C;display:flex;align-items:center;gap:5px;font-family:'Barlow Condensed';font-weight:800;font-size:13px;letter-spacing:.12em;"><span style="font-family:'Material Symbols Rounded';font-size:18px;font-variation-settings:'FILL' 1;letter-spacing:0;">sports_gymnastics</span>DE CHILENA</span><span style="height:28px;padding:0 10px;border-radius:8px;background:rgba(7,9,12,.7);color:#FFFFFF;display:flex;align-items:center;font-family:'Big Shoulders Display';font-weight:900;font-size:18px;">87'</span></div>
+                  <div style="position:absolute;left:12px;right:12px;bottom:12px;pointer-events:none;"><div style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:46px;line-height:.85;">EL BRUJO SE <span style="color:#D0FF41;">AVENTÓ</span></div><div style="font-family:'Barlow Condensed';font-weight:800;font-size:13px;letter-spacing:.12em;margin-top:6px;">PORTALES <span style="background:#FFFFFF;color:#07090C;padding:0 5px;border-radius:3px;">3–2</span> CONDESA</div></div>
+                </div>
+                <div style="display:flex;gap:6px;align-items:center;padding:10px 12px;font-size:13px;font-weight:600;">
+                  <span style="height:30px;padding:0 10px;border-radius:99px;background:#D0FF41;color:#07090C;display:flex;align-items:center;white-space:nowrap;">🔥 2.3k</span><span style="height:30px;padding:0 10px;border-radius:99px;background:#181E26;display:flex;align-items:center;white-space:nowrap;">💬 147</span>
+                  <span style="font-size:11px;color:#8E9AAB;flex:1;line-height:1.2;">1 de 12 chilenas en toda la liga</span>
+                </div>
+              </div>
+              <div style="border-radius:16px;background:#10141A;border:1px solid #242C36;padding:10px;display:flex;gap:10px;align-items:center;">
+                <div style="width:72px;height:72px;border-radius:12px;background:#0B1424;position:relative;overflow:hidden;flex:none;"><image-slot id="tipo-feed-chicharo" shape="rect" placeholder="Foto" style="width:72px;height:72px;color:#FFFFFF;"></image-slot></div>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;">
+                  <span style="align-self:flex-start;height:22px;padding:0 8px;border-radius:6px;background:#D0FF41;color:#07090C;display:flex;align-items:center;gap:4px;font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.12em;"><span style="font-family:'Material Symbols Rounded';font-size:15px;font-variation-settings:'FILL' 1;letter-spacing:0;">moving</span>PANENKA · 63'</span>
+                  <span style="font-size:14px;font-weight:700;">El Chícharo la picó y ni el portero se movió</span>
+                  <span style="font-size:12px;color:#8E9AAB;">🔥 312 · Doña Lupe: “¡Con esa calma!” 😂</span>
+                </div>
+              </div>
+            </div>
+            <div style="position:absolute;left:0;right:0;bottom:0;height:86px;background:#07090C;border-top:1px solid #242C36;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:8px 4px 0;box-sizing:border-box;">
+              <sc-for list="{{ navAfi }}" as="t" hint-placeholder-count="5">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:{{ t.color }};font-size:11px;font-weight:700;margin-top:{{ t.mt }};white-space:nowrap;"><span style="width:{{ t.w }};height:{{ t.w }};border-radius:50%;background:{{ t.bg }};color:{{ t.ic }};box-shadow:{{ t.sh }};display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:{{ t.fs }};font-variation-settings:'FILL' {{ t.fill }};">{{ t.icon }}</span></span>{{ t.label }}</div>
+              </sc-for>
+              <div style="position:absolute;left:50%;bottom:7px;transform:translateX(-50%);width:120px;height:5px;border-radius:3px;background:#F4F7FA;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:10px;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:22px;">EN LA TIMELINE</span><span style="font-size:13px;">Portales 3–2 Condesa</span></div>
+      <div style="width:300px;height:628px;border-radius:46px;background:#000;padding:10px;box-sizing:border-box;box-shadow:0 30px 60px rgba(0,0,0,.35);">
+        <div style="width:280px;height:608px;border-radius:37px;overflow:hidden;position:relative;">
+          <div style="zoom:.7778;width:360px;height:782px;background:#07090C;color:#F4F7FA;position:relative;display:flex;flex-direction:column;">
+            <div style="height:46px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px;font-size:15px;font-weight:600;position:relative;"><span>16:02</span><div style="position:absolute;left:50%;top:10px;transform:translateX(-50%);width:110px;height:30px;border-radius:16px;background:#000;"></div><span style="font-family:'Material Symbols Rounded';font-size:17px;letter-spacing:2px;">signal_cellular_alt wifi battery_full</span></div>
+            <div style="height:52px;flex:none;display:flex;align-items:center;gap:8px;padding:0 12px;">
+              <span style="font-family:'Material Symbols Rounded';font-size:24px;">arrow_back</span>
+              <span style="flex:1;font-family:'Barlow Condensed';font-weight:800;font-size:15px;letter-spacing:.16em;">J15 · CANCHA 3</span>
+              <div style="width:40px;height:40px;border-radius:12px;background:#10141A;border:1px solid #242C36;box-sizing:border-box;display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:21px;">notifications</span></div>
+            </div>
+            <div style="flex:none;margin:0 14px;border-radius:18px;background:linear-gradient(90deg,rgba(2,80,176,.45),#10141A 50%,rgba(138,28,43,.45));border:1px solid #242C36;padding:12px;display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;width:90px;"><span style="width:36px;height:38px;border-radius:7px 7px 16px 16px;background:#0250B0;border:2px solid #FFFFFF;border-top-width:8px;box-sizing:border-box;"></span><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:18px;">PORTALES</span></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-size:46px;line-height:.9;color:#D0FF41;">3–2</span><span style="font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.16em;color:#8E9AAB;">FINAL</span></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;width:90px;"><span style="width:36px;height:38px;border-radius:7px 7px 16px 16px;background:#8A1C2B;box-sizing:border-box;"></span><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:18px;">CONDESA</span></div>
+            </div>
+            <div style="flex:none;display:flex;gap:22px;padding:10px 18px 0;border-bottom:1px solid #242C36;font-family:'Barlow Condensed';font-weight:800;font-size:14px;letter-spacing:.1em;">
+              <span style="padding:6px 0 8px;color:#FF7AD9;border-bottom:3px solid #FF7AD9;">TIMELINE</span><span style="padding:6px 0 8px;color:#8E9AAB;">ALINEACIONES</span><span style="padding:6px 0 8px;color:#8E9AAB;">LA PORRA</span>
+            </div>
+            <div style="flex:1;min-height:0;overflow:hidden;padding:10px 14px 100px;display:flex;flex-direction:column;">
+              <sc-for list="{{ timeline }}" as="e" hint-placeholder-count="7">
+                <div style="display:flex;gap:10px;align-items:stretch;">
+                  <div style="width:34px;flex:none;display:flex;flex-direction:column;align-items:center;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-size:17px;line-height:1.6;color:{{ e.minColor }};">{{ e.min }}</span><span style="flex:1;width:2px;background:#242C36;"></span></div>
+                  <div style="flex:1;min-width:0;padding:4px 0 10px;display:flex;flex-direction:column;gap:4px;">
+                    <div style="display:flex;align-items:center;gap:6px;"><span style="width:20px;height:20px;border-radius:5px;background:{{ e.dot }};flex:none;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:14px;color:#07090C;">{{ e.icon }}</span><span style="font-size:14px;font-weight:700;white-space:nowrap;">{{ e.who }}</span><span style="font-size:12px;color:#8E9AAB;white-space:nowrap;">{{ e.team }}</span></div>
+                    <sc-if value="{{ e.hasTag }}" hint-placeholder-val="{{ false }}">
+                      <span style="align-self:flex-start;height:22px;padding:0 8px;border-radius:6px;background:{{ e.tagBg }};color:{{ e.tagFg }};border:1px solid {{ e.tagLine }};display:flex;align-items:center;gap:4px;font-family:'Barlow Condensed';font-weight:800;font-size:11px;letter-spacing:.12em;box-sizing:border-box;white-space:nowrap;"><span style="font-family:'Material Symbols Rounded';font-size:14px;font-variation-settings:'FILL' 1;letter-spacing:0;">{{ e.tagIcon }}</span>{{ e.tag }}<span style="opacity:.7;">· {{ e.score }}</span></span>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="position:absolute;left:0;right:0;bottom:0;height:86px;background:#07090C;border-top:1px solid #242C36;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:8px 4px 0;box-sizing:border-box;">
+              <sc-for list="{{ navVivo }}" as="t" hint-placeholder-count="5">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:{{ t.color }};font-size:11px;font-weight:700;margin-top:{{ t.mt }};white-space:nowrap;"><span style="width:{{ t.w }};height:{{ t.w }};border-radius:50%;background:{{ t.bg }};color:{{ t.ic }};box-shadow:{{ t.sh }};display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:{{ t.fs }};font-variation-settings:'FILL' {{ t.fill }};">{{ t.icon }}</span></span>{{ t.label }}</div>
+              </sc-for>
+              <div style="position:absolute;left:50%;bottom:7px;transform:translateX(-50%);width:120px;height:5px;border-radius:3px;background:#F4F7FA;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:10px;"><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:22px;">EN LA PLANTILLA</span><span style="font-size:13px;">1080 × 1920 al 30%</span></div>
+      <div style="width:324px;height:576px;border-radius:12px;overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.4);">
+        <div style="zoom:.3;width:1080px;height:1920px;position:relative;background:#0250B0;overflow:hidden;color:#FFFFFF;">
+          <div style="position:absolute;left:0;right:0;top:300px;height:1060px;"><image-slot id="tipo-plantilla-brujo" shape="rect" placeholder="Foto del golazo" style="width:1080px;height:1060px;color:#FFFFFF;"></image-slot></div>
+          <div style="position:absolute;left:0;right:0;top:300px;height:1060px;background:linear-gradient(180deg,#0250B0 0%,rgba(2,80,176,0) 22%,rgba(2,80,176,0) 60%,#0250B0 100%);pointer-events:none;"></div>
+          <div style="position:absolute;left:70px;right:70px;top:80px;display:flex;align-items:center;gap:24px;pointer-events:none;">
+            <img src="assets/chilena-logo-azul.png" alt="Chilena" style="width:130px;height:130px;display:block;">
+            <span style="font-family:'Barlow Condensed';font-weight:800;font-size:34px;letter-spacing:.24em;line-height:1.3;">LIGA DOMINICAL<br>IZTAPALAPA</span>
+          </div>
+          <div style="position:absolute;right:70px;top:250px;transform:rotate(-6deg);background:#D0FF41;color:#07090C;padding:22px 34px;display:flex;align-items:center;gap:18px;box-shadow:14px 14px 0 #07090C;pointer-events:none;">
+            <span style="font-family:'Material Symbols Rounded';font-size:96px;font-variation-settings:'FILL' 1;">sports_gymnastics</span>
+            <div style="display:flex;flex-direction:column;"><span style="font-family:'Barlow Condensed';font-weight:800;font-size:30px;letter-spacing:.2em;">TIPO DE GOL</span><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:100px;line-height:.85;">DE CHILENA</span></div>
+          </div>
+          <div style="position:absolute;left:70px;right:70px;top:1180px;display:flex;flex-direction:column;gap:20px;pointer-events:none;">
+            <span style="font-family:'Big Shoulders Display';font-weight:900;font-size:120px;line-height:.8;color:#D0FF41;">87'</span>
+            <span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:250px;line-height:.78;">¡GOLAZO!</span>
+            <span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:84px;line-height:.9;">EL BRUJO #10</span>
+            <div style="align-self:flex-start;display:flex;align-items:center;gap:22px;background:#FFFFFF;color:#07090C;padding:14px 26px;border-radius:18px;">
+              <span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:58px;">PORTALES</span><span style="font-family:'Big Shoulders Display';font-weight:900;font-size:76px;background:#07090C;color:#D0FF41;padding:0 14px;border-radius:10px;">3–2</span><span style="font-family:'Big Shoulders Display';font-weight:900;font-style:italic;font-size:58px;">CONDESA</span>
+            </div>
+          </div>
+          <div style="position:absolute;left:70px;right:70px;bottom:80px;display:flex;justify-content:space-between;align-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:34px;letter-spacing:.2em;white-space:nowrap;pointer-events:none;"><span>🔥 2.3K EN CHILENA</span><span>CHILENA.MX</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  nav(active, role) {
+    const C = { jugador: '#5B9BFF', delegado: '#B38CFF', arbitro: '#3FE0D0', aficionado: '#FF7AD9' };
+    const center = { delegado: ['checklist', 'Pase de lista'], arbitro: ['sports', 'Capturar'] }[role] || ['add', 'Publicar'];
+    const it = (icon, label) => ({ icon, label, color: label === active ? C[role] : '#8E9AAB', fill: label === active ? 1 : 0, bg: 'transparent', ic: 'currentColor', w: '28px', fs: '24px', mt: '0px', sh: 'none' });
+    return [it('home', 'Inicio'), it('sensors', 'En vivo'),
+      { icon: center[0], label: center[1], color: '#F4F7FA', fill: 0, bg: '#D0FF41', ic: '#07090C', w: '52px', fs: '28px', mt: '-22px', sh: '0 0 0 5px #07090C' },
+      it('stadium', 'Mi liga'), it('person', 'Perfil')];
+  }
+  renderVals() {
+    const T = {
+      cabeza: { icon: 'face', name: 'DE CABEZA', stat: '38 en el torneo · El Pelón lleva 6', rare: '17%' },
+      penal: { icon: 'adjust', name: 'DE PENAL', stat: '22 en el torneo', rare: '10%' },
+      libre: { icon: 'fence', name: 'TIRO LIBRE', stat: '9 en el torneo · por encima de la barrera', rare: '4%' },
+      fuera: { icon: 'rocket_launch', name: 'DE FUERA DEL ÁREA', stat: '27 en el torneo', rare: '12%' },
+      chilena: { icon: 'sports_gymnastics', name: 'DE CHILENA', stat: '12 en toda la liga · la de la casa', rare: 'GOLAZO' },
+      panenka: { icon: 'moving', name: 'A LO PANENKA', stat: '3 en el torneo · sangre fría', rare: 'GOLAZO' }
+    };
+    const tipos = ['cabeza', 'penal', 'libre', 'fuera', 'chilena', 'panenka'].map(k => {
+      const g = T[k].rare === 'GOLAZO';
+      return { ...T[k], bg: g ? '#D0FF41' : '#242C36', fg: g ? '#07090C' : '#F4F7FA' };
+    });
+    const ev = (min, who, team, kind, tipo, score) => {
+      const isGol = kind === 'gol', t = tipo ? T[tipo] : null, g = t && t.rare === 'GOLAZO';
+      return { min, who, team, score, hasTag: !!t, tag: t ? t.name : '', tagIcon: t ? t.icon : '',
+        tagBg: g ? '#D0FF41' : '#181E26', tagFg: g ? '#07090C' : '#F4F7FA', tagLine: g ? '#D0FF41' : '#2D3A4A',
+        dot: isGol ? '#D0FF41' : kind === 'ta' ? '#FFB020' : '#8E9AAB', icon: isGol ? 'sports_soccer' : kind === 'ta' ? 'style' : 'swap_horiz',
+        minColor: isGol ? '#F4F7FA' : '#8E9AAB' };
+    };
+    return {
+      navAfi: this.nav('Inicio', 'aficionado'),
+      navVivo: this.nav('En vivo', 'aficionado'),
+      tipos,
+      timeline: [
+        ev("87'", 'El Brujo', 'Portales', 'gol', 'chilena', '3–2'),
+        ev("75'", 'Kike por Beto', 'Portales', 'cambio'),
+        ev("70'", 'El Pelón', 'Condesa', 'gol', 'cabeza', '2–2'),
+        ev("63'", 'El Chícharo', 'Portales', 'gol', 'panenka', '2–1'),
+        ev("58'", 'El Güero', 'Condesa · amarilla', 'ta'),
+        ev("31'", 'El Pelón', 'Condesa', 'gol', 'libre', '1–1'),
+        ev("12'", 'El Chícharo', 'Portales', 'gol', 'fuera', '1–0')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

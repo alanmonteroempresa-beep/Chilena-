@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="width:300px;height:628px;border-radius:46px;background:#000;padding:10px;box-sizing:border-box;box-shadow:0 30px 60px rgba(0,0,0,.35);font-family:'Barlow',sans-serif;">
+  <div style="width:280px;height:608px;border-radius:37px;overflow:hidden;position:relative;">
+    <div style="zoom:.7778;width:360px;height:782px;background:{{ bg }};color:{{ ink }};position:relative;display:flex;flex-direction:column;border-top:2px solid {{ top }};box-sizing:border-box;">
+      <div style="position:absolute;left:0;right:0;top:0;height:220px;background:{{ glow }};pointer-events:none;"></div>
+      <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px;font-size:15px;font-weight:600;position:relative;"><span>{{ time }}</span><div style="position:absolute;left:50%;top:8px;transform:translateX(-50%);width:110px;height:30px;border-radius:16px;background:#000;"></div><span style="font-family:'Material Symbols Rounded';font-size:17px;letter-spacing:2px;">signal_cellular_alt wifi battery_full</span></div>
+      <div style="flex:1;min-height:0;display:flex;flex-direction:column;position:relative;">{{ children }}</div>
+      <sc-if value="{{ hasNav }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;left:0;right:0;bottom:0;height:86px;background:#07090C;border-top:1px solid #242C36;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:8px 4px 0;box-sizing:border-box;z-index:5;">
+          <sc-for list="{{ items }}" as="t" hint-placeholder-count="5">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:{{ t.color }};font-size:11px;font-weight:700;margin-top:{{ t.mt }};white-space:nowrap;"><span style="width:{{ t.w }};height:{{ t.w }};border-radius:50%;background:{{ t.bg }};color:{{ t.ic }};box-shadow:{{ t.sh }};display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:{{ t.fs }};font-variation-settings:'FILL' {{ t.fill }};">{{ t.icon }}</span></span>{{ t.label }}</div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ hasFab }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;right:12px;bottom:{{ fabBottom }};height:34px;padding:0 12px 0 10px;border-radius:17px;background:#181E26;border:1px solid #2D3A4A;box-shadow:0 6px 16px rgba(0,0,0,.4);display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#F4F7FA;z-index:6;"><span style="font-family:'Material Symbols Rounded';font-size:17px;color:#D0FF41;">bug_report</span>Reportar falla</div>
+      </sc-if>
+      <div style="position:absolute;left:50%;bottom:7px;transform:translateX(-50%);width:120px;height:5px;border-radius:3px;background:{{ ink }};z-index:7;"></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:300,&quot;height&quot;:628},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;jugador&quot;,&quot;delegado&quot;,&quot;arbitro&quot;,&quot;aficionado&quot;,&quot;liga&quot;,&quot;visitante&quot;],&quot;default&quot;:&quot;jugador&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;active&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Inicio&quot;,&quot;En vivo&quot;,&quot;Mi liga&quot;,&quot;Perfil&quot;,&quot;Ninguno&quot;],&quot;default&quot;:&quot;Inicio&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;time&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;20:00&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;nav&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;fab&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;noGlow&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;noTop&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;bg&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#07090C&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;children&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;ReactNode&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const role = this.props.role ?? 'jugador';
+    const active = this.props.active ?? 'Inicio';
+    const C = { jugador: '#5B9BFF', delegado: '#B38CFF', arbitro: '#3FE0D0', aficionado: '#FF7AD9', liga: '#E9E4D8', visitante: '#8E9AAB' };
+    const rc = C[role] || C.jugador;
+    const center = { delegado: ['checklist', 'Pase de lista'], arbitro: ['sports', 'Capturar'] }[role] || ['add', 'Publicar'];
+    const it = (icon, label) => ({ icon, label, color: label === active ? rc : '#8E9AAB', fill: label === active ? 1 : 0, bg: 'transparent', ic: 'currentColor', w: '28px', fs: '24px', mt: '0px', sh: 'none' });
+    const items = [it('home', 'Inicio'), it('sensors', 'En vivo'),
+      { icon: center[0], label: center[1], color: '#F4F7FA', fill: 0, bg: '#D0FF41', ic: '#07090C', w: '52px', fs: '28px', mt: '-22px', sh: '0 0 0 5px #07090C' },
+      it('stadium', 'Mi liga'), it('person', 'Perfil')];
+    const hex = rc.replace('#', '');
+    const rgb = [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16)).join(',');
+    const nav = this.props.nav ?? true;
+    return {
+      time: this.props.time ?? '20:00',
+      bg: this.props.bg ?? '#07090C',
+      ink: this.props.ink ?? '#F4F7FA',
+      top: this.props.noTop ? 'transparent' : rc,
+      glow: this.props.noGlow ? 'none' : `linear-gradient(180deg,rgba(${rgb},.14),rgba(${rgb},0))`,
+      items, hasNav: nav,
+      hasFab: !!this.props.fab, fabBottom: nav ? '98px' : '24px',
+      children: this.props.children
+    };
+  }
+}
+</script>
+</body>
+</html>
