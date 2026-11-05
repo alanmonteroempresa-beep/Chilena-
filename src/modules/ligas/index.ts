@@ -3,6 +3,7 @@ export { registerListeners } from "./server/listeners";
 
 // Servicios puros (PRD §7.8, §7.11 y §7.13)
 export {
+  assertFaseRegularCerrable,
   calcularTabla,
   marcarSorteo,
   type CriterioDesempate,

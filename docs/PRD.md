@@ -440,6 +440,11 @@ Los **reportes de la porra** llegan al panel de la liga dueña del contenido. Ac
 5. **Juego limpio:** menos puntos de tarjetas en el torneo (amarilla 1, roja 3; la doble amarilla vale 3, como roja).
 6. **Sorteo:** lo marca la liga a mano en `StandingRow.ordenManual` (1 va arriba de 2), siempre con motivo y bitácora (`AuditLog`). Tiene que ordenar a **todos** los empatados; si a alguno le falta, la tabla avisa que el empate sigue sin resolver. El orden manual solo cuenta como último criterio: nunca le gana a los puntos ni a los otros desempates.
 
+**Empates durante el torneo y al cierre:**
+- Durante el torneo, los empatados sin resolver se muestran en la **misma posición** (3º, 3º, 5º…). La liga no tiene que sortear cada jornada.
+- El sorteo **solo se exige al cerrar la fase regular**, porque define los cruces de la liguilla: no se cierra mientras quede un empate sin sortear ("Falta el sorteo entre Tigres y Condesa para cerrar la fase regular").
+- Si un empate sorteado se deshace (por resultados, o porque otro equipo se suma al empate), el recálculo de la tabla **borra** `ordenManual`. Si vuelven a empatar, se sortea de nuevo.
+
 **Liguilla:**
 - Al terminar la fase regular se proponen los cruces desde la tabla (editable).
 - Semifinal y final generan posts especiales.

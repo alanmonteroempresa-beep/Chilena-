@@ -4,6 +4,9 @@
  * Desempate fijo en la beta (estilo Liga MX):
  *   puntos → diferencia → goles a favor → resultado entre ellos → juego limpio → sorteo de la liga.
  * El sorteo lo marca la liga en `StandingRow.ordenManual` (con `marcarSorteo` y bitácora).
+ * Durante el torneo los empatados sin resolver comparten posición; el sorteo solo se exige al
+ * cerrar la fase regular (`assertFaseRegularCerrable`). Si un empate sorteado se deshace, el
+ * recálculo devuelve `ordenManual: null` y, si vuelven a empatar, se sortea de nuevo.
  */
 import { DomainError } from "@/modules/core";
 
@@ -48,6 +51,7 @@ export type FilaTabla = {
   juegoLimpio: number;
   /** Últimos 5, del más viejo al más reciente: G gana · E empata · P pierde */
   racha: string;
+  /** Los empatados sin resolver comparten posición (3º, 3º, 5º…) */
   posicion: number;
   /** Criterio que lo separó de los empatados en puntos (null si nadie empató con él) */
   desempate: CriterioDesempate | null;
@@ -55,6 +59,10 @@ export type FilaTabla = {
   empateSinResolver: boolean;
   /** Posición donde empieza su empate sin resolver (identifica a los empatados para el sorteo) */
   grupoEmpate: number | null;
+  /**
+   * Lo que el recálculo guarda en `StandingRow.ordenManual`: solo sigue si el sorteo resolvió su
+   * empate. Si el empate se deshizo (o se sumó otro equipo), vuelve a null.
+   */
   ordenManual: number | null;
 };
 
@@ -206,9 +214,27 @@ export function calcularTabla({
   tabla.forEach((f, i) => (f.posicion = i + 1));
   for (const grupo of ctx.sinResolver) {
     const inicio = Math.min(...grupo.map((f) => f.posicion));
-    for (const f of grupo) f.grupoEmpate = inicio;
+    for (const f of grupo) {
+      f.grupoEmpate = inicio;
+      f.posicion = inicio; // mientras nadie lo sortea, comparten posición
+    }
   }
+  for (const f of tabla) if (f.desempate !== "SORTEO" || f.empateSinResolver) f.ordenManual = null;
   return tabla;
+}
+
+const lista = new Intl.ListFormat("es", { type: "conjunction" });
+
+/** Al cerrar la fase regular (para armar la liguilla) no puede quedar ningún empate sin sortear */
+export function assertFaseRegularCerrable(tabla: FilaTabla[]): void {
+  const grupos = [...new Set(tabla.filter((f) => f.empateSinResolver).map((f) => f.grupoEmpate))];
+  if (!grupos.length) return;
+  const nombres = tabla.filter((f) => f.grupoEmpate === grupos[0]).map((f) => f.nombre);
+  const mas = grupos.length > 1 ? ` (y ${grupos.length - 1} empate${grupos.length > 2 ? "s" : ""} más)` : "";
+  throw new DomainError(
+    `Falta el sorteo entre ${lista.format(nombres)} para cerrar la fase regular${mas}.`,
+    "SORTEO_PENDIENTE",
+  );
 }
 
 /**

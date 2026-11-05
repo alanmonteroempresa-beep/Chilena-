@@ -1314,6 +1314,8 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
     pts: f.pts,
     posicion: f.posicion,
     posicionAnterior: tablaAnterior.find((a) => a.clave === f.clave)!.posicion,
+    // El recálculo escribe el orden del sorteo que sigue vigente (null: no hay empates sorteados)
+    ordenManual: f.ordenManual,
     // Últimos 5 resultados, del más viejo al más reciente (G gana · E empata · P pierde)
     racha: f.racha,
   }));

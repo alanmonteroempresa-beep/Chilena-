@@ -16,6 +16,7 @@ Ligas, administradores, canchas, torneos (asistente), generador del rol, inscrip
 - El generador del rol es un servicio puro con tests exhaustivos.
 - Panel en escritorio y celular.
 - Tabla (PRD §7.13, `server/services/tabla.ts`): puntos → diferencia → goles a favor → entre ellos → juego limpio → sorteo de la liga (`StandingRow.ordenManual`, con `marcarSorteo` y AuditLog).
+- Bitácora en la MISMA transacción (CLAUDE.md, Arquitectura): el sorteo (`ordenManual`), los cargos (multa, condonar, confirmar) y los pagos a árbitros escriben su `AuditLog` en el mismo `db.$transaction` que el cambio.
 - Multas (PRD §7.8, `server/services/cargos.ts`): la sanción con multa crea su cargo `MULTA` ligado por `sanctionId`; condonar se hace en el cargo.
 
 ## Estructura

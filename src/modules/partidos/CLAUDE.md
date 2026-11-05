@@ -14,6 +14,7 @@ Máquina de estados del partido, marcador desde la banda, alineación con alerta
 ## Reglas clave
 - Marcador oficial = cédula firmada (o papel) y validada; lo de la banda es NO OFICIAL.
 - Cédula firmada inmutable; corrige solo la liga con AuditLog.
+- Bitácora en la MISMA transacción (CLAUDE.md, Arquitectura): validar o corregir un resultado, cambiar eventos oficiales y crear o ajustar sanciones escriben su `AuditLog` en el mismo `db.$transaction` que el cambio.
 - El delegado no suspende; el árbitro solo durante su partido.
 - Cola offline con `clientId` idempotente.
 - Sanciones (PRD §7.8, `server/services/sanciones.ts`): automáticas desde la cédula validada; la liga ajusta la MISMA sanción con bitácora; 5 amarillas → suspensión y el acumulado vuelve a 0; doble amarilla = roja y no suma; la liguilla reinicia el acumulado.

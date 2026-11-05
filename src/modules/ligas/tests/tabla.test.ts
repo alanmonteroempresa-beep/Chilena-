@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { DomainError } from "@/modules/core";
-import { calcularTabla, marcarSorteo, type PartidoTabla } from "@/modules/ligas";
+import {
+  assertFaseRegularCerrable,
+  calcularTabla,
+  marcarSorteo,
+  type FilaTabla,
+  type PartidoTabla,
+} from "@/modules/ligas";
 
 // PRD §7.13: puntos → diferencia → goles a favor → entre ellos → juego limpio → sorteo
 const REGLAS = { puntosVictoria: 3, puntosEmpate: 1 };
@@ -239,5 +245,100 @@ describe("la liga marca el sorteo (PRD §7.13)", () => {
     expect(() => marcarSorteo(tabla, ["A", "B", "Z"], "x")).toThrow(/todos los empatados/);
     expect(() => marcarSorteo(tabla, ["Z"], "x")).toThrow(/no tiene un empate/);
     expect(() => marcarSorteo(tabla, ["X", "A"], "x")).toThrow(/no está en la tabla/);
+  });
+});
+
+describe("empates durante el torneo y al cerrar la fase regular (PRD §7.13)", () => {
+  /** Partidos seguidos, J1, J2… */
+  const seguidos = (...listas: PartidoTabla[][]) => listas.flat().map((p, i) => ({ ...p, orden: i + 1 }));
+  /** Recalcula con lo guardado en StandingRow.ordenManual */
+  const recalcular = (ps: PartidoTabla[], guardado = new Map<string, number | null>()) =>
+    calcularTabla({
+      equipos: equipos("A", "B", "Z").map((e) => ({ ...e, ordenManual: guardado.get(e.id) ?? null })),
+      reglas: REGLAS,
+      partidos: ps,
+    });
+  /** Lo que el recálculo escribe de vuelta en StandingRow.ordenManual */
+  const guardar = (tabla: FilaTabla[]) => new Map(tabla.map((f) => [f.equipoId, f.ordenManual]));
+
+  it("durante el torneo, los empatados sin resolver comparten posición", () => {
+    const tabla = recalcular(EMPATADOS);
+    expect(tabla.map((f) => [f.equipoId, f.posicion])).toEqual([
+      ["A", 1],
+      ["B", 1],
+      ["Z", 3],
+    ]);
+  });
+
+  it("si el empate sorteado se deshace, el recálculo borra ordenManual; si vuelven a empatar, se sortea de nuevo", () => {
+    // J1–J2: A y B empatados en todo → la liga sortea: B arriba
+    const sorteo = marcarSorteo(recalcular(EMPATADOS), ["B", "A"], "Volado");
+    let guardado = new Map(sorteo.cambios.map((c) => [c.equipoId, c.ordenManual as number | null]));
+    let tabla = recalcular(EMPATADOS, guardado);
+    expect(tabla.map((f) => [f.equipoId, f.posicion, f.ordenManual])).toEqual([
+      ["B", 1, 1],
+      ["A", 2, 2],
+      ["Z", 3, null],
+    ]);
+    guardado = guardar(tabla);
+
+    // J3: A le gana a Z → se deshace el empate → ordenManual vuelve a null
+    const j3 = seguidos(EMPATADOS, partidos(["A", "Z", 2, 0]));
+    tabla = recalcular(j3, guardado);
+    expect(tabla.map((f) => f.ordenManual)).toEqual([null, null, null]);
+    guardado = guardar(tabla);
+
+    // J4: B le gana a Z 2–0 → empatan otra vez en todo → hay que sortear de nuevo
+    tabla = recalcular(seguidos(j3, partidos(["B", "Z", 2, 0])), guardado);
+    expect(tabla.slice(0, 2).map((f) => [f.equipoId, f.posicion, f.empateSinResolver])).toEqual([
+      ["A", 1, true],
+      ["B", 1, true],
+    ]);
+  });
+
+  it("si otro equipo se suma al empate sorteado, se sortea de nuevo entre todos", () => {
+    const tabla = calcularTabla({
+      equipos: [
+        { id: "A", nombre: "Equipo A", ordenManual: 2 },
+        { id: "B", nombre: "Equipo B", ordenManual: 1 },
+        { id: "C", nombre: "Equipo C" },
+        { id: "Z", nombre: "Equipo Z" },
+      ],
+      reglas: REGLAS,
+      partidos: seguidos(EMPATADOS, partidos(["C", "Z", 1, 0])),
+    });
+    expect(
+      tabla.filter((f) => f.empateSinResolver).map((f) => [f.equipoId, f.posicion, f.ordenManual]),
+    ).toEqual([
+      ["A", 1, null],
+      ["B", 1, null],
+      ["C", 1, null],
+    ]);
+  });
+
+  it("el orden manual que no se usó también se borra", () => {
+    const tabla = calcularTabla({
+      equipos: [
+        { id: "A", nombre: "Equipo A", ordenManual: 2 },
+        { id: "B", nombre: "Equipo B", ordenManual: 1 },
+        { id: "Z", nombre: "Equipo Z" },
+      ],
+      reglas: REGLAS,
+      partidos: partidos(["A", "Z", 3, 0], ["B", "Z", 1, 0]), // A arriba por diferencia
+    });
+    expect(tabla.map((f) => f.ordenManual)).toEqual([null, null, null]);
+  });
+
+  it("el sorteo solo se exige al cerrar la fase regular", () => {
+    const sinResolver = recalcular(EMPATADOS);
+    expect(() => assertFaseRegularCerrable(sinResolver)).toThrow(
+      "Falta el sorteo entre Equipo A y Equipo B para cerrar la fase regular.",
+    );
+    expect(() => assertFaseRegularCerrable(sinResolver)).toThrow(DomainError);
+
+    const sorteo = marcarSorteo(sinResolver, ["A", "B"], "Volado");
+    const resuelta = recalcular(EMPATADOS, new Map(sorteo.cambios.map((c) => [c.equipoId, c.ordenManual])));
+    expect(() => assertFaseRegularCerrable(resuelta)).not.toThrow();
+    expect(() => assertFaseRegularCerrable(recalcular(partidos(["A", "B", 1, 0])))).not.toThrow();
   });
 });
