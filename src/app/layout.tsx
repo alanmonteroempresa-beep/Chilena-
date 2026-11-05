@@ -34,6 +34,8 @@ export const viewport: Viewport = {
   ],
   width: "device-width",
   initialScale: 1,
+  // PWA instalada en iPhone: deja que la barra inferior use el área segura (env(safe-area-inset-bottom))
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
