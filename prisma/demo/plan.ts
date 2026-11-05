@@ -116,8 +116,8 @@ const PRESENTES: Partial<Record<Ref, number[]>> = { "DP:11": [15], "DP:14": [15]
 const INTOCABLES: Ref[] = ["DP:7", "DP:8", "DP:9", "DP:10", "TL:9", "RC:9"];
 /**
  * Rojas. La de La Roca: la liga aplicó 2 partidos (panel de la liga, "APLICAR: 2 PARTIDOS") y ya cumplió uno.
- * PROVISIONAL: el PRD (§7.8) no dice si la sanción manual reemplaza a la automática (roja = 1) o se suma;
- * aquí queda una sola sanción manual de 2 partidos, con su bitácora.
+ * PROVISIONAL (PRD §13.2, por decidir): no está definido si el ajuste de la liga reemplaza a la automática
+ * (roja = 1) o se suma; aquí queda una sola sanción manual de 2 partidos, con su bitácora.
  */
 const ROJAS: { jornada: number; ref: Ref; minuto: number; partidos: number; automatica: boolean }[] = [
   { jornada: 6, ref: "TL:3", minuto: 64, partidos: 1, automatica: true },
@@ -737,8 +737,8 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
         f.racha.push(r);
       }
     }
-    // Puntos con la configuración del torneo. Desempate provisional: puntos, diferencia, goles a favor
-    // (el PRD todavía no define el desempate).
+    // Puntos con la configuración del torneo. Desempate PROVISIONAL (PRD §13.1, por decidir):
+    // puntos, diferencia, goles a favor.
     return filas
       .map((f) => ({ ...f, dg: f.gf - f.gc, pts: f.pg * TORNEO.puntosVictoria + f.pe * TORNEO.puntosEmpate }))
       .sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.nombre.localeCompare(b.nombre, "es"))
@@ -764,8 +764,8 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
         if (golesEn(p) === 0) break;
         rachaGoles++;
       }
-      // PROVISIONAL: "domingos sin faltar" = jornadas seguidas en las que jugó (el PRD no lo define;
-      // un suplente que fue y no entró cuenta como falta). Ajustar cuando el PRD lo diga.
+      // PROVISIONAL (PRD §13.5, por decidir): "domingos sin faltar" = jornadas seguidas en las que jugó
+      // (un suplente que fue y no entró cuenta como falta). La recomendación es contar también la banca.
       let rachaAsistencia = 0;
       for (let n = TORNEO.jornadasJugadas; n >= 1; n--) {
         if (!suyos.some((p) => p.jornada === n)) break;

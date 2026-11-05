@@ -350,7 +350,7 @@ Estados: `BORRADOR → INSCRIPCIONES_ABIERTAS → EN_CURSO → LIGUILLA → FINA
    - El delegado ve "11 de 16 ya contestaron que van" y manda recordatorio.
 2. **Alineación** (pantalla 53):
    - Se arma con los confirmados, con alertas: **suspendido**, **cuota pendiente**, **no registrado en el torneo** o **registrado con otro equipo**.
-   - Las alertas no bloquean; el delegado decide y la liga revisa.
+   - Las alertas no bloquean; el delegado decide y la liga revisa. *(Pendiente: la pantalla 53 dice que el suspendido sí se bloquea → §13.6.)*
 3. **Marcador en vivo desde la banda** (pantalla 32):
    - Aficionados y delegados lo actualizan ("¿Cambió el marcador?") y lo narran ("87' El Brujo, de chilena").
    - Es **NO OFICIAL** y se muestra con su chip.
@@ -377,6 +377,7 @@ Estados: `BORRADOR → INSCRIPCIONES_ABIERTAS → EN_CURSO → LIGUILLA → FINA
 - **Manuales:** partidos, multa, expulsión del torneo, pérdida del partido.
 - Los partidos cumplidos se descuentan al validar cada jornada.
 - **Alerta preventiva al jugador:** "Aguas: llevas 4 amarillas. Una más y te sientas un partido."
+- *Pendiente de decidir:* cómo se ajusta una automática (§13.2), cuándo se reinician las amarillas (§13.3) y cómo se cobra una multa (§13.4).
 
 ### 7.9 "No hay juego", suspensión y reprogramación
 - El **delegado no suspende**: avisa "No hay juego" y **la liga confirma**.
@@ -399,7 +400,7 @@ Estados: `BORRADOR → INSCRIPCIONES_ABIERTAS → EN_CURSO → LIGUILLA → FINA
 Los **reportes de la porra** llegan al panel de la liga dueña del contenido. Acciones: Ocultar · Mantener · Avisar al usuario. El superadmin es respaldo.
 
 ### 7.13 Liguilla y campeón
-- Al terminar la fase regular se proponen los cruces desde la tabla (editable).
+- Al terminar la fase regular se proponen los cruces desde la tabla (editable). *(El desempate de la tabla está pendiente → §13.1.)*
 - Semifinal y final generan posts especiales.
 - Al cerrar el torneo: campeón, trofeo en la vitrina, insignias y **cierre de temporada** para todos.
 
@@ -594,3 +595,86 @@ Se miden con PostHog (eventos en `docs/MODULOS.md` §5).
 - Chat interno (si la beta lo pide).
 - Pagos dentro de la app; planes (jugador pro, liga pro); patrocinios locales.
 - Dominio propio (migrar desde `*.vercel.app` con redirección).
+
+---
+
+## 13. Decisiones pendientes (propuestas)
+
+> **Estado: por decidir.** Salieron al armar la liga demo y en la revisión de la Fase 0. Cada una trae opciones, una recomendación y lo que cambia en el código. Cuando se decida, se pasa la regla a su sección (§7.x), se borra de aquí y se agrega el test. Mientras tanto, el código marca estas reglas como **provisionales** y nadie las debe copiar como definitivas.
+
+### 13.1 Desempate de la tabla
+**Hoy:** el PRD solo fija los puntos (3 por ganar, 1 por empatar, configurables en el torneo). No dice qué pasa si dos equipos empatan en puntos, y eso define la posición, "Subimos al 2º" y los cruces de liguilla (§7.13).
+
+| Opción | Orden |
+|---|---|
+| **A** (estilo Liga MX) | Puntos → diferencia de goles → goles a favor → resultado entre ellos → juego limpio → sorteo de la liga |
+| **B** (estilo europeo) | Puntos → resultado entre ellos → diferencia de goles → goles a favor → juego limpio → sorteo |
+| **C** | Configurable por torneo en el paso 5 del asistente (§7.2), con A por defecto |
+
+- *Resultado entre ellos:* puntos (y luego diferencia) solo en los partidos entre los empatados.
+- *Juego limpio:* menos puntos de tarjetas en el torneo: amarilla 1, roja 3.
+- *Sorteo:* lo marca la liga a mano, con motivo y bitácora.
+- Solo cuentan partidos **VALIDADOS** (regla 2).
+
+**Recomendación: A fija en la beta.** Es la que el llanero conoce por la Liga MX y se explica en una línea. C se puede dejar para después de la beta.
+**Si se aprueba:** el servicio puro de tabla de `ligas` implementa A con un test por criterio. La semilla demo ya ordena por los tres primeros (sin empates en puntos) y pasaría a usar ese servicio.
+
+### 13.2 Una sanción automática que la liga ajusta
+**Hoy:** la roja genera 1 partido automático (§7.8) y la liga puede poner sanciones manuales. El panel de la liga (deck, lámina 18) muestra "Desde la cédula J14 · #4 La Roca · roja directa al 71' · APLICAR: 2 PARTIDOS". No está definido si eso **reemplaza** al partido automático o **se suma**.
+
+| Opción | Cómo queda |
+|---|---|
+| **A** Ajustar la misma | La roja crea su sanción automática (1 partido). La liga la sube, la baja o la anula **en la misma sanción**, con motivo y bitácora (antes → después). Una sanción por hecho |
+| **B** Sumar | La automática se queda (1) y la liga crea otra manual (+1). El total es la suma de las dos |
+
+**Recomendación: A.** El delegado y el jugador ven una sola cosa ("2 partidos · roja en J14"), el cumplimiento se descuenta de un solo contador y el historial queda en la bitácora.
+**Si se aprueba:** no cambia el schema; `Sanction.automatica` significa "nació de la cédula", aunque la liga la haya ajustado. La semilla pasa La Roca a una sanción automática ajustada de 1 a 2 partidos, con su bitácora `UPDATE`.
+
+### 13.3 Amarillas acumuladas
+**Hoy:** "5 amarillas acumuladas = 1 partido (configurable)" y la alerta "Aguas: llevas 4". Falta definir:
+
+1. **¿Se reinicia el conteo?** Recomendación: al llegar a 5 se crea la suspensión y el acumulado vuelve a 0 (la siguiente sale con 5 más).
+2. **Doble amarilla en un partido:** recomendación: se captura como expulsión (`ROJA`) y vale 1 partido como roja; esas 2 amarillas **no** suman al acumulado.
+3. **Liguilla:** recomendación: el acumulado vuelve a 0 al empezar la liguilla. Las suspensiones pendientes sí se cumplen.
+
+**Si se aprueba:** servicio puro de sanciones con test de cada caso. La alerta preventiva usa el acumulado y no el total del torneo.
+
+### 13.4 Multas
+**Hoy:** la multa es una sanción manual (§7.8) y un cobro de la liga al equipo (§7.11). El deck la muestra en "Por pagar a la liga" ("Multa · roja de La Roca · $300"), pero no hay nada que ligue las dos cosas.
+
+**Recomendación:**
+- Una sanción puede llevar partidos **y** multa a la vez (`partidos` y `multaCents` ya existen).
+- Si trae multa, se crea su cargo `LeagueCharge` tipo `MULTA` por el mismo monto, en centavos (regla 7).
+- La sanción y el cargo quedan ligados, así se ve en la pantalla 47 y en el "Por pagar a la liga" del delegado.
+- Condonar la multa se hace en el cargo (`CONDONADO`), con bitácora.
+
+**Si se aprueba:** necesita un campo `sanctionId` en `LeagueCharge` → **lo decide el dueño del schema**. Hoy la semilla solo crea el cargo.
+
+### 13.5 "Domingos sin faltar" (racha de asistencia)
+**Hoy:** las insignias `DOMINGOS_5/12/25` usan `attendance_streak` y la carta guarda `rachaAsistencia`, pero no está definido qué cuenta como "ir". CON (constancia, `docs/CARTA_E_INSIGNIAS.md`) usa "fue y jugó".
+
+| Opción | Cuenta como domingo |
+|---|---|
+| **A** Jugó | Aparece en la cédula y entró a la cancha (`jugo`) |
+| **B** Fue | Aparece en la alineación de la cédula, aunque se quedara en la banca |
+| **C** Dijo que iba | Contestó VOY en el pase de lista |
+
+**Recomendación: B.** Lo que se premia es presentarse, y el que va a la banca cada domingo también es constancia. CON sigue midiendo "fue y jugó", que es otra cosa.
+- **Pausa en lugar de corte:** los domingos sin partido de su equipo (descanso, "No hay juego", partido suspendido o reprogramado) ni suman ni cortan.
+- **Suspensión:** recomendación: también es pausa (la sanción ya castiga); la alternativa es que corte.
+
+**Si se aprueba:** `rachaAsistencia` y el progreso de las insignias usan B. Hoy la semilla usa A y está marcada como provisional.
+
+### 13.6 ¿Qué alertas de la alineación bloquean?
+**Hoy:** §7.6 dice que las alertas no bloquean, pero la pantalla 53 dice "ROJO = NO PUEDE · lo bloquea la liga".
+
+**Recomendación: dos niveles.**
+- **Bloquean** (no pueden entrar a la cédula):
+  - Registrado con otro equipo del torneo: rompe la regla 4.
+  - Suspendido con sanción activa.
+  - No registrado en el torneo: la liga lo puede registrar en ese momento.
+- **Solo avisan:** cuota pendiente con el equipo, que es asunto interno del equipo.
+- En el pase de lista el suspendido **sí aparece**, con su nota (así cuadra "11 de 16"), pero no se puede alinear.
+
+**Si se aprueba:** se corrige §7.6. La alineación (O3) valida en el servidor con `assertCan()` y deja la lista de bloqueos en `Lineup.alerts`.
+
