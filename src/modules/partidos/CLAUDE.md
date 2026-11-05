@@ -16,6 +16,9 @@ Máquina de estados del partido, marcador desde la banda, alineación con alerta
 - Cédula firmada inmutable; corrige solo la liga con AuditLog.
 - El delegado no suspende; el árbitro solo durante su partido.
 - Cola offline con `clientId` idempotente.
+- Sanciones (PRD §7.8, `server/services/sanciones.ts`): automáticas desde la cédula validada; la liga ajusta la MISMA sanción con bitácora; 5 amarillas → suspensión y el acumulado vuelve a 0; doble amarilla = roja y no suma; la liguilla reinicia el acumulado.
+- Alineación (PRD §7.6, `server/services/alineacion.ts`): rojo bloquea (otro equipo, suspendido, no registrado); ámbar avisa (cuota pendiente, a una amarilla).
+- "Domingos sin faltar" (PRD §7.6, `server/services/asistencia.ts`): cuenta estar en la cédula, titular o banca; descansos y suspensiones pausan.
 
 ## Estructura
 - `index.ts`: **API pública**. Lo único que otros módulos pueden importar (`@/modules/partidos`).

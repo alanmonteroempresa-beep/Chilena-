@@ -6,12 +6,24 @@
 //  4.   Cada jugador está en un solo equipo del torneo.
 //  7.   Dinero en centavos.
 //  8.   Sin datos privados (celular, nacimiento, emergencia).
-// Tabla, goleo y estadísticas se calculan AQUÍ a partir de los eventos, igual que lo hará la validación
-// real (partidos → match.validated). Cuando exista el servicio de tabla del módulo `ligas`, úsalo aquí.
+// Tabla, sanciones y rachas salen de los MISMOS servicios puros que usará la validación real
+// (partidos → match.validated): `calcularTabla` y `cargoDeMulta` de `ligas`; `sancionesAutomaticas`,
+// `ajustarSancion`, `partidosCumplidos`, `puntosJuegoLimpio` y `rachaAsistencia` de `partidos`.
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import { es } from "date-fns/locale";
 import type { Prisma } from "../../src/generated/prisma/client";
 import { TZ } from "../../src/shared/lib/dates";
+import { calcularTabla, cargoDeMulta, descripcionMulta } from "../../src/modules/ligas";
+import {
+  ajustarSancion,
+  partidosCumplidos,
+  puntosJuegoLimpio,
+  rachaAsistencia,
+  sancionesAutomaticas,
+  type AjusteSancion,
+  type SancionActual,
+  type TarjetaCedula,
+} from "../../src/modules/partidos";
 import { Azar, idDemo, slug } from "./azar";
 import {
   AFICIONADA,
@@ -115,18 +127,34 @@ const PRESENTES: Partial<Record<Ref, number[]>> = { "DP:11": [15], "DP:14": [15]
 /** Nunca salen de cambio */
 const INTOCABLES: Ref[] = ["DP:7", "DP:8", "DP:9", "DP:10", "TL:9", "RC:9"];
 /**
- * Rojas. La de La Roca: la liga aplicó 2 partidos (panel de la liga, "APLICAR: 2 PARTIDOS") y ya cumplió uno.
- * PROVISIONAL (PRD §13.2, por decidir): no está definido si el ajuste de la liga reemplaza a la automática
- * (roja = 1) o se suma; aquí queda una sola sanción manual de 2 partidos, con su bitácora.
+ * Rojas directas. Cada una crea su sanción automática (roja = 1 partido, PRD §7.8).
+ * La de La Roca: la liga la ajustó en la MISMA sanción a 2 partidos y le puso multa de $300
+ * (panel de la liga: "APLICAR: 2 PARTIDOS" · "Por pagar a la liga": "Multa · roja de La Roca · $300").
  */
-const ROJAS: { jornada: number; ref: Ref; minuto: number; partidos: number; automatica: boolean }[] = [
-  { jornada: 6, ref: "TL:3", minuto: 64, partidos: 1, automatica: true },
-  { jornada: 9, ref: "SN:4", minuto: 58, partidos: 1, automatica: true },
-  { jornada: 14, ref: "DP:4", minuto: 71, partidos: 2, automatica: false },
+const ROJAS: { jornada: number; ref: Ref; minuto: number; ajusteLiga?: AjusteSancion }[] = [
+  { jornada: 6, ref: "TL:3", minuto: 64 },
+  { jornada: 9, ref: "SN:4", minuto: 58 },
+  {
+    jornada: 14,
+    ref: "DP:4",
+    minuto: 71,
+    ajusteLiga: {
+      partidos: 2,
+      multaCents: 30_000,
+      motivo: "La liga aplicó 2 partidos y multa por la roja directa",
+    },
+  },
 ];
-/** "Aguas: llevas 4 amarillas" · El Gato: 0 tarjetas en 15 partidos */
-const AMARILLAS_EXACTAS: Partial<Record<Ref, number>> = { "DP:9": 4 };
-const MAX_AMARILLAS = 4; // con 5 se suspende (Tournament.amarillasParaSuspension): nadie llega
+const partidosDeLaRoja = (r: (typeof ROJAS)[number]) => r.ajusteLiga?.partidos ?? TORNEO.partidosPorRoja;
+/**
+ * Amarillas exactas antes de la J15 (la cédula de la J15 trae las suyas):
+ * - El Chícharo: 4, "Aguas: llevas 4 amarillas" (home 03) · El Gato: 0 tarjetas en 15 partidos.
+ * - El Güero: 4 + la de la J15 = 5ª amarilla → 1 partido en la J16 vs Halcones (pantalla 47).
+ */
+const AMARILLAS_EXACTAS: Partial<Record<Ref, number>> = { "DP:9": 4, "RC:5": 4 };
+const QUINTA_AMARILLA: { ref: Ref; jornada: number } = { ref: "RC:5", jornada: 15 };
+/** Los demás no llegan a 5 (amarillasParaSuspension): las únicas suspensiones son las de arriba */
+const MAX_AMARILLAS = TORNEO.amarillasParaSuspension - 1;
 const VALLAS_INVICTAS_PORTALES = 4; // El Gato · 4 vallas invictas
 const PENALES_ATAJADOS: { ref: Ref; cuantos: number } = { ref: "TL:1", cuantos: 2 }; // El Pulpo
 const MAX_GOLES_RESTO = 10; // nadie más alcanza al podio del goleo
@@ -384,8 +412,9 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
   }
 
   // ---- Suspensiones por roja (se cumplen en las jornadas siguientes) ----------
+  // (cada equipo juega todas las jornadas: no hay descansos con 8 equipos)
   const suspendido = (ref: Ref, jornada: number) =>
-    ROJAS.some((r) => r.ref === ref && jornada > r.jornada && jornada <= r.jornada + r.partidos);
+    ROJAS.some((r) => r.ref === ref && jornada > r.jornada && jornada <= r.jornada + partidosDeLaRoja(r));
 
   // ---- Alineaciones y cambios ---------------------------------------------
   for (const p of jugados) {
@@ -709,41 +738,82 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
 
   for (const p of jugados) p.eventos.sort((a, b) => a.minuto - b.minuto);
 
+  // ---- Sanciones automáticas (PRD §7.8): salen de las cédulas validadas ------
+  const jugadorPorId = new Map([...jugadores.values()].map((j) => [j.id, j]));
+  const tarjetasDe = (p: Partido): TarjetaCedula[] =>
+    p.eventos.flatMap((e) =>
+      e.tipo === "AMARILLA" || e.tipo === "ROJA"
+        ? [{ jugadorId: e.jugador.id, equipoId: e.equipo, tipo: e.tipo, minuto: e.minuto }]
+        : [],
+    );
+  const estadoDe = (p: Partido) => (p.jornada <= TORNEO.jornadasJugadas ? "VALIDADO" : "PROGRAMADO");
+  const delEquipo = (c: ClaveEquipo) => partidos.filter((p) => p.local === c || p.visita === c);
+  const sancionesDemo = sancionesAutomaticas(
+    jugados.map((p) => ({
+      matchId: p.id,
+      orden: p.jornada,
+      etiqueta: `J${p.jornada}`,
+      status: "VALIDADO",
+      fase: "REGULAR",
+      tarjetas: tarjetasDe(p),
+    })),
+    { partidosPorRoja: TORNEO.partidosPorRoja, amarillasParaSuspension: TORNEO.amarillasParaSuspension },
+  ).map((a) => {
+    const j = jugadorPorId.get(a.jugadorId)!;
+    // La liga ajusta en la MISMA sanción, entre la validación y el domingo siguiente (0 cumplidos)
+    const ajuste =
+      a.origen === "ROJA"
+        ? ROJAS.find((r) => r.ref === j.ref && r.jornada === a.orden)?.ajusteLiga
+        : undefined;
+    const inicial: SancionActual = {
+      partidos: a.partidos,
+      partidosCumplidos: 0,
+      multaCents: null,
+      status: "ACTIVA",
+    };
+    const ajustada = ajuste ? ajustarSancion(inicial, ajuste) : null;
+    const { partidos: total, multaCents } = ajustada?.sancion ?? inicial;
+    const cumplidos = partidosCumplidos(
+      { orden: a.orden, partidos: total },
+      delEquipo(j.equipo).map((p) => ({ orden: p.jornada, status: estadoDe(p) })),
+    );
+    return { ...a, jugador: j, partidos: total!, multaCents, cumplidos, ajustada };
+  });
+  // Las alineaciones se armaron con ROJAS: las sanciones que salen de las cédulas tienen que ser esas mismas
+  {
+    const esperadas = [
+      ...ROJAS.map((r) => `${r.jornada}:${r.ref}:${partidosDeLaRoja(r)}`),
+      `${QUINTA_AMARILLA.jornada}:${QUINTA_AMARILLA.ref}:1`,
+    ].sort();
+    const derivadas = sancionesDemo.map((s) => `${s.orden}:${s.jugador.ref}:${s.partidos}`).sort();
+    if (esperadas.join() !== derivadas.join())
+      throw new Error(`Sanciones inesperadas en la demo: ${derivadas.join(", ")}`);
+  }
+  /** ¿Cumplía una sanción en esa jornada? (cada equipo juega todas las jornadas) */
+  const cumpliaSancion = (j: Jugador, jornada: number) =>
+    sancionesDemo.some((s) => s.jugador.id === j.id && jornada > s.orden && jornada <= s.orden + s.partidos);
+
   // ---- Tabla y estadísticas (solo partidos VALIDADOS) -----------------------
-  const tablaHasta = (ultima: number) => {
-    const filas = EQUIPOS.map((e) => ({
-      clave: e.clave,
-      nombre: e.nombre,
-      pj: 0,
-      pg: 0,
-      pe: 0,
-      pp: 0,
-      gf: 0,
-      gc: 0,
-      racha: [] as string[],
-    }));
-    const fila = (c: ClaveEquipo) => filas.find((f) => f.clave === c)!;
-    for (const p of jugados.filter((x) => x.jornada <= ultima).sort((a, b) => a.jornada - b.jornada)) {
-      for (const lado of ["L", "V"] as const) {
-        const f = fila(lado === "L" ? p.local : p.visita);
-        f.pj++;
-        f.gf += p.goles[lado];
-        f.gc += p.goles[rival(lado)];
-        const r =
-          p.goles[lado] > p.goles[rival(lado)] ? "G" : p.goles[lado] === p.goles[rival(lado)] ? "E" : "P";
-        if (r === "G") f.pg++;
-        else if (r === "E") f.pe++;
-        else f.pp++;
-        f.racha.push(r);
-      }
-    }
-    // Puntos con la configuración del torneo. Desempate PROVISIONAL (PRD §13.1, por decidir):
-    // puntos, diferencia, goles a favor.
-    return filas
-      .map((f) => ({ ...f, dg: f.gf - f.gc, pts: f.pg * TORNEO.puntosVictoria + f.pe * TORNEO.puntosEmpate }))
-      .sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.nombre.localeCompare(b.nombre, "es"))
-      .map((f, i) => ({ ...f, posicion: i + 1 }));
-  };
+  // Desempate de la PRD §7.13 (servicio de `ligas`), con juego limpio de las tarjetas de cada cédula
+  const tablaHasta = (ultima: number) =>
+    calcularTabla({
+      equipos: EQUIPOS.map((e) => ({ id: e.clave, nombre: e.nombre })),
+      reglas: { puntosVictoria: TORNEO.puntosVictoria, puntosEmpate: TORNEO.puntosEmpate },
+      partidos: jugados
+        .filter((p) => p.jornada <= ultima)
+        .map((p) => {
+          const limpio = puntosJuegoLimpio(tarjetasDe(p));
+          return {
+            localId: p.local,
+            visitanteId: p.visita,
+            golesLocal: p.goles.L,
+            golesVisitante: p.goles.V,
+            status: "VALIDADO",
+            orden: p.jornada,
+            juegoLimpio: { local: limpio.get(p.local) ?? 0, visitante: limpio.get(p.visita) ?? 0 },
+          };
+        }),
+    }).map((f) => ({ ...f, clave: f.equipoId as ClaveEquipo }));
   const tabla = tablaHasta(TORNEO.jornadasJugadas);
   const tablaAnterior = tablaHasta(TORNEO.jornadasJugadas - 1);
 
@@ -764,13 +834,18 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
         if (golesEn(p) === 0) break;
         rachaGoles++;
       }
-      // PROVISIONAL (PRD §13.5, por decidir): "domingos sin faltar" = jornadas seguidas en las que jugó
-      // (un suplente que fue y no entró cuenta como falta). La recomendación es contar también la banca.
-      let rachaAsistencia = 0;
-      for (let n = TORNEO.jornadasJugadas; n >= 1; n--) {
-        if (!suyos.some((p) => p.jornada === n)) break;
-        rachaAsistencia++;
-      }
+      // "Domingos sin faltar" (PRD §7.6): fue = está en la alineación, titular o en la banca;
+      // cumplir una sanción es pausa
+      const domingosSinFaltar = rachaAsistencia(
+        delEquipo(j.equipo)
+          .filter((p) => p.jornada <= TORNEO.jornadasJugadas)
+          .map((p) => ({
+            orden: p.jornada,
+            status: estadoDe(p),
+            enAlineacion: p.alineacion[ladoDe(p, j.equipo)].some((c) => c.jugador.id === j.id),
+            suspendido: cumpliaSancion(j, p.jornada),
+          })),
+      );
       // Goles recibidos y vallas: solo para porteros, en los partidos que jugaron
       const deArco = j.posicion === "POR" ? suyos : [];
       const recibidos = deArco.map((p) => p.goles[rival(ladoDe(p, j.equipo))]);
@@ -789,7 +864,7 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
           vallasInvictas: recibidos.filter((g) => g === 0).length,
           penalesAtajados: cuenta("PENAL_ATAJADO"),
           rachaGoles,
-          rachaAsistencia,
+          rachaAsistencia: domingosSinFaltar,
         },
       ] as const;
     }),
@@ -992,6 +1067,8 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
     ventanaFichajesAbierta: false,
     puntosVictoria: TORNEO.puntosVictoria,
     puntosEmpate: TORNEO.puntosEmpate,
+    partidosPorRoja: TORNEO.partidosPorRoja,
+    amarillasParaSuspension: TORNEO.amarillasParaSuspension,
   };
   const tournamentTeams: Prisma.TournamentTeamCreateManyInput[] = EQUIPOS.map((e, i) => ({
     id: inscripcionId(e.clave),
@@ -1174,26 +1251,26 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
     }
   }
 
-  const sanctions: Prisma.SanctionCreateManyInput[] = ROJAS.map((r) => {
-    const j = jugador(r.ref);
-    const cumplidos = Math.min(r.partidos, TORNEO.jornadasJugadas - r.jornada);
-    return {
-      id: idDemo("sancion", `${r.jornada}:${r.ref}`),
-      tournamentId: torneoId,
-      userId: j.id,
-      tournamentTeamId: inscripcionId(j.equipo),
-      matchId: partidoDe(r.jornada, j.equipo)!.id,
-      type: "SUSPENSION_PARTIDOS",
-      partidos: r.partidos,
-      partidosCumplidos: cumplidos,
-      motivo: `Roja directa al ${r.minuto}' en la J${r.jornada}`,
-      automatica: r.automatica,
-      status: cumplidos >= r.partidos ? "CUMPLIDA" : "ACTIVA",
-      createdById: r.automatica ? null : organizadorId,
-    };
-  });
+  // Todas nacen de la cédula (automatica = true), aunque la liga las haya ajustado (PRD §7.8)
+  const idSancion = (s: (typeof sancionesDemo)[number]) =>
+    idDemo("sancion", `${s.orden}:${s.jugador.ref}${s.origen === "AMARILLAS" ? ":amarillas" : ""}`);
+  const sanctions: Prisma.SanctionCreateManyInput[] = sancionesDemo.map((s) => ({
+    id: idSancion(s),
+    tournamentId: torneoId,
+    userId: s.jugador.id,
+    tournamentTeamId: inscripcionId(s.jugador.equipo),
+    matchId: s.matchId,
+    type: "SUSPENSION_PARTIDOS",
+    partidos: s.partidos,
+    partidosCumplidos: s.cumplidos,
+    multaCents: s.multaCents,
+    motivo: s.motivo,
+    automatica: true,
+    status: s.cumplidos >= s.partidos ? "CUMPLIDA" : "ACTIVA",
+    createdById: null,
+  }));
 
-  // Bitácora (CLAUDE.md: cambios a resultados y sanciones): la liga validó cada partido y aplicó la sanción manual
+  // Bitácora (CLAUDE.md: cambios a resultados y sanciones): la liga validó cada partido y ajustó la sanción
   const auditLogs: Prisma.AuditLogCreateManyInput[] = [
     ...jugados.map((p) => ({
       id: idDemo("bitacora", `validar:${p.clave}`),
@@ -1205,17 +1282,20 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
       after: { status: "VALIDADO", homeScore: p.goles.L, awayScore: p.goles.V },
       createdAt: noDespuesDeAhora(enCDMX(sumarDias(p.fecha, 1), "10:00")),
     })),
-    ...sanctions
-      .filter((s) => !s.automatica)
-      .map((s) => ({
-        id: idDemo("bitacora", `sancion:${s.id}`),
-        actorId: organizadorId,
-        action: "CREATE" as const,
-        entityType: "Sanction",
-        entityId: s.id!,
-        after: { type: s.type, partidos: s.partidos, userId: s.userId },
-        motivo: s.motivo,
-      })),
+    ...sancionesDemo.flatMap((s) =>
+      s.ajustada
+        ? [
+            {
+              id: idDemo("bitacora", `sancion:${idSancion(s)}`),
+              actorId: organizadorId,
+              entityType: "Sanction",
+              entityId: idSancion(s),
+              ...s.ajustada.bitacora,
+              createdAt: noDespuesDeAhora(enCDMX(sumarDias(fechaJornada(s.orden), 1), "12:00")),
+            },
+          ]
+        : [],
+    ),
   ];
 
   const standings: Prisma.StandingRowCreateManyInput[] = tabla.map((f) => ({
@@ -1232,7 +1312,7 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
     posicion: f.posicion,
     posicionAnterior: tablaAnterior.find((a) => a.clave === f.clave)!.posicion,
     // Últimos 5 resultados, del más viejo al más reciente (G gana · E empata · P pierde)
-    racha: f.racha.slice(-5).join(""),
+    racha: f.racha,
   }));
 
   const playerTournamentStats: Prisma.PlayerTournamentStatCreateManyInput[] = [...jugadores.values()].map(
@@ -1289,20 +1369,26 @@ export function armarLigaDemo({ hoy = new Date(), semilla = 2026 }: { hoy?: Date
       });
     }
   }
-  {
-    const roja = ROJAS.find((r) => r.ref === "DP:4")!;
+  // Multas: cada una con su cargo a la liga, ligado a la sanción (PRD §7.8)
+  for (const s of sancionesDemo.filter((x) => x.multaCents != null)) {
+    const sancion = sanctions.find((x) => x.id === idSancion(s))!;
     leagueCharges.push({
-      id: idDemo("cobro", "multa:DP:4"),
-      leagueId: ligaId,
-      tournamentId: torneoId,
-      tournamentTeamId: inscripcionId("DP"),
-      matchId: partidoDe(roja.jornada, "DP")!.id,
-      concept: "MULTA",
-      descripcion: `Multa · roja de ${jugador("DP:4").datos.sobrenombre}`,
-      amountCents: 30_000,
-      dueDate: soloFecha(sumarDias(fechaJornada(TORNEO.jornadasJugadas + 1), -1)),
-      status: "PENDIENTE",
-      recordedById: organizadorId,
+      id: idDemo("cobro", `multa:${s.jugador.ref}`),
+      ...cargoDeMulta(
+        {
+          id: sancion.id!,
+          tournamentId: torneoId,
+          tournamentTeamId: sancion.tournamentTeamId!,
+          matchId: s.matchId,
+          multaCents: s.multaCents,
+        },
+        {
+          leagueId: ligaId,
+          recordedById: organizadorId,
+          descripcion: descripcionMulta(`roja de ${s.jugador.datos.sobrenombre ?? s.jugador.datos.nombre}`),
+          dueDate: soloFecha(sumarDias(fechaJornada(TORNEO.jornadasJugadas + 1), -1)),
+        },
+      ),
     });
   }
   const refereePayments: Prisma.RefereePaymentCreateManyInput[] = jugados.map((p) => ({

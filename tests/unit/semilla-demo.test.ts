@@ -1,4 +1,14 @@
 import { describe, expect, it } from "vitest";
+import { calcularTabla } from "@/modules/ligas";
+import {
+  amarillasAcumuladas,
+  puntosJuegoLimpio,
+  rachaAsistencia,
+  revisarAlineacion,
+  sancionesAutomaticas,
+  type PartidoParaSanciones,
+  type TarjetaCedula,
+} from "@/modules/partidos";
 import { armarLigaDemo, domingoJ15 } from "../../prisma/demo/plan";
 
 // Lunes 12 de octubre de 2026: la fecha del deck (J15 = domingo 11, J16 = domingo 18)
@@ -20,6 +30,36 @@ const jugoEn = (matchId: string | undefined, userId: string) => {
   const lineupIds = plan.lineups.filter((l) => l.matchId === matchId).map((l) => l.id);
   return plan.lineupPlayers.some((lp) => lineupIds.includes(lp.lineupId) && lp.userId === userId && lp.jugo);
 };
+/** En la alineación de la cédula: titular o banca */
+const fueA = (matchId: string | undefined, userId: string | undefined) => {
+  const lineupIds = plan.lineups.filter((l) => l.matchId === matchId).map((l) => l.id);
+  return plan.lineupPlayers.some((lp) => lineupIds.includes(lp.lineupId) && lp.userId === userId);
+};
+const numeroDe = (matchId?: string | null) =>
+  plan.rounds.find((r) => r.id === plan.matches.find((m) => m.id === matchId)!.roundId)!.numero;
+const equipoDeInscripcion = (tournamentTeamId?: string | null) =>
+  plan.tournamentTeams.find((t) => t.id === tournamentTeamId)!.teamId;
+const validados = () =>
+  plan.matches.filter((m) => m.status === "VALIDADO").sort((a, b) => numeroDe(a.id) - numeroDe(b.id));
+const tarjetasDe = (matchId?: string): TarjetaCedula[] =>
+  eventosDe(matchId).flatMap((e) =>
+    e.type === "AMARILLA" || e.type === "ROJA"
+      ? [{ jugadorId: e.playerId!, equipoId: e.teamId!, tipo: e.type, minuto: e.minute }]
+      : [],
+  );
+const REGLAS = {
+  partidosPorRoja: plan.tournament.partidosPorRoja!,
+  amarillasParaSuspension: plan.tournament.amarillasParaSuspension!,
+};
+const paraSanciones = (): PartidoParaSanciones[] =>
+  validados().map((m) => ({
+    matchId: m.id!,
+    orden: numeroDe(m.id),
+    etiqueta: `J${numeroDe(m.id)}`,
+    status: m.status!,
+    fase: plan.rounds.find((r) => r.id === m.roundId)?.fase ?? "REGULAR",
+    tarjetas: tarjetasDe(m.id),
+  }));
 
 describe("fechas", () => {
   it("la J15 es el domingo anterior a hoy y la J16 el siguiente", () => {
@@ -170,7 +210,7 @@ describe("lo que muestran las pantallas", () => {
       nota: "Le toca trabajar",
     });
     expect(plan.matchAttendances.filter((a) => a.status === "CONVOCADO")).toHaveLength(3);
-    // Las alertas no bloquean (PRD §7.6): el suspendido sale en la lista con su nota
+    // El suspendido sí aparece en el pase de lista, con su nota (PRD §7.6), pero no se puede alinear
     expect(plan.matchAttendances).toHaveLength(16);
     expect(plan.matchAttendances.find((a) => a.userId === usuario("la-roca").id)).toMatchObject({
       status: "NO_VA",
@@ -178,15 +218,23 @@ describe("lo que muestran las pantallas", () => {
     });
   });
 
-  it("bitácora: la liga validó cada partido y aplicó la sanción manual", () => {
-    const validados = plan.matches.filter((m) => m.status === "VALIDADO");
+  it("bitácora: la liga validó cada partido y ajustó la sanción de La Roca (antes → después)", () => {
     const validaciones = plan.auditLogs.filter((a) => a.action === "VALIDATE");
-    expect(validaciones.map((a) => a.entityId).sort()).toEqual(validados.map((m) => m.id).sort());
+    expect(validaciones.map((a) => a.entityId).sort()).toEqual(
+      validados()
+        .map((m) => m.id)
+        .sort(),
+    );
     const roca = plan.sanctions.find((s) => s.userId === usuario("la-roca").id)!;
-    expect(plan.auditLogs.find((a) => a.entityId === roca.id)).toMatchObject({
-      action: "CREATE",
-      entityType: "Sanction",
-    });
+    expect(plan.auditLogs.filter((a) => a.entityId === roca.id)).toEqual([
+      expect.objectContaining({
+        action: "UPDATE",
+        entityType: "Sanction",
+        actorId: usuario("don-tono").id,
+        before: { partidos: 1, multaCents: null },
+        after: { partidos: 2, multaCents: 30_000 },
+      }),
+    ]);
   });
 
   it("los puntos salen de la configuración del torneo", () => {
@@ -213,32 +261,196 @@ describe("regla 4: un jugador, un equipo por torneo", () => {
   });
 });
 
-describe("sanciones", () => {
-  it("el expulsado no juega mientras está suspendido", () => {
+describe("sanciones (PRD §7.8)", () => {
+  it("salen de las cédulas validadas con el servicio de sanciones", () => {
+    const esperadas = sancionesAutomaticas(paraSanciones(), REGLAS);
+    expect(plan.sanctions.map((s) => [s.userId, s.matchId, s.motivo]).sort()).toEqual(
+      esperadas.map((s) => [s.jugadorId, s.matchId, s.motivo]).sort(),
+    );
+    expect(plan.sanctions.every((s) => s.automatica && s.createdById === null)).toBe(true);
+  });
+
+  it("La Roca: la automática (1) se ajustó en la misma sanción a 2 partidos + multa; cumplió 1", () => {
+    const deLaRoca = plan.sanctions.filter((s) => s.userId === usuario("la-roca").id);
+    expect(deLaRoca).toHaveLength(1); // una sanción por hecho, no una que se suma
+    expect(deLaRoca[0]).toMatchObject({
+      motivo: "Roja directa al 71' en la J14",
+      partidos: 2,
+      partidosCumplidos: 1,
+      multaCents: 30_000,
+      status: "ACTIVA",
+      automatica: true,
+    });
+  });
+
+  it("las otras rojas ya se cumplieron", () => {
+    for (const s of plan.sanctions.filter(
+      (x) => x.motivo.startsWith("Roja") && x.userId !== usuario("la-roca").id,
+    ))
+      expect(s).toMatchObject({ partidos: 1, partidosCumplidos: 1, status: "CUMPLIDA" });
+  });
+
+  it("El Güero: 5ª amarilla en la J15 → 1 partido, se aplica en la J16 vs Halcones (pantalla 47)", () => {
+    const guero = usuario("el-guero");
+    expect(stat("el-guero").amarillas).toBe(5);
+    expect(plan.sanctions.filter((s) => s.userId === guero.id)).toEqual([
+      expect.objectContaining({
+        motivo: "5ª amarilla en la J15",
+        partidos: 1,
+        partidosCumplidos: 0,
+        status: "ACTIVA",
+      }),
+    ]);
+    // El acumulado vuelve a 0; El Chícharo lleva 4: "Aguas: llevas 4 amarillas"
+    const acumuladas = amarillasAcumuladas(paraSanciones(), REGLAS);
+    expect(acumuladas.get(guero.id!)).toBe(0);
+    expect(acumuladas.get(usuario("el-chicharo").id!)).toBe(4);
+    expect([...acumuladas.values()].every((n) => n < REGLAS.amarillasParaSuspension)).toBe(true);
+  });
+
+  it("el suspendido no está en la cédula, ni de titular ni en la banca (PRD §7.6)", () => {
     for (const s of plan.sanctions) {
-      const roja = plan.matches.find((m) => m.id === s.matchId)!;
-      const numero = plan.rounds.find((r) => r.id === roja.roundId)!.numero;
-      for (let n = numero + 1; n <= Math.min(15, numero + s.partidos!); n++) {
-        for (const m of partidosDe(n)) expect(jugoEn(m.id, s.userId!)).toBe(false);
-      }
+      const numero = numeroDe(s.matchId);
+      for (let n = numero + 1; n <= Math.min(15, numero + s.partidos!); n++)
+        for (const m of partidosDe(n)) expect(fueA(m.id, s.userId!)).toBe(false);
     }
   });
 
-  it("La Roca: 2 partidos, cumplió 1, sigue activa; las automáticas ya se cumplieron", () => {
-    const roca = plan.sanctions.find((s) => s.userId === usuario("la-roca").id)!;
-    expect(roca).toMatchObject({ partidos: 2, partidosCumplidos: 1, status: "ACTIVA", automatica: false });
-    for (const s of plan.sanctions.filter((x) => x.automatica))
-      expect(s).toMatchObject({ partidos: 1, status: "CUMPLIDA" });
-  });
-
-  it("nadie llega a 5 amarillas ni tiene dos en un partido", () => {
-    for (const s of plan.playerTournamentStats) expect(s.amarillas).toBeLessThan(5);
+  it("nadie tiene dos amarillas en un partido", () => {
     for (const m of plan.matches) {
       const amarillas = eventosDe(m.id)
         .filter((e) => e.type === "AMARILLA")
         .map((e) => e.playerId);
       expect(new Set(amarillas).size).toBe(amarillas.length);
     }
+  });
+
+  it("multa: su cargo MULTA por el mismo monto, ligado a la sanción", () => {
+    const roca = plan.sanctions.find((s) => s.userId === usuario("la-roca").id)!;
+    const ligados = plan.leagueCharges.filter((c) => c.sanctionId);
+    expect(ligados).toEqual([
+      expect.objectContaining({
+        sanctionId: roca.id,
+        concept: "MULTA",
+        amountCents: roca.multaCents,
+        tournamentTeamId: roca.tournamentTeamId,
+        descripcion: "Multa · roja de La Roca",
+        status: "PENDIENTE",
+      }),
+    ]);
+    // CHECK league_charges_sanction_is_multa y una multa por sanción
+    expect(plan.leagueCharges.filter((c) => c.concept === "MULTA").every((c) => c.sanctionId)).toBe(true);
+  });
+
+  it("alineación de la J16: La Roca en rojo (suspendido); El Chícharo en ámbar (4 amarillas)", () => {
+    const portales = plan.tournamentTeams.find((t) => t.teamId === equipo("dep-portales").id)!;
+    const activas = plan.sanctions.filter((s) => s.status === "ACTIVA");
+    const acumuladas = amarillasAcumuladas(paraSanciones(), REGLAS);
+    const revision = revisarAlineacion(
+      plan.tournamentRosters
+        .filter((r) => r.tournamentTeamId === portales.id)
+        .map((r) => {
+          const u = plan.users.find((x) => x.id === r.userId)!;
+          const suspension = activas.find((s) => s.userId === r.userId);
+          return {
+            userId: r.userId,
+            nombre: u.sobrenombre ?? u.nombre,
+            registro: { tournamentTeamId: r.tournamentTeamId, equipo: "Portales", aprobado: true },
+            suspension: suspension ? { motivo: suspension.motivo } : null,
+            amarillasAcumuladas: acumuladas.get(r.userId) ?? 0,
+          };
+        }),
+      { tournamentTeamId: portales.id!, umbralAmarillas: REGLAS.amarillasParaSuspension },
+    );
+    expect(revision.bloqueados.map((b) => b.nombre)).toEqual(["La Roca"]);
+    expect(revision.porJugador.find((j) => j.nombre === "El Chícharo")).toMatchObject({
+      bloqueado: false,
+      alertas: [{ tipo: "AMARILLAS_AL_LIMITE", acumuladas: 4 }],
+    });
+  });
+});
+
+describe("tabla con el desempate de la PRD §7.13", () => {
+  const tablaHasta = (ultima: number) =>
+    calcularTabla({
+      equipos: plan.teams.map((t) => ({ id: t.id!, nombre: t.nombre })),
+      reglas: {
+        puntosVictoria: plan.tournament.puntosVictoria!,
+        puntosEmpate: plan.tournament.puntosEmpate!,
+      },
+      partidos: validados()
+        .filter((m) => numeroDe(m.id) <= ultima)
+        .map((m) => {
+          const limpio = puntosJuegoLimpio(tarjetasDe(m.id));
+          return {
+            localId: m.homeTeamId,
+            visitanteId: m.awayTeamId,
+            golesLocal: m.homeScore ?? null,
+            golesVisitante: m.awayScore ?? null,
+            status: m.status!,
+            orden: numeroDe(m.id),
+            juegoLimpio: { local: limpio.get(m.homeTeamId) ?? 0, visitante: limpio.get(m.awayTeamId) ?? 0 },
+          };
+        }),
+    });
+
+  it("posición, puntos, racha y posición anterior salen del servicio de tabla", () => {
+    const hoy = tablaHasta(15);
+    const antes = tablaHasta(14);
+    for (const s of plan.standings) {
+      const teamId = equipoDeInscripcion(s.tournamentTeamId);
+      const f = hoy.find((x) => x.equipoId === teamId)!;
+      expect(s).toMatchObject({ posicion: f.posicion, pts: f.pts, dg: f.dg, gf: f.gf, racha: f.racha });
+      expect(s.posicionAnterior).toBe(antes.find((x) => x.equipoId === teamId)!.posicion);
+    }
+  });
+
+  it("ningún empate queda sin resolver (no hace falta sorteo)", () => {
+    expect([...tablaHasta(15), ...tablaHasta(14)].some((f) => f.empateSinResolver)).toBe(false);
+  });
+});
+
+describe("domingos sin faltar (PRD §7.6)", () => {
+  const racha = (userId: string, teamId: string) =>
+    rachaAsistencia(
+      validados()
+        .filter((m) => m.homeTeamId === teamId || m.awayTeamId === teamId)
+        .map((m) => {
+          const n = numeroDe(m.id);
+          return {
+            orden: n,
+            status: m.status!,
+            enAlineacion: fueA(m.id, userId),
+            suspendido: plan.sanctions.some(
+              (s) => s.userId === userId && n > numeroDe(s.matchId) && n <= numeroDe(s.matchId) + s.partidos!,
+            ),
+          };
+        }),
+    );
+
+  it("rachaAsistencia sale del servicio: fue a la cédula, titular o banca", () => {
+    for (const r of plan.tournamentRosters) {
+      const s = plan.playerTournamentStats.find((x) => x.userId === r.userId)!;
+      expect(s.rachaAsistencia).toBe(racha(r.userId, equipoDeInscripcion(r.tournamentTeamId)));
+    }
+  });
+
+  it("ir a la banca cuenta: alguien que fue y no entró en la J15 no corta su racha", () => {
+    const j15 = partidosDe(15).map((m) => m.id);
+    const banca = plan.lineupPlayers.find(
+      (lp) => lp.jugo === false && j15.includes(plan.lineups.find((l) => l.id === lp.lineupId)!.matchId),
+    )!;
+    expect(banca).toBeDefined();
+    expect(
+      plan.playerTournamentStats.find((s) => s.userId === banca.userId)!.rachaAsistencia,
+    ).toBeGreaterThan(0);
+  });
+
+  it("La Roca: cumplir la suspensión en la J15 es pausa, no corte", () => {
+    expect(
+      fueA(partidosDe(15).find((m) => m.homeTeamId === equipo("dep-portales").id)!.id, usuario("la-roca").id),
+    ).toBe(false);
+    expect(stat("la-roca").rachaAsistencia).toBeGreaterThan(0);
   });
 });
 

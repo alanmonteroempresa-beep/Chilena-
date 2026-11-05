@@ -74,6 +74,9 @@ export const TORNEO = {
   costoArbitrajeCents: 65_000,
   puntosVictoria: 3,
   puntosEmpate: 1,
+  // Sanciones automáticas (PRD §7.8): roja = 1 partido · 5 amarillas = 1 partido
+  partidosPorRoja: 1,
+  amarillasParaSuspension: 5,
 };
 
 export const ORGANIZADOR = { nombre: "Antonio", apellidos: "Gutiérrez", sobrenombre: "Don Toño" };

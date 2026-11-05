@@ -1738,6 +1738,7 @@ model Sanction {
   tournamentTeam    TournamentTeam? @relation(fields: [tournamentTeamId], references: [id], onDelete: Cascade)
   match             Match?          @relation(fields: [matchId], references: [id], onDelete: SetNull)
   createdBy         User?           @relation("SanctionCreator", fields: [createdById], references: [id])
+  cargo             LeagueCharge? // la multa, si la lleva (PRD §7.8)
 
   @@index([tournamentId, userId, status])
   @@map("sanctions")
@@ -1800,6 +1801,7 @@ model LeagueCharge {
   tournamentId     String?        @db.Uuid
   tournamentTeamId String         @db.Uuid
   matchId          String?        @db.Uuid
+  sanctionId       String?        @unique @db.Uuid // multa de una sanción (PRD §7.8): un cargo por sanción
   concept          ChargeConcept
   descripcion      String?
   amountCents      Int
@@ -1813,6 +1815,7 @@ model LeagueCharge {
   tournament       Tournament?    @relation(fields: [tournamentId], references: [id], onDelete: SetNull)
   tournamentTeam   TournamentTeam @relation(fields: [tournamentTeamId], references: [id], onDelete: Cascade)
   match            Match?         @relation(fields: [matchId], references: [id], onDelete: SetNull)
+  sanction         Sanction?      @relation(fields: [sanctionId], references: [id], onDelete: SetNull)
   recordedBy       User           @relation("ChargeRecorder", fields: [recordedById], references: [id])
 
   @@index([tournamentTeamId, status])

@@ -15,6 +15,8 @@ Ligas, administradores, canchas, torneos (asistente), generador del rol, inscrip
 - Un jugador no puede estar en dos equipos del mismo torneo.
 - El generador del rol es un servicio puro con tests exhaustivos.
 - Panel en escritorio y celular.
+- Tabla (PRD §7.13, `server/services/tabla.ts`): puntos → diferencia → goles a favor → entre ellos → juego limpio → sorteo de la liga.
+- Multas (PRD §7.8, `server/services/cargos.ts`): la sanción con multa crea su cargo `MULTA` ligado por `sanctionId`; condonar se hace en el cargo.
 
 ## Estructura
 - `index.ts`: **API pública**. Lo único que otros módulos pueden importar (`@/modules/ligas`).

@@ -41,6 +41,8 @@ ALTER TABLE respect_votes ADD CONSTRAINT respect_votes_not_self CHECK ("voterId"
 ALTER TABLE player_cards ADD CONSTRAINT player_cards_media_range CHECK (media IS NULL OR media BETWEEN 40 AND 99);
 ALTER TABLE team_dues ADD CONSTRAINT team_dues_amount_positive CHECK ("amountCents" > 0);
 ALTER TABLE league_charges ADD CONSTRAINT league_charges_amount_positive CHECK ("amountCents" > 0);
+-- El cargo ligado a una sanción es su multa (PRD §7.8)
+ALTER TABLE league_charges ADD CONSTRAINT league_charges_sanction_is_multa CHECK ("sanctionId" IS NULL OR "concept" = 'MULTA');
 ALTER TABLE referee_payments ADD CONSTRAINT referee_payments_amount_positive CHECK ("amountCents" > 0);
 ALTER TABLE user_follows ADD CONSTRAINT user_follows_not_self CHECK ("followerId" <> "followedId");
 ALTER TABLE blocks ADD CONSTRAINT blocks_not_self CHECK ("blockerId" <> "blockedId");
