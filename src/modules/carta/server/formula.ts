@@ -120,12 +120,19 @@ export function bonoDefensivo(vallasPorPartido: number): number {
   return 0;
 }
 
+/**
+ * Cortes de los niveles (§1.5, POR APROBAR): media mínima de cada uno y los partidos que pide la Leyenda.
+ * Salen de la liga demo (`scripts/distribucion-cartas.ts`) para acercarse a 50% Bronce · 30% Plata ·
+ * 15% Oro · 5% Leyenda. Se reajustan cuando haya votaciones (CRK y RES suben la media).
+ */
+export const NIVELES = { plata: 67, oro: 75, leyenda: 78, leyendaPartidos: 30 } as const;
+
 /** Nivel por media (§1.5). En construcción siempre es Bronce. */
 export function nivelDeCarta(media: number | null, partidosValidados: number): NivelCarta {
   if (media == null || partidosValidados < PARTIDOS_PARA_MEDIA) return "bronce";
-  if (media >= 85 && partidosValidados >= 30) return "leyenda";
-  if (media >= 75) return "oro";
-  if (media >= 65) return "plata";
+  if (media >= NIVELES.leyenda && partidosValidados >= NIVELES.leyendaPartidos) return "leyenda";
+  if (media >= NIVELES.oro) return "oro";
+  if (media >= NIVELES.plata) return "plata";
   return "bronce";
 }
 

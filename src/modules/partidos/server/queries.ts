@@ -322,9 +322,9 @@ export function partidosValidadosConGoles(tournamentId: string, numero: number) 
       ...partidoSelect,
       validatedAt: true,
       events: {
-        where: { type: "GOL", oficial: true, voided: false },
+        where: { type: { in: ["GOL", "AUTOGOL"] }, oficial: true, voided: false },
         orderBy: { minute: "asc" },
-        select: { minute: true, tipoGol: true, teamId: true, player: { select: personaSelect } },
+        select: { type: true, minute: true, tipoGol: true, teamId: true, player: { select: personaSelect } },
       },
     },
   });

@@ -189,7 +189,7 @@ function Resumen({ p, resumen }: { p: Partido; resumen: ReturnType<typeof resume
             {g.minuto != null ? `${g.minuto}'` : ""}
           </span>
           <span className={cn("flex flex-col gap-1", lado === "visita" && "items-end")}>
-            <span className="text-[13px] font-semibold">⚽ {g.jugador}</span>
+            <span className="text-[13px] font-semibold">{g.tipo === "AUTOGOL" ? `Autogol de ${g.jugador}` : `⚽ ${g.jugador}`}</span>
             {g.tipoGol && ETIQUETA_TIPO_GOL[g.tipoGol] && (
               <Chip tono={esGolazo(g.tipoGol) ? "lima" : "neutro"}>{ETIQUETA_TIPO_GOL[g.tipoGol]}</Chip>
             )}
@@ -209,11 +209,6 @@ function Resumen({ p, resumen }: { p: Partido; resumen: ReturnType<typeof resume
         {columna(resumen.golesLocal, "local")}
         {columna(resumen.golesVisita, "visita")}
       </div>
-      {resumen.autogoles.map((a, i) => (
-        <p key={`a${i}`} className="text-[13px] text-muted-foreground">
-          {a.minuto != null ? `${a.minuto}' ` : ""}Autogol de {a.jugador}
-        </p>
-      ))}
       {(resumen.tarjetas.length > 0 || resumen.penales.length > 0) && (
         <ul className="flex flex-col gap-1.5 border-t border-border pt-2.5 text-[13px]">
           {resumen.tarjetas.map((t, i) => (

@@ -58,10 +58,12 @@ Interpolación lineal entre los puntos de cada tabla (fuera de rango se toma el 
 ### 1.5 Niveles
 | Nivel | Regla | Color |
 |---|---|---|
-| Bronce | media < 65 (o en construcción) | bronce |
-| Plata | 65–74 | plata (#C6D0DD) |
+| Bronce | media < 67 (o en construcción) | bronce |
+| Plata | 67–74 | plata (#C6D0DD) |
 | Oro | 75+ | oro (#E8C46A) |
-| **Leyenda del Barrio** | 85+ **y** 30+ partidos validados | negro + lima |
+| **Leyenda del Barrio** | 78+ **y** 30+ partidos validados | negro + lima |
+
+> **Cortes POR APROBAR.** Salen de la liga demo para acercarse a 50% Bronce · 30% Plata · 15% Oro · 5% Leyenda (`npx tsx scripts/distribucion-cartas.ts`). Con la semilla: Bronce 68 (53%) · Plata 39 (30%) · Oro 21 (16%) · Leyenda 0 (nadie tiene 30 partidos; por media serían 5, el 4%). Las medias están comprimidas porque aún no hay votaciones (CRK 55 y RES 70 de base): se reajustan con datos de la beta. La lámina 25b usa otros cortes (70/80/90); manda esta tabla.
 
 **Cartas especiales** (marco temporal de una semana o para siempre):
 - **Once de la Jornada** (semana): ganó su posición en la votación.
@@ -140,7 +142,7 @@ Las no ganadas se muestran en gris con su progreso (`UserBadge.progreso / meta`)
 | Gol de chilena | "¡{JUGADOR} SE AVENTÓ DE CHILENA!" |
 | Líder pierde | "¡LOS BAJARON DE LA NUBE!" |
 | Hat-trick | "¡LA PELOTA SE LA LLEVA {JUGADOR}!" |
-| Victoria (sin nada especial) | "¡{GANADOR} SE LLEVÓ LOS TRES PUNTOS!" · "¡TRES PUNTOS PARA {GANADOR}!" *(propuesta del recorrido, por aprobar)* |
+| Victoria (sin nada especial) | "¡{GANADOR} SE LLEVÓ LOS TRES PUNTOS!" · "¡TRES PUNTOS PARA {GANADOR}!" |
 
 Cuál situación manda (de la más fuerte a la más normal): remontada → gol agónico (el que lo puso arriba para siempre, al 85' o después) → hat-trick → líder pierde → goleada → gol de chilena → victoria; si no hay ganador, empate. El cuerpo de la crónica (2–3 líneas) dice el resultado, los goleadores y lo que pasó, solo con datos de la cédula. Mientras no se guarden los posts, el titular del banco es estable por partido (el "no repetir en 4 semanas" llega con la cola de `match.validated`).
 
