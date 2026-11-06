@@ -12,4 +12,4 @@ export { PaginaPost } from "./components/pagina-post";
 export { FormularioPublicar } from "./components/publicar/formulario";
 export { Porra } from "./components/porra/porra";
 export { BotonSeguir } from "./components/boton-seguir";
-export { yaSigue } from "./server/queries";
+export { datosDeComentario, duenosDePost, yaSigue } from "./server/queries";

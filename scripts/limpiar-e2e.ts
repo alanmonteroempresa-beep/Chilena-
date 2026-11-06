@@ -1,6 +1,6 @@
 // Borra lo que crean los E2E en chilena-dev: comentarios y publicaciones con la marca "[e2e]" (y corrige
 // los contadores de la porra). Lo llaman los specs al terminar. Carga .env.local por dentro.
-//   npx tsx scripts/limpiar-e2e.ts
+//   npx tsx scripts/limpiar-e2e.ts [--desde=2026-11-06T17:00:00Z]   # también los avisos de las cuentas de prueba desde esa hora
 import { existsSync, readFileSync } from "node:fs";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { parse } from "dotenv";
@@ -19,6 +19,14 @@ async function main() {
   await db.report.deleteMany({ where: { targetId: { in: comentarios.map((c) => c.id) } } });
   await db.comment.deleteMany({ where: { id: { in: comentarios.map((c) => c.id) } } });
   const posts = await db.post.deleteMany({ where: { body: { startsWith: MARCA } } });
-  console.log(`✓ limpié ${comentarios.length} comentarios y ${posts.count} publicaciones [e2e]`);
+  const desde = process.argv.find((a) => a.startsWith("--desde="))?.slice(8);
+  let avisos = 0;
+  if (desde && !Number.isNaN(Date.parse(desde))) {
+    const r = await db.notification.deleteMany({
+      where: { createdAt: { gte: new Date(desde) }, user: { email: { endsWith: "@prueba.chilena" } } },
+    });
+    avisos = r.count;
+  }
+  console.log(`✓ limpié ${comentarios.length} comentarios, ${posts.count} publicaciones [e2e] y ${avisos} avisos`);
 }
 main().finally(() => db.$disconnect());

@@ -5,7 +5,7 @@ import { limpiarE2E, MARCA } from "./db";
 // Bloque B: reaccionar, comentar en la porra, seguir y publicar texto (PRD §6.1–6.3)
 test.skip(cuentas.size === 0, `Necesita ${ARCHIVO_CUENTAS} (npx tsx scripts/cuentas-de-prueba.ts)`);
 test.describe.configure({ mode: "serial" });
-test.afterAll(limpiarE2E);
+test.afterAll(() => limpiarE2E());
 
 test("echar 🔥 se queda al recargar y se quita tocando otra vez", async ({ page }) => {
   await entrarCon(page, "aficionada");

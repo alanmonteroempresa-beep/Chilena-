@@ -35,3 +35,8 @@ export function perfilesDeJugadores(userIds: string[]) {
     select: { id: true, isPionero: true, claimedAt: true, playerProfile: { select: { posicionPrincipal: true } } },
   });
 }
+
+/** Nombre y username públicos de varias personas (avisos de la campana) */
+export function personasPorId(ids: string[]) {
+  return db.user.findMany({ where: { id: { in: ids } }, select: { id: true, username: true, nombre: true, sobrenombre: true } });
+}

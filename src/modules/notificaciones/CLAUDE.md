@@ -12,6 +12,8 @@
 | **Escucha** | Casi todos los eventos (ver `docs/NOTIFICACIONES.md`) |
 
 ## Reglas clave
+- `notificar()` (`server/notificar.ts`) guarda en `notifications`: nunca a quien hizo la acción ni a perfiles sin reclamar; lo social (reacciones, seguidores) se agrupa en 10 min. Los listeners (`server/listeners.ts`) escuchan `post.reacted`, `comment.created`, `user.followed`, `badge.awarded` y `card.recalculated`; los de día de partido se agregan con su bloque.
+- La campana (pantalla 09) en `/notificaciones`; `/n/[id]` marca leído y lleva a su `href`. El numerito sale en el header (`sinLeer`).
 - Pocas y útiles: push solo para los tipos ★.
 - Perfiles sin reclamar no reciben nada.
 - Horario silencioso 23:00–07:00.
