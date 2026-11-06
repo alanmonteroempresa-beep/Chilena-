@@ -68,3 +68,12 @@ export function Escudo({
     </span>
   );
 }
+
+/** Colores del escudo a partir del equipo de la base (sin colores: azul Chilena con franja blanca) */
+export function coloresDe(t: { siglas?: string | null; colorPrimario?: string | null; colorSecundario?: string | null }): ColoresEquipo {
+  return {
+    siglas: t.siglas ?? undefined,
+    color: t.colorPrimario ?? "#0250B0",
+    colorFranja: t.colorSecundario ?? "#FFFFFF",
+  };
+}

@@ -43,6 +43,8 @@
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
   --color-whatsapp: #25d366;
+  /* Tarjeta amarilla dibujada (aviso de amarillas, pantalla 03) */
+  --color-amarilla: #e39a00;
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
 
@@ -183,6 +185,23 @@
     text-transform: uppercase;
     letter-spacing: -0.01em;
     line-height: 0.9;
+  }
+  /* Tarjeta principal del inicio con el color del rol (export 03 claro: 140deg #0A63D6 → #0250B0 → #023B83).
+     En oscuro el color se funde con la superficie para que el lima del titular resalte (pantalla 03). */
+  .tarjeta-rol {
+    background: linear-gradient(
+      140deg,
+      color-mix(in srgb, var(--role-card) 82%, white),
+      var(--role-card) 50%,
+      color-mix(in srgb, var(--role-card) 72%, black)
+    );
+  }
+  .dark .tarjeta-rol {
+    background: linear-gradient(
+      140deg,
+      color-mix(in srgb, var(--role-card) 55%, var(--surface)),
+      color-mix(in srgb, var(--role-card) 18%, var(--surface)) 70%
+    );
   }
   /* Chips, etiquetas, marcadores y números de la carta */
   .etiqueta {

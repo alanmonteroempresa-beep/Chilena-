@@ -1,9 +1,7 @@
 import { hrefCentral } from "@/modules/core";
 import { CascaronApp } from "@/modules/core/server-api";
+import { inicialesDe, nombreVisible } from "@/shared/lib/personas";
 import { sesionActiva } from "./sesion";
-
-const iniciales = (texto: string) =>
-  (texto.match(/\p{L}/gu) ?? []).slice(0, 2).join("").toUpperCase() || "CH";
 
 export async function Cascaron({ children }: { children: React.ReactNode }) {
   const sesion = await sesionActiva();
@@ -16,7 +14,7 @@ export async function Cascaron({ children }: { children: React.ReactNode }) {
       opciones={opciones}
       activoId={activa.id}
       hrefCentral={hrefCentral(activa)}
-      avatar={{ iniciales: iniciales(usuario.sobrenombre || usuario.nombre || usuario.username), src: null }}
+      avatar={{ iniciales: inicialesDe(nombreVisible(usuario) || usuario.username), src: null }}
     >
       {children}
     </CascaronApp>
