@@ -36,6 +36,18 @@ export function rolDesdeRoleType(roleType: RoleType): Rol | null {
   }
 }
 
+/** Rol de la interfaz → RoleType del schema */
+export function roleTypeDesdeRol(rol: Rol): RoleType {
+  const mapa: Record<Rol, RoleType> = {
+    jugador: "JUGADOR",
+    delegado: "DELEGADO",
+    arbitro: "ARBITRO",
+    aficionado: "AFICIONADO",
+    liga: "LIGA",
+  };
+  return mapa[rol];
+}
+
 export type ClaveAccionCentral = "publicar" | "pase-de-lista" | "capturar" | "programar-jornada";
 
 export type AccionCentral = {

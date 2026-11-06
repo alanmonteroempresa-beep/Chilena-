@@ -20,7 +20,7 @@ Ya hecho (base técnica):
 
 Falta:
 - [x] Repo en GitHub y deploy en Vercel (`chilena.vercel.app`, proyecto `alan-montero/chilena`, rama de producción `main`) con variables en Production y Preview (`scripts/vercel-env.mjs`)
-- [ ] Proteger `main` en GitHub (PR obligatorio, 1 aprobación, CI)
+- [x] Proteger `main` en GitHub: PR obligatorio, CI `checks` en verde y al día con `main`, historia lineal, sin force push. **0 aprobaciones** mientras Alan sea el único colaborador: subir a 1 cuando entren los otros devs
 - [x] Migración inicial + migración `extras` contra `chilena-dev` (`docs/SETUP.md` §4) — **dueño del schema**
 - [x] Supabase `chilena-dev` montado con el CLI (`scripts/supabase-dev.mjs`): proyecto vinculado, `.env.local` completo (llaves, `DATABASE_URL`, `DIRECT_URL`, `CRON_SECRET`), extensiones `pg_trgm`, `unaccent`, `pg_cron` y `pg_net`, bucket público `avatars` (1 MB, webp y jpeg), liga demo cargada y la app conectada (`/api/cron/trabajos` lee la base)
 - [x] Componentes de marca: Botón lima, ChipMarcador, CartaCrack (estática), Header con selector de rol, Barra inferior con botón central por rol (pantallas 03, 07b, 23, 24) → `src/shared/ui/`, vitrina en `/componentes` (fuera de producción)
@@ -29,6 +29,14 @@ Falta:
 - [x] Cuentas de prueba para la beta interna (flag `auth.demo_login`, `scripts/cuentas-de-prueba.ts`): entrar con correo y contraseña, sin registro con contraseña; ligadas a los perfiles de la semilla (jugador, delegado, árbitro, liga, aficionada) y tres del equipo con todos los roles
 - [ ] PWA completa: Serwist (service worker, página sin conexión) e íconos desde el logo (`public/brand/`)
 - [ ] Sentry y PostHog conectados
+
+### Recorrido navegable (solo lectura, con la liga demo)
+Para revisar la app en `chilena.vercel.app` con las cuentas de prueba antes de construir las funciones. Un PR por bloque; sin publicar ni editar todavía.
+- [x] 1. Esqueleto: header con selector de rol y barra inferior (Inicio · En vivo · central por rol · Mi liga · Perfil); el rol cambia el acento, el botón central y el inicio. Al entrar se va a `/inicio`. Rutas de la barra y del botón central con "Próximamente"
+- [ ] 2. Inicio de cada rol con sus datos: Jugador (03), Delegado (04), Aficionado (05), Árbitro (02) y Liga (18 resumen)
+- [ ] 3. Perfil público y carta: perfil del jugador (06), carta frente y reverso (25), insignias (14/28)
+- [ ] 4. Mi liga: tabla, rol de juegos, goleo y la página de un partido (32, estado final)
+- [ ] 5. Feed (10): resultados, goles y crónicas automáticas de la J15
 
 **Prompt:**
 ```
@@ -43,7 +51,7 @@ y después la semilla demo. No cambies prisma/schema.prisma sin preguntarme.
 - [ ] **Reclamar perfil** (`/j/[username]/reclamar`): liga `authId`, migra reacciones anónimas, "No soy yo"
 - [ ] Perfil público `/j/[username]` con `publicUserSelect` (carta, stats, insignias, porra)
 - [ ] **Visitante**: todo lo público, 🔥 anónimo, invitación a registrarse a la 3ª interacción
-- [ ] Selector de rol y liga; activar roles ("Crear mi equipo", "Registrar mi liga", "Soy árbitro")
+- [ ] Selector de rol y liga (hecho en el recorrido: `cambiarRol`, contextos de equipos y ligas); falta activar roles ("Crear mi equipo", "Registrar mi liga", "Soy árbitro")
 - [ ] Completa tu perfil (progresivo, un paso por pantalla) y subida de avatar comprimido
 - [ ] Ajustes: tema, privacidad, quitar etiquetas, cerrar sesión, borrar cuenta (ARCO)
 - [ ] Botón "Reportar falla" (tabla `bug_reports`) y pantalla "Instala la app"

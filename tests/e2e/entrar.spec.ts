@@ -43,23 +43,27 @@ test.describe("con la cuenta de prueba", () => {
   test.beforeAll(() => script("borrar"));
   test.afterAll(() => script("borrar"));
 
-  test("la primera vez crea su User y va a Completa tu perfil; con nombre y apodo, a su inicio", async ({
+  test("la primera vez crea su User y llega a su inicio con la tarjeta de Completa tu perfil", async ({
     page,
     baseURL,
   }) => {
     await page.goto(script("link", "prueba-entrar@example.com", baseURL!));
-    await expect(page).toHaveURL(/\/perfil\/completar/);
-    await expect(page.getByText(/Entraste como crack \(@prueba-entrar\)/)).toBeVisible();
+    await expect(page).toHaveURL(/\/inicio$/);
+    await expect(page.getByRole("link", { name: /Completar · 2 min/ })).toBeVisible();
+    // Un solo rol: el chip del header no es botón (no hay a qué cambiar)
+    await expect(page.getByRole("banner").getByText("Sin equipos")).toBeVisible();
 
     // Con sesión, entrar ya no tiene caso: decide /auth/confirm
     await page.goto("/entrar");
-    await expect(page).toHaveURL(/\/perfil\/completar$/);
+    await expect(page).toHaveURL(/\/inicio$/);
 
     script("perfil", "Prueba", "El Probador");
     await page.goto("/");
     await expect(page).toHaveURL(/\/inicio$/);
-    await expect(page.getByText(/Entraste como El Probador/)).toBeVisible();
+    await expect(page.getByRole("link", { name: /Completar · 2 min/ })).toHaveCount(0);
 
+    await page.goto("/perfil");
+    await expect(page.getByText(/Entraste como El Probador/)).toBeVisible();
     await page.getByRole("button", { name: "Salir" }).click();
     await expect(page).toHaveURL(/\/entrar$/);
   });

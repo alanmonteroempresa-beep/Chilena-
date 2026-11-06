@@ -43,22 +43,18 @@ describe("a dónde va después de entrar", () => {
   const nuevo = { nombre: "", sobrenombre: null };
   const completo = { nombre: "Luis Ángel", sobrenombre: "El Chícharo" };
 
-  it("sin nombre o sin apodo → Completa tu perfil (40)", () => {
+  it("sin nombre o sin apodo necesita completar el perfil (tarjeta en su inicio, pantalla 40a)", () => {
     expect(necesitaCompletarPerfil(nuevo)).toBe(true);
     expect(necesitaCompletarPerfil({ nombre: "Luis", sobrenombre: null })).toBe(true);
     expect(necesitaCompletarPerfil({ nombre: "  ", sobrenombre: "El Chícharo" })).toBe(true);
-    expect(destinoTrasEntrar(nuevo)).toBe("/perfil/completar");
-  });
-
-  it("con nombre y apodo → su inicio, o a donde iba", () => {
     expect(necesitaCompletarPerfil(completo)).toBe(false);
-    expect(destinoTrasEntrar(completo)).toBe("/inicio");
-    expect(destinoTrasEntrar(completo, "/i/abc123")).toBe("/i/abc123");
-    expect(destinoTrasEntrar(completo, "https://otro.com")).toBe("/inicio");
   });
 
-  it("si le falta perfil, completa primero y luego sigue a donde iba", () => {
-    expect(destinoTrasEntrar(nuevo, "/i/abc123")).toBe("/perfil/completar?next=%2Fi%2Fabc123");
+  it("siempre va a su inicio, o a donde iba si es una ruta de Chilena", () => {
+    expect(destinoTrasEntrar(nuevo)).toBe("/inicio");
+    expect(destinoTrasEntrar(completo)).toBe("/inicio");
+    expect(destinoTrasEntrar(nuevo, "/i/abc123")).toBe("/i/abc123");
+    expect(destinoTrasEntrar(completo, "https://otro.com")).toBe("/inicio");
   });
 });
 

@@ -3,36 +3,33 @@ import { Suspense } from "react";
 import { LogOut } from "lucide-react";
 import { ETIQUETA_ROL, rolDesdeRoleType, type Rol } from "@/shared/lib/roles";
 import { buttonVariants } from "@/shared/ui/button";
-import { Logo } from "@/shared/ui/logo";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { salir } from "../../server/actions";
 import { getCurrentUser } from "../../server/auth";
 
-type Variante = "completar" | "inicio";
+type Variante = "completar" | "perfil";
 
 const TEXTOS: Record<Variante, { titulo: string; cuerpo: string }> = {
   completar: {
     titulo: "Completa tu perfil",
-    cuerpo:
-      "Registro en 30 segundos: nombre, apodo y foto. Esta pantalla llega en la siguiente fase de la beta.",
+    cuerpo: "Registro en 30 segundos: nombre, apodo y foto. Esta pantalla llega en la siguiente fase de la beta.",
   },
-  inicio: {
-    titulo: "¡Ya entraste!",
-    cuerpo: "Tu inicio (tu equipo, la porra y tu carta) llega en la siguiente fase de la beta.",
+  perfil: {
+    titulo: "Tu perfil",
+    cuerpo: "Tu perfil público con tu carta e insignias llega en el bloque 3 del recorrido.",
   },
 };
 
 /**
- * PROVISIONAL (Fase 0): destino después de entrar mientras no existen la pantalla 40 (Completa tu perfil,
- * core) ni las 03/05 (inicio, social). Confirma la sesión y deja salir.
+ * PROVISIONAL: /perfil (hasta el bloque 3, perfil público 06) y /perfil/completar (hasta la pantalla 40).
+ * Confirma con quién entraste, tus roles, y deja salir. Va dentro del cascarón (header y barra).
  */
 export function PantallaProvisional({ variante }: { variante: Variante }) {
   const t = TEXTOS[variante];
   return (
-    <main className="flex min-h-dvh flex-col gap-8 bg-background px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-10">
-      <Logo tamano={44} />
+    <main className="flex flex-col gap-6 px-4 pt-4 pb-6">
       <div className="flex flex-col gap-3">
-        <h1 className="titular-momento text-[52px] leading-[0.9]">{t.titulo}</h1>
+        <h1 className="titular-momento text-[48px] leading-[0.9]">{t.titulo}</h1>
         <p className="max-w-[440px] text-[15px] leading-snug text-muted-foreground">{t.cuerpo}</p>
       </div>
       <Suspense fallback={<Skeleton className="h-24 w-full max-w-[440px] rounded-xl" />}>
@@ -47,10 +44,7 @@ async function QuienEntro({ variante }: { variante: Variante }) {
   const usuario = await getCurrentUser();
   if (!usuario) {
     return (
-      <Link
-        href="/entrar"
-        className={buttonVariants({ variant: "lima", size: "cta", className: "max-w-[440px]" })}
-      >
+      <Link href="/entrar" className={buttonVariants({ variant: "lima", size: "cta", className: "max-w-[440px]" })}>
         Entrar
       </Link>
     );
@@ -94,11 +88,7 @@ async function QuienEntro({ variante }: { variante: Variante }) {
       <form action={salir}>
         <button
           type="submit"
-          className={buttonVariants({
-            variant: "quieto",
-            size: "cta",
-            className: "w-full border border-border",
-          })}
+          className={buttonVariants({ variant: "quieto", size: "cta", className: "w-full border border-border" })}
         >
           <LogOut aria-hidden />
           Salir

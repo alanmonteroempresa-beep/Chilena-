@@ -89,7 +89,7 @@ Todo lo que se apaga en la beta se controla con **interruptores** (`FeatureFlag`
 - Si un perfil sin reclamar ya tiene el correo con el que alguien entra (y lo acaba de comprobar con el link), se liga a esa cuenta en lugar de crear otra persona.
 
 ### 4.4 Perfil progresivo (pantalla 40)
-**Registro en 30 segundos**: nombre, apodo y foto. Al entrar, quien no tiene nombre o apodo va a Completa tu perfil; la foto se puede saltar ("SALTAR" en la pantalla 40). Todo lo demás se pide después con incentivo: *"Tu perfil va al 40% · complétalo y tu carta sube de nivel"*. Un paso por pantalla. El delegado o la liga pueden pedir lo que les falte cuando lo necesiten.
+**Registro en 30 segundos**: nombre, apodo y foto. Al entrar todos van a su inicio; a quien le falta nombre o apodo, su inicio le muestra la tarjeta de Completa tu perfil (pantalla 40a: "una tarjeta en su inicio y pasos cortos") y la foto se puede saltar ("SALTAR"). Todo lo demás se pide después con incentivo: *"Tu perfil va al 40% · complétalo y tu carta sube de nivel"*. Un paso por pantalla. El delegado o la liga pueden pedir lo que les falte cuando lo necesiten.
 
 ### 4.5 Datos por rol (de la hoja "Perfiles" del Excel)
 | Dato (Excel) | En Chilena | Quién lo ve |
