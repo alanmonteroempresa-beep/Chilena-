@@ -1,6 +1,10 @@
 import "server-only";
 import { insigniaPorCodigo } from "@/modules/carta/server-api";
 import { personasPorId } from "@/modules/core/server-api";
+import { plantillaDelEquipo } from "@/modules/equipos/server-api";
+import { horarioCorto } from "@/modules/partidos";
+import { partidoDelDia } from "@/modules/partidos/server-api";
+import { nombreCorto } from "@/shared/lib/personas";
 import { datosDeComentario, duenosDePost } from "@/modules/social/server-api";
 import { on } from "@/shared/events/bus";
 import { nombreVisible } from "@/shared/lib/personas";
@@ -87,6 +91,20 @@ export function registerListeners() {
       title: `${badge.icon ?? "🏅"} Ganaste la insignia ${badge.nombre}`,
       body: badge.descripcion,
       href: `/j/${yo.username}/insignias`,
+    });
+  });
+
+  on("attendance.link_opened", async ({ matchId, teamId, byUserId }) => {
+    const [p, plantilla, delegado] = await Promise.all([partidoDelDia(matchId), plantillaDelEquipo(teamId), persona(byUserId)]);
+    if (!p) return;
+    const rival = p.homeTeam.id === teamId ? p.awayTeam : p.homeTeam;
+    await notificar({
+      userIds: plantilla.map((m) => m.user.id),
+      actorId: byUserId,
+      type: "PASE_DE_LISTA",
+      title: `${delegado?.nombreVisible ?? "Tu delegado"} abrió el pase de lista: ¿vas vs ${nombreCorto(rival.nombre)}?`,
+      body: p.scheduledAt ? horarioCorto(p.scheduledAt, p.field?.nombre) : null,
+      href: "/inicio",
     });
   });
 

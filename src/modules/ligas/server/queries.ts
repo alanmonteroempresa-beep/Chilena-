@@ -129,8 +129,14 @@ export function pagosAlArbitro(refereeId: string) {
 /** Plantillas de cada persona en los torneos (para su historial de partidos validados) */
 export function plantillasDeJugadores(userIds: string[]) {
   return db.tournamentRoster.findMany({
-    where: { userId: { in: userIds }, status: { in: ["ACTIVO", "SUSPENDIDO", "BAJA"] } },
-    select: { userId: true, tournamentId: true, tournamentTeam: { select: { teamId: true } } },
+    where: { userId: { in: userIds }, status: { in: ["ACTIVO", "SUSPENDIDO", "BAJA", "PENDIENTE_APROBACION"] } },
+    select: {
+      userId: true,
+      tournamentId: true,
+      tournamentTeamId: true,
+      status: true,
+      tournamentTeam: { select: { teamId: true, team: { select: { nombre: true } } } },
+    },
   });
 }
 

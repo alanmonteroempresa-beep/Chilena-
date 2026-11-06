@@ -96,3 +96,41 @@ export function equipoDeCadaQuien(userIds: string[]) {
     select: { userId: true, numero: true, posicion: true, team: { select: equipoSelect } },
   });
 }
+
+export async function esDelegadoDe(userId: string, teamId: string) {
+  return (
+    (await db.teamMember.count({
+      where: { userId, teamId, status: "ACTIVO", role: { in: ["DELEGADO_PRINCIPAL", "DELEGADO_AUXILIAR"] } },
+    })) > 0
+  );
+}
+
+export async function esMiembroDe(userId: string, teamId: string) {
+  return (await db.teamMember.count({ where: { userId, teamId, status: "ACTIVO" } })) > 0;
+}
+
+/** Delegados de varios equipos (avisos: cédula por firmar) */
+export async function delegadosDe(teamIds: string[]) {
+  const filas = await db.teamMember.findMany({
+    where: { teamId: { in: teamIds }, status: "ACTIVO", role: { in: ["DELEGADO_PRINCIPAL", "DELEGADO_AUXILIAR"] } },
+    select: { userId: true, teamId: true },
+  });
+  return filas;
+}
+
+/** El link de pase de lista de un partido y equipo (pantalla 20) */
+export function linkDePaseDeLista(matchId: string, teamId: string) {
+  return db.attendanceLink.findUnique({ where: { matchId_teamId: { matchId, teamId } }, select: { token: true, expiresAt: true } });
+}
+
+export function linkPorToken(token: string) {
+  return db.attendanceLink.findUnique({ where: { token }, select: { token: true, matchId: true, teamId: true, expiresAt: true } });
+}
+
+/** La alineación que ya mandó el delegado (pantalla 53) */
+export function alineacionDe(matchId: string, teamId: string) {
+  return db.lineup.findUnique({
+    where: { matchId_teamId: { matchId, teamId } },
+    select: { submittedAt: true, players: { select: { userId: true, titular: true, numero: true, capitan: true } } },
+  });
+}

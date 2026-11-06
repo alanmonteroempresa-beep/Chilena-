@@ -12,3 +12,6 @@ export {
   type EstadoPago,
   type Respuesta,
 } from "./server/services/plantilla";
+
+// Día de partido: botones del jugador (cliente)
+export { BotonesAsistencia } from "./components/dia-de-partido/botones-asistencia";

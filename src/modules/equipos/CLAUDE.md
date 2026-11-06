@@ -12,6 +12,8 @@ Equipos, miembros, invitación (link/QR), dar de alta perfiles sin reclamar, pas
 | **Escucha** | tournament.finished (vitrina) |
 
 ## Reglas clave
+- Día de partido (`server/actions.ts`): contestar VOY / NO VOY en la app (cada quien por sí mismo) o desde el link de WhatsApp `/p/[token]` (sin cuenta, eligiendo su nombre); el delegado abre el pase de lista (un link por partido y equipo, avisa a la plantilla la primera vez) y manda la alineación. Se puede hasta que el árbitro mande la cédula. Reglas en `server/reglas.ts` (PERMISOS §3).
+- Alineación (`server/alineacion.ts` + `revisarAlineacion` de partidos): rojo no entra (otro equipo, suspendido, no registrado), ámbar avisa (cuota, a una amarilla). El servidor valida.
 - Inicio del delegado (04): `server/inicio.ts` + `components/inicio-delegado.tsx`. La plantilla "primero los que necesitan atención", el pase de lista y las cuotas salen de `server/services/plantilla.ts` (puro).
 - El pase de lista por link no pide cuenta: el jugador elige su nombre.
 - La app no mueve dinero; solo control de pagos.

@@ -84,8 +84,8 @@ y después la semilla demo. No cambies prisma/schema.prisma sin preguntarme.
 ### O3 — Día de partido y cédula ⭐
 **PRD §7.6–7.10 · pantallas 02, 08b, 19, 20, 32, 46, 47, 53, 55, 56**
 - [ ] Máquina de estados de `Match` (servicio puro, test de cada transición y de quién puede hacerla)
-- [ ] **Pase de lista por link sin cuenta** (`/p/[token]`) y desde la app; resumen para el delegado
-- [ ] Alineación con alertas (suspendido, cuota, no registrado, otro equipo)
+- [x] **Pase de lista por link sin cuenta** (`/p/[token]`) y desde la app; resumen para el delegado
+- [x] Alineación con alertas (suspendido, cuota, no registrado, otro equipo)
 - [ ] **Marcador desde la banda** (`LiveScoreUpdate`) + página del partido en vivo con Broadcast `match:{id}`
 - [ ] **Cédula del árbitro**: modo "al terminar" (por defecto) y "en vivo"; tipo de gol; offline con cola en IndexedDB y `clientId`; alto contraste
 - [ ] Firmas de delegados (en el celular del árbitro o en el suyo), **correcciones** (señalar → aceptar o rechazar), validar después de 48 h sin firma

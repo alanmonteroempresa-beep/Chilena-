@@ -40,6 +40,7 @@ async function proximoDe(equipoId: string, partido: Partido | null, ahora: Date,
   const resumen = resumenPaseDeLista(respuestas.map((r) => respuestaDe(r.status)));
   const esLocal = partido.homeTeam.id === equipoId;
   return {
+    matchId: partido.id,
     jornada: partido.round?.numero ?? null,
     horario: horarioCorto(partido.scheduledAt, partido.field?.nombre),
     cuando: cuandoTeToca(ahora, partido.scheduledAt),
