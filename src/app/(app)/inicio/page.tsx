@@ -27,7 +27,7 @@ export default function InicioPage({ searchParams }: PageProps<"/inicio">) {
 }
 
 async function Inicio({ searchParams }: Pick<PageProps<"/inicio">, "searchParams">) {
-  const [sesion, { vista: v }] = await Promise.all([sesionActiva(), searchParams]);
+  const [sesion, { vista: v, j, antes }] = await Promise.all([sesionActiva(), searchParams]);
   if (!sesion?.activa) return null;
   const { usuario, activa } = sesion;
   // Después de leer la sesión (petición real): la hora de "ahora" ya no se prerenderiza
@@ -35,11 +35,17 @@ async function Inicio({ searchParams }: Pick<PageProps<"/inicio">, "searchParams
   const conFeed = CON_FEED.has(activa.rol);
   const vista = VISTAS.find((x) => x === v) ?? "para-ti";
   const contexto = { userId: usuario.id, slugEquipo: activa.slugEquipo, slugLiga: activa.slugLiga };
-  if (conFeed && vista !== "para-ti") {
+  const jornada = Number(Array.isArray(j) ? j[0] : j);
+  const pagina = {
+    jornada: Number.isInteger(jornada) && jornada > 0 ? jornada : undefined,
+    antes: typeof antes === "string" ? antes : undefined,
+  };
+  // Otra pestaña o una página anterior del feed: solo el feed
+  if (conFeed && (vista !== "para-ti" || pagina.jornada)) {
     return (
       <>
         <PestanasInicio vista={vista} />
-        <Feed contexto={contexto} vista={vista} />
+        <Feed contexto={contexto} vista={vista} pagina={pagina} conTitulo={vista === "para-ti"} />
       </>
     );
   }

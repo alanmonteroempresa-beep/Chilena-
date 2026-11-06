@@ -16,7 +16,8 @@ La carta (fórmula, fotos semanales, delta), insignias (motor por `criteria`, pr
 - Solo partidos VALIDADO cuentan.
 - DIS usa `conteoDeTarjetas` de `partidos`: la doble amarilla es 1 roja y 0 amarillas (PRD §7.8).
 - Media entre 40 y 99; en construcción hasta 3 partidos.
-- Por ahora la carta y las insignias se calculan al leer (`server/jugador.ts`): `services/historial.ts` arma el historial validado con lo que dan `ligas` (plantillas) y `partidos` (partidos, alineaciones, eventos, suspensiones). Cuando exista la cola de `match.validated`, lo mismo llenará `player_cards` y `user_badges`.
+- La carta y las insignias se GUARDAN (`server/persistir.ts`, `recalcularCartas`): al validar un partido, `match.validated` encola `carta.recalcular` para las dos plantillas; solo escribe lo que cambió y emite `card.recalculated` y `badge.awarded`. `services/historial.ts` arma el historial validado con lo que dan `ligas` (plantillas) y `partidos`. La lectura (`server/jugador.ts`) usa lo guardado y, si no hay nada, calcula.
+- Después de cargar la semilla: `node scripts/supabase-dev.mjs recalcular` (en silencio: no avisa ni publica lo que ya pasó).
 - Insignias (`server/badges.ts`): las de votaciones y de cierre de torneo quedan con pista hasta que existan esos datos. Rareza = % de los jugadores del torneo que la tienen.
 - Sin votaciones todavía: CRK y RES toman su valor base (55 y 70). RES solo de rivales (regla 6) cuando lleguen los votos.
 

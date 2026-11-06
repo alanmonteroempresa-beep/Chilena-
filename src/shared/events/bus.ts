@@ -33,6 +33,9 @@ async function ensureListeners() {
   return listenersLoaded;
 }
 
+/** Registra los listeners (y los handlers de la cola) si nadie ha emitido todavía en este proceso */
+export const asegurarListeners = ensureListeners;
+
 /** Solo para tests. */
 export function __resetBus() {
   handlers.clear();

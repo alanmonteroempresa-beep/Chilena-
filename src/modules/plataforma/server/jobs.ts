@@ -1,5 +1,6 @@
 import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
+import { asegurarListeners } from "@/shared/events/bus";
 import { db } from "@/shared/lib/db";
 import { logger } from "@/shared/lib/logger";
 
@@ -30,6 +31,8 @@ export async function enqueueJob(type: string, payload: Prisma.InputJsonValue, o
 const MAX_ATTEMPTS = 5;
 
 export async function runPendingJobs(limit = 25) {
+  // Los handlers se registran en registerListeners(): en el cron nadie ha emitido todavía
+  await asegurarListeners();
   const jobs = await db.job.findMany({
     where: { status: "PENDIENTE", runAt: { lte: new Date() } },
     orderBy: { runAt: "asc" },
@@ -62,4 +65,19 @@ export async function runPendingJobs(limit = 25) {
     }
   }
   return { processed: jobs.length, done };
+}
+
+/**
+ * Corre la cola hasta vaciarla (máximo `vueltas`): lo usa `after()` al validar un partido para que la
+ * carta, las insignias y el feed salgan al momento, sin esperar al cron. Un trabajo puede encolar otro
+ * (la insignia ganada encola su post), por eso da varias vueltas.
+ */
+export async function procesarCola(vueltas = 4) {
+  let total = 0;
+  for (let i = 0; i < vueltas; i++) {
+    const { processed } = await runPendingJobs(50);
+    total += processed;
+    if (processed === 0) break;
+  }
+  return total;
 }

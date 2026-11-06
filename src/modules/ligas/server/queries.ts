@@ -176,3 +176,28 @@ export function equiposEnElTorneo(tournamentId: string, userIds: string[]) {
     select: { userId: true, numero: true, tournamentTeam: { select: { team: { select: equipoSelect } } } },
   });
 }
+
+/** Las plantillas de los dos equipos de un partido (a quién se le recalcula la carta al validarlo) */
+export async function jugadoresDelPartido(matchId: string) {
+  const m = await db.match.findUnique({ where: { id: matchId }, select: { tournamentId: true, homeTeamId: true, awayTeamId: true } });
+  if (!m?.tournamentId) return [];
+  const filas = await db.tournamentRoster.findMany({
+    where: {
+      tournamentId: m.tournamentId,
+      status: { in: ["ACTIVO", "SUSPENDIDO"] },
+      tournamentTeam: { teamId: { in: [m.homeTeamId, m.awayTeamId] } },
+    },
+    select: { userId: true },
+  });
+  return filas.map((f) => f.userId);
+}
+
+/** Todos los que juegan algún torneo vigente (recalcular todo) */
+export async function jugadoresDeTorneosVigentes() {
+  const filas = await db.tournamentRoster.findMany({
+    where: { status: { in: ["ACTIVO", "SUSPENDIDO"] }, tournament: { status: { in: [...ACTIVOS] } } },
+    select: { userId: true },
+    distinct: ["userId"],
+  });
+  return filas.map((f) => f.userId);
+}

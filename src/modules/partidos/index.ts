@@ -1,5 +1,4 @@
 // API pública del módulo `partidos`. Otros módulos SOLO importan desde aquí.
-export { registerListeners } from "./server/listeners";
 
 // Servicios puros (PRD §7.6 y §7.8)
 export {

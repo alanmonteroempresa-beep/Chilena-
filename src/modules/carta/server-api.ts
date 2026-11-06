@@ -3,3 +3,5 @@ export { datosDelJugador, encabezadoDe, type DatosDelJugador } from "./server/ju
 export { PaginaCarta, propsDeCarta } from "./components/pagina-carta";
 export { ColeccionInsignias } from "./components/pagina-insignias";
 export { HexagonoInsignia } from "./components/insignia";
+export { registerListeners } from "./server/listeners";
+export { recalcularCartas } from "./server/persistir";

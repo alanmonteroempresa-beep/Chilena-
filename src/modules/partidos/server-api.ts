@@ -3,11 +3,15 @@ export {
   cedulaPorFirmar,
   cedulasPorRevisar,
   estadisticasDelJugador,
+  estadisticasVigentes,
   goleoDelTorneo,
   historialDePlantillas,
+  jornadaCompleta,
   jornadaQueViene,
   partidosDeLaJornada,
   partidoCompleto,
+  partidoValidadoParaFeed,
+  partidosValidadosVigentes,
   partidosValidadosConGoles,
   partidosDelArbitro,
   proximoPartidoDelEquipo,
@@ -18,3 +22,4 @@ export {
 } from "./server/queries";
 export { InicioArbitro } from "./components/inicio-arbitro";
 export { PaginaPartido } from "./components/pagina-partido";
+export { registerListeners } from "./server/listeners";

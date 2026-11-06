@@ -6,3 +6,5 @@ export { PaginaPerfil } from "./components/perfil/pagina-perfil";
 export { PaginaStats } from "./components/perfil/pagina-stats";
 export { Feed, PestanasInicio } from "./components/feed/feed";
 export type { VistaFeed } from "./server/feed";
+export { registerListeners } from "./server/listeners";
+export { publicarPartido } from "./server/publicar";

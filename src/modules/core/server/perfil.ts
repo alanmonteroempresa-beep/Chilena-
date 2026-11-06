@@ -27,3 +27,11 @@ export function perfilPublico(username: string) {
     },
   });
 }
+
+/** Lo que necesita la carta de cada jugador (posición y si es pionero de la beta) */
+export function perfilesDeJugadores(userIds: string[]) {
+  return db.user.findMany({
+    where: { id: { in: userIds } },
+    select: { id: true, isPionero: true, claimedAt: true, playerProfile: { select: { posicionPrincipal: true } } },
+  });
+}

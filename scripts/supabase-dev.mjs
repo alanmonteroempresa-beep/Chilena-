@@ -13,6 +13,8 @@
 //   node scripts/supabase-dev.mjs flag <clave> on|off  # prende o apaga un flag en chilena-dev
 //   node scripts/supabase-dev.mjs cron-secret   # genera CRON_SECRET si falta
 //   node scripts/supabase-dev.mjs app [url]     # con pnpm dev corriendo: /api/cron/trabajos llega a la base
+//   node scripts/supabase-dev.mjs recalcular [url] # guarda cartas, insignias y posts de lo validado
+//   node scripts/supabase-dev.mjs cron [url]    # pg_cron llama /api/cron/trabajos cada minuto (o `cron quitar`)
 //
 // El ref sale de SUPABASE_PROJECT_REF o de supabase/.temp/project-ref (después del link).
 import { spawnSync } from "node:child_process";
@@ -300,6 +302,42 @@ const comandos = {
     const cuerpo = await r.text();
     decir(`Con secreto: HTTP ${r.status} · ${cuerpo.slice(0, 300)}`);
     if (!r.ok) process.exit(1);
+  },
+
+  /**
+   * Recalcula y guarda todo lo que sale de lo validado (cartas, insignias y auto-posts): /api/cron/recalcular.
+   * Después de cargar la semilla: `node scripts/supabase-dev.mjs recalcular [url]` (por defecto, pnpm dev).
+   */
+  async recalcular() {
+    const base = process.argv[3] ?? "http://localhost:3000";
+    necesito("CRON_SECRET");
+    decir(`Recalculando en ${base} (puede tardar un par de minutos)…`);
+    const r = await fetch(`${base}/api/cron/recalcular`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${env.CRON_SECRET}` },
+    }).catch((e) => fallar(`No responde ${base}: ${e.message}`));
+    decir(`HTTP ${r.status} · ${(await r.text()).slice(0, 400)}`);
+    if (!r.ok) process.exit(1);
+  },
+
+  /**
+   * Programa la cola en pg_cron (docs/SETUP.md §4): cada minuto llama /api/cron/trabajos de la app con el
+   * CRON_SECRET (queda dentro de cron.job, en la base; no se imprime). `cron [url]` o `cron quitar`.
+   */
+  async cron() {
+    necesito("DIRECT_URL", "CRON_SECRET");
+    const arg = process.argv[3] ?? "https://chilena.vercel.app";
+    await conPg(env.DIRECT_URL, async (c) => {
+      await c.query("select cron.unschedule(jobid) from cron.job where jobname = 'trabajos'");
+      if (arg === "quitar") return decir("✓ Quité el job 'trabajos' de pg_cron.");
+      const url = `${arg.replace(/\/$/, "")}/api/cron/trabajos`;
+      await c.query(
+        `select cron.schedule('trabajos', '* * * * *', format($q$select net.http_post(url := %L, headers := jsonb_build_object('Authorization', %L))$q$, $1::text, $2::text))`,
+        [url, `Bearer ${env.CRON_SECRET}`],
+      );
+      const { rows } = await c.query("select jobname, schedule, active from cron.job where jobname = 'trabajos'");
+      decir(`✓ pg_cron: ${rows.map((x) => `${x.jobname} ${x.schedule} ${x.active ? "activo" : "inactivo"}`).join(", ")} → ${url}`);
+    }).catch((e) => fallar(e.message));
   },
 
   async bucket() {

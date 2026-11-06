@@ -125,7 +125,7 @@ y después la semilla demo. No cambies prisma/schema.prisma sin preguntarme.
 ### S3 — La Carta e insignias ⭐
 **`docs/CARTA_E_INSIGNIAS.md` · pantallas 14, 25, 28, 29**
 - [x] `formula.ts` puro con tests de cada tramo (campo, portero, bono de defensa, niveles, en construcción)
-- [ ] Recalcular al validar + foto del lunes + delta "↑ +2"
+- [ ] Recalcular al validar + foto del lunes + delta "↑ +2" — recalcular al validar hecho (cola `carta.recalcular`, delta contra el cálculo anterior); falta la foto del lunes
 - [ ] Carta (frente y reverso volteable, portero, en construcción, especiales) y "Comparar con…" (duelo) — hecha en el recorrido salvo especiales y el duelo
 - [ ] Motor de insignias por `criteria`, progreso, rareza nocturna, colección con gris + progreso, auto-post `AUTO_INSIGNIA` — motor (`server/badges.ts`), progreso, rareza al leer y colección hechos; faltan `user_badges`, la rareza nocturna y el auto-post
 - [ ] Plantilla para compartir la carta
