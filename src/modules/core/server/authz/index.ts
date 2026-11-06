@@ -8,6 +8,9 @@ import { ForbiddenError } from "./errors";
  */
 export type Action =
   | "post.create"
+  | "post.react"
+  | "user.follow"
+  | "content.report"
   | "post.createAsTeam"
   | "post.createAsLeague"
   | "comment.create"

@@ -7,7 +7,12 @@ import { Chip } from "@/shared/ui/chip";
 import { coloresDe, Escudo } from "@/shared/ui/escudo";
 import { Iniciales } from "@/shared/ui/iniciales";
 import { Sobretitulo, Tarjeta } from "@/shared/ui/tarjeta";
-import type { AutoPost, Marcador } from "../../server/services/auto-posts";
+import type { PostDelFeed } from "../../server/feed";
+import type { AutoPost, Marcador, PostNormal } from "../../server/services/auto-posts";
+import { Reacciones } from "../reacciones";
+
+const ES_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+type Meta = { postId: string; reacciones?: Record<string, number>; mia?: string | null; comentarios?: number; conSesion: boolean };
 
 const URL_APP = (process.env.NEXT_PUBLIC_APP_URL ?? "https://chilena.vercel.app").replace(/\/$/, "");
 const marcadorTexto = (m: Marcador) => `${m.local.corto} ${m.golesLocal}–${m.golesVisita} ${m.visita.corto}`;
@@ -26,10 +31,39 @@ function Grande({ texto, className }: { texto: string; className?: string }) {
 }
 
 /** Reacciones (🔥 Fuego · ⚽ Golazo · 🏆 Trofeo · 💬) y compartir por WhatsApp (PRD §6.1) */
-function Pie({ texto, ruta }: { texto: string; ruta: string }) {
+function Pie({ texto, ruta, meta }: { texto: string; ruta: string; meta: Meta }) {
   const href = `https://wa.me/?text=${encodeURIComponent(`${texto} ${URL_APP}${ruta}`)}`;
+  const guardado = ES_UUID.test(meta.postId);
   return (
-    <div className="flex items-center gap-1.5 px-3.5 pb-3.5">
+    <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-3.5">
+      {guardado ? (
+        <Reacciones
+          postId={meta.postId}
+          conteos={meta.reacciones ?? {}}
+          mia={meta.mia ?? null}
+          comentarios={meta.comentarios ?? 0}
+          conSesion={meta.conSesion}
+        />
+      ) : (
+        <PieSinGuardar />
+      )}
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="etiqueta ml-auto inline-flex h-[34px] items-center gap-1.5 rounded-lg bg-whatsapp px-3 text-xs font-extrabold tracking-[0.12em] text-ink"
+      >
+        <MessageCircle aria-hidden className="size-4" />
+        WhatsApp
+      </a>
+    </div>
+  );
+}
+
+/** Mientras el post no está guardado (feed calculado) las reacciones avisan que llegan pronto */
+function PieSinGuardar() {
+  return (
+    <>
       {(["🔥", "⚽", "🏆"] as const).map((e, i) => (
         <AccionPronto
           key={e}
@@ -50,22 +84,13 @@ function Pie({ texto, ruta }: { texto: string; ruta: string }) {
       >
         <MessageCircle aria-hidden className="size-4" />
       </AccionPronto>
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="etiqueta ml-auto inline-flex h-[34px] items-center gap-1.5 rounded-lg bg-whatsapp px-3 text-xs font-extrabold tracking-[0.12em] text-ink"
-      >
-        <MessageCircle aria-hidden className="size-4" />
-        WhatsApp
-      </a>
-    </div>
+    </>
   );
 }
 
 const chipAuto = <Chip tono="lima">⚡ Auto</Chip>;
 
-function TarjetaGol({ p }: { p: Extract<AutoPost, { tipo: "AUTO_GOL" }> }) {
+function TarjetaGol({ p, meta }: { p: Extract<AutoPost, { tipo: "AUTO_GOL" }>; meta: Meta }) {
   return (
     <Tarjeta className="overflow-hidden">
       <div className="flex items-center gap-2.5 p-3">
@@ -101,12 +126,12 @@ function TarjetaGol({ p }: { p: Extract<AutoPost, { tipo: "AUTO_GOL" }> }) {
         </span>
       </Link>
       <div className="pt-3" />
-      <Pie texto={`${p.titular} · ${marcadorTexto(p.marcador)} · J${p.jornada}`} ruta={`/partido/${p.matchId}`} />
+      <Pie texto={`${p.titular} · ${marcadorTexto(p.marcador)} · J${p.jornada}`} ruta={`/partido/${p.matchId}`} meta={meta} />
     </Tarjeta>
   );
 }
 
-function TarjetaCronica({ p }: { p: Extract<AutoPost, { tipo: "AUTO_CRONICA" }> }) {
+function TarjetaCronica({ p, meta }: { p: Extract<AutoPost, { tipo: "AUTO_CRONICA" }>; meta: Meta }) {
   const palabras = p.titular.split(" ");
   const ultima = palabras.pop();
   return (
@@ -128,12 +153,12 @@ function TarjetaCronica({ p }: { p: Extract<AutoPost, { tipo: "AUTO_CRONICA" }> 
           </span>
         ))}
       </Link>
-      <Pie texto={`${p.titular} ${marcadorTexto(p.marcador)} · J${p.jornada}`} ruta={`/partido/${p.matchId}`} />
+      <Pie texto={`${p.titular} ${marcadorTexto(p.marcador)} · J${p.jornada}`} ruta={`/partido/${p.matchId}`} meta={meta} />
     </Tarjeta>
   );
 }
 
-function TarjetaResultado({ p }: { p: Extract<AutoPost, { tipo: "AUTO_RESULTADO" }> }) {
+function TarjetaResultado({ p, meta }: { p: Extract<AutoPost, { tipo: "AUTO_RESULTADO" }>; meta: Meta }) {
   const lado = (e: Marcador["local"]) => (
     <span className="flex w-20 flex-col items-center gap-1">
       <Escudo {...coloresDe(e)} tamano={36} forma="escudo" />
@@ -163,7 +188,7 @@ function TarjetaResultado({ p }: { p: Extract<AutoPost, { tipo: "AUTO_RESULTADO"
           </span>
         ))}
       </Link>
-      <Pie texto={`Final: ${marcadorTexto(p.marcador)} · J${p.jornada}`} ruta={`/partido/${p.matchId}`} />
+      <Pie texto={`Final: ${marcadorTexto(p.marcador)} · J${p.jornada}`} ruta={`/partido/${p.matchId}`} meta={meta} />
     </Tarjeta>
   );
 }
@@ -202,7 +227,7 @@ function TarjetaTabla({ p }: { p: Extract<AutoPost, { tipo: "AUTO_TABLA" }> }) {
   );
 }
 
-function TarjetaRacha({ p }: { p: Extract<AutoPost, { tipo: "AUTO_RACHA" }> }) {
+function TarjetaRacha({ p, meta }: { p: Extract<AutoPost, { tipo: "AUTO_RACHA" }>; meta: Meta }) {
   return (
     <Tarjeta className="overflow-hidden">
       <Link href={`/j/${p.autor.username}`} className="flex items-center gap-3 p-3.5">
@@ -217,12 +242,12 @@ function TarjetaRacha({ p }: { p: Extract<AutoPost, { tipo: "AUTO_RACHA" }> }) {
         </span>
         {chipAuto}
       </Link>
-      <Pie texto={`🔥 ${p.autor.nombre} lleva ${p.racha} partidos anotando`} ruta={`/j/${p.autor.username}`} />
+      <Pie texto={`🔥 ${p.autor.nombre} lleva ${p.racha} partidos anotando`} ruta={`/j/${p.autor.username}`} meta={meta} />
     </Tarjeta>
   );
 }
 
-function TarjetaInsignia({ p }: { p: Extract<AutoPost, { tipo: "AUTO_INSIGNIA" }> }) {
+function TarjetaInsignia({ p, meta }: { p: Extract<AutoPost, { tipo: "AUTO_INSIGNIA" }>; meta: Meta }) {
   return (
     <Tarjeta className="overflow-hidden">
       <Link href={`/j/${p.autor.username}/insignias`} className="flex items-center gap-3 p-3.5">
@@ -242,24 +267,50 @@ function TarjetaInsignia({ p }: { p: Extract<AutoPost, { tipo: "AUTO_INSIGNIA" }
         </span>
         {chipAuto}
       </Link>
-      <Pie texto={`🏅 ${p.autor.nombre} ganó la insignia ${p.insignia.nombre}`} ruta={`/j/${p.autor.username}/insignias`} />
+      <Pie texto={`🏅 ${p.autor.nombre} ganó la insignia ${p.insignia.nombre}`} ruta={`/j/${p.autor.username}/insignias`} meta={meta} />
     </Tarjeta>
   );
 }
 
-export function TarjetaPost({ p }: { p: AutoPost }) {
+/** Publicación de una persona (pantalla 34) */
+function TarjetaNormal({ p, meta }: { p: PostNormal; meta: Meta }) {
+  return (
+    <Tarjeta className="overflow-hidden">
+      <div className="flex items-start gap-2.5 p-3.5">
+        <Link href={`/j/${p.autor.username}`} aria-label={`Perfil de ${p.autor.nombre}`}>
+          <Iniciales nombre={p.autor.nombre} tamano={36} />
+        </Link>
+        <div className="min-w-0 flex-1">
+          <p className="flex items-baseline gap-2">
+            <Link href={`/j/${p.autor.username}`} className="truncate text-sm font-bold">
+              {p.autor.nombre}
+            </Link>
+            <span className="shrink-0 text-xs text-muted-foreground">{formatCDMX(new Date(p.fecha), "EEE d · HH:mm")}</span>
+          </p>
+          <p className="mt-1 text-[15px] leading-snug break-words whitespace-pre-line">{p.texto}</p>
+        </div>
+      </div>
+      <Pie texto={`${p.autor.nombre} en Chilena: "${p.texto.slice(0, 80)}"`} ruta={`/post/${p.id}`} meta={meta} />
+    </Tarjeta>
+  );
+}
+
+export function TarjetaPost({ p, conSesion = true }: { p: PostDelFeed; conSesion?: boolean }) {
+  const meta: Meta = { postId: p.id, reacciones: p.reacciones, mia: p.mia, comentarios: p.comentarios, conSesion };
   switch (p.tipo) {
+    case "NORMAL":
+      return <TarjetaNormal p={p} meta={meta} />;
     case "AUTO_INSIGNIA":
-      return <TarjetaInsignia p={p} />;
+      return <TarjetaInsignia p={p} meta={meta} />;
     case "AUTO_GOL":
-      return <TarjetaGol p={p} />;
+      return <TarjetaGol p={p} meta={meta} />;
     case "AUTO_CRONICA":
-      return <TarjetaCronica p={p} />;
+      return <TarjetaCronica p={p} meta={meta} />;
     case "AUTO_RESULTADO":
-      return <TarjetaResultado p={p} />;
+      return <TarjetaResultado p={p} meta={meta} />;
     case "AUTO_TABLA":
       return <TarjetaTabla p={p} />;
     case "AUTO_RACHA":
-      return <TarjetaRacha p={p} />;
+      return <TarjetaRacha p={p} meta={meta} />;
   }
 }

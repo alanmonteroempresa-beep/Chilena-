@@ -17,9 +17,8 @@ test("Para ti: el inicio del jugador y abajo lo que dejó la J15", async ({ page
   // Compartir por WhatsApp ya funciona y lleva al partido público
   const wa = page.getByRole("link", { name: "WhatsApp" }).first();
   await expect(wa).toHaveAttribute("href", /^https:\/\/wa\.me\/\?text=.*%2Fpartido%2F/);
-  // Reaccionar llega pronto
-  await page.getByRole("button", { name: "Fuego" }).first().click();
-  await expect(page.getByText("Reaccionar llega pronto")).toBeVisible();
+  // Las reacciones ya son reales (bloque B: social.spec.ts las prueba)
+  await expect(page.getByRole("button", { name: /^Fuego/ }).first()).toHaveAttribute("aria-pressed", /true|false/);
   await salir(page);
 });
 

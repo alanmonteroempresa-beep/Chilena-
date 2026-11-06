@@ -11,5 +11,5 @@ export const perfilDelJugador = cache(async (username: string, conRareza = false
     sesionActiva(),
   ]);
   if (!d) notFound();
-  return { d, esPropio: sesion?.usuario.id === d.persona.id };
+  return { d, esPropio: sesion?.usuario.id === d.persona.id, yo: sesion?.usuario.id ?? null };
 });

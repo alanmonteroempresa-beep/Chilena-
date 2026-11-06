@@ -49,7 +49,7 @@ y después la semilla demo. No cambies prisma/schema.prisma sin preguntarme.
 **PRD §3, §4 · pantallas 01, 01b, 06, 07, 11, 24, 40, 41, 42, 43**
 - [ ] Entrar sin elegir rol; deducción de rol por link (`/i/[token]` del delegado → entra al equipo) o por perfil compartido
 - [ ] **Reclamar perfil** (`/j/[username]/reclamar`): liga `authId`, migra reacciones anónimas, "No soy yo"
-- [ ] Perfil público `/j/[username]` con `publicUserSelect` (carta, stats, insignias, porra) — hecho en el recorrido salvo la porra y los golazos (feed)
+- [x] Perfil público `/j/[username]` con `publicUserSelect` (carta, stats, insignias, porra del muro); falta la pestaña Golazos
 - [ ] **Visitante**: todo lo público, 🔥 anónimo, invitación a registrarse a la 3ª interacción
 - [ ] Selector de rol y liga (hecho en el recorrido: `cambiarRol`, contextos de equipos y ligas); falta activar roles ("Crear mi equipo", "Registrar mi liga", "Soy árbitro")
 - [ ] Completa tu perfil (progresivo, un paso por pantalla) y subida de avatar comprimido
@@ -106,11 +106,11 @@ y después la semilla demo. No cambies prisma/schema.prisma sin preguntarme.
 
 ### S1 — Red social núcleo ⭐
 **PRD §6.1–6.3 · pantallas 05, 10, 33, 34, 35**
-- [ ] Feed `/inicio` con *Para ti · Golazos · Siguiendo*, scroll infinito por cursor, skeletons — pestañas y auto-posts de la jornada hechos en el recorrido; faltan los posts guardados, el scroll infinito y las publicaciones de la gente
+- [x] Feed `/inicio` con *Para ti · Golazos · Siguiendo*, paginado por jornada y por cursor ("Ver más"), con los posts guardados y las publicaciones de la gente
 - [ ] Tarjetas de cada `PostType` (gol con tipo, resultado, crónica, once, MVP, tabla, insignia, racha, campeón, fichaje)
 - [ ] Publicar texto ligado a partido o equipo, con etiquetas (fotos y videos "Próximamente")
-- [ ] La porra: comentarios con respuestas, reacciones 🔥 ⚽ 🏆, reportar, ocultar y bloquear
-- [ ] Seguir personas, equipos y ligas
+- [ ] La porra: comentarios con respuestas, reacciones 🔥 ⚽ 🏆, reportar, ocultar y bloquear — comentarios (post y muro), reacciones y reportar hechos; faltan respuestas, ocultar (moderación) y bloquear
+- [ ] Seguir personas, equipos y ligas — personas y equipos hechos; faltan ligas
 - [ ] Búsqueda con trigram (jugadores, equipos, ligas y canchas)
 - [ ] Compartir por WhatsApp con plantillas `next/og` 1080×1920 (resultado, golazo, carta, MVP, tabla, hat-trick)
 - [ ] **Auto-posts** escuchando `match.validated` (prueba con los partidos de la semilla)

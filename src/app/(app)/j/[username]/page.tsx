@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { encabezadoDe } from "@/modules/carta/server-api";
-import { PaginaPerfil } from "@/modules/social/server-api";
+import { PaginaPerfil, yaSigue } from "@/modules/social/server-api";
 import { EncabezadoPerfil } from "@/shared/ui/encabezado-perfil";
 import { PerfilCargando } from "./cargando";
 import { perfilDelJugador } from "./perfil-del-jugador";
@@ -19,11 +19,12 @@ export default function PerfilPage({ params }: PageProps<"/j/[username]">) {
 
 async function Perfil({ params }: Pick<PageProps<"/j/[username]">, "params">) {
   const { username } = await params;
-  const { d, esPropio } = await perfilDelJugador(username);
+  const { d, esPropio, yo } = await perfilDelJugador(username);
+  const siguiendo = yo && !esPropio ? await yaSigue(yo, { persona: d.persona.id }) : false;
   return (
     <>
       <EncabezadoPerfil {...encabezadoDe(d)} activa="carta" />
-      <PaginaPerfil d={d} esPropio={esPropio} />
+      <PaginaPerfil d={d} esPropio={esPropio} yo={yo} siguiendo={siguiendo} />
     </>
   );
 }

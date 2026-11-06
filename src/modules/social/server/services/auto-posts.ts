@@ -84,6 +84,10 @@ export type AutoPost =
       veces: number;
     });
 
+/** Publicación de una persona (pantalla 34): mismo feed, mismas reacciones y porra */
+export type PostNormal = Base & { tipo: "NORMAL"; texto: string; autor: { nombre: string; username: string } };
+export type PostDeFeed = AutoPost | PostNormal;
+
 /** Insignias que no se anuncian en el feed (se ganan solas o no dicen nada del juego) */
 const SIN_ANUNCIO = new Set(["PIONERO"]);
 
@@ -322,17 +326,23 @@ export function autoPostsDeLaJornada(entrada: {
   return posts;
 }
 
-const PESO: Record<AutoPost["tipo"], number> = { AUTO_CRONICA: 30, AUTO_RESULTADO: 20, AUTO_TABLA: 15, AUTO_RACHA: 12, AUTO_INSIGNIA: 10, AUTO_GOL: 5 };
+const PESO: Record<PostDeFeed["tipo"], number> = { AUTO_CRONICA: 30, NORMAL: 25, AUTO_RESULTADO: 20, AUTO_TABLA: 15, AUTO_RACHA: 12, AUTO_INSIGNIA: 10, AUTO_GOL: 5 };
+const DIA = 86_400_000;
 
 /**
  * Para ti (PRD §6.1): primero lo de tu equipo, luego crónicas y resultados de la liga, la tabla, rachas y
  * los golazos. Los goles sin chiste de otros partidos se quedan en Golazos.
  */
-export function paraTi(posts: AutoPost[], miEquipoId?: string): AutoPost[] {
-  const mio = (p: AutoPost) => (miEquipoId ? p.equipos.includes(miEquipoId) : false);
+export function paraTi<T extends PostDeFeed>(posts: T[], miEquipoId?: string, yo?: { id: string; ahora: number }): T[] {
+  const mio = (p: PostDeFeed) => (miEquipoId ? p.equipos.includes(miEquipoId) : false);
+  // Lo que acabas de publicar va hasta arriba (el día que lo publicas)
+  const recienMio = (p: PostDeFeed) => p.tipo === "NORMAL" && yo && p.jugadores[0] === yo.id && yo.ahora - p.fecha < DIA;
   return posts
     .filter((p) => p.tipo !== "AUTO_GOL" || p.golazo || mio(p))
-    .map((p) => ({ p, peso: (mio(p) ? 100 : 0) + PESO[p.tipo] + (p.tipo === "AUTO_GOL" && p.golazo ? 20 : 0) }))
+    .map((p) => ({
+      p,
+      peso: (recienMio(p) ? 1000 : 0) + (mio(p) ? 100 : 0) + PESO[p.tipo] + (p.tipo === "AUTO_GOL" && p.golazo ? 20 : 0),
+    }))
     .sort((a, b) => b.peso - a.peso || b.p.fecha - a.p.fecha)
     .map((x) => x.p);
 }
@@ -344,7 +354,7 @@ export const golazos = (posts: AutoPost[]) =>
     .sort((a, b) => Number(b.golazo) - Number(a.golazo) || b.fecha - a.fecha);
 
 /** Siguiendo: lo de los equipos y cracks que sigue, en orden cronológico (lo más nuevo arriba) */
-export function siguiendo(posts: AutoPost[], sigue: { equipos: Set<string>; jugadores: Set<string> }): AutoPost[] {
+export function siguiendo<T extends PostDeFeed>(posts: T[], sigue: { equipos: Set<string>; jugadores: Set<string> }): T[] {
   return posts
     .filter((p) => p.equipos.some((e) => sigue.equipos.has(e)) || p.jugadores.some((j) => sigue.jugadores.has(j)))
     .sort((a, b) => b.fecha - a.fecha);
