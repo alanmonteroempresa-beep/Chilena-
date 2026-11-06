@@ -5,3 +5,4 @@ export { ColeccionInsignias } from "./components/pagina-insignias";
 export { HexagonoInsignia } from "./components/insignia";
 export { registerListeners } from "./server/listeners";
 export { recalcularCartas } from "./server/persistir";
+export { insigniaPorCodigo } from "./server/queries";

@@ -141,3 +141,23 @@ export async function yaSigue(userId: string, a: { persona?: string; equipo?: st
   if (a.equipo) return (await db.teamFollow.count({ where: { userId, teamId: a.equipo } })) > 0;
   return false;
 }
+
+/** A quién le avisa una reacción: el autor o, en un auto-post, su protagonista (el goleador) */
+export function duenosDePost(postId: string) {
+  return db.post.findUnique({ where: { id: postId }, select: { type: true, authorId: true, subjectUserId: true } });
+}
+
+/** Lo que necesita el aviso de un comentario nuevo */
+export function datosDeComentario(commentId: string) {
+  return db.comment.findUnique({
+    where: { id: commentId },
+    select: {
+      body: true,
+      authorId: true,
+      postId: true,
+      wallUserId: true,
+      post: { select: { authorId: true, subjectUserId: true } },
+      wallUser: { select: { username: true } },
+    },
+  });
+}

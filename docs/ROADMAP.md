@@ -117,7 +117,7 @@ y después la semilla demo. No cambies prisma/schema.prisma sin preguntarme.
 
 ### S2 — Notificaciones
 **`docs/NOTIFICACIONES.md` · pantallas 09, 43**
-- [ ] `notify()`, campana con pestañas, agrupación, Broadcast `user:{id}`
+- [ ] `notify()`, campana con pestañas, agrupación, Broadcast `user:{id}` — `notificar()`, campana (Todas · Partidos · Social · Liga) y agrupación hechos; falta Broadcast
 - [ ] Push web VAPID (pedir permiso después de reclamar o instalar, no al entrar), horario silencioso
 - [ ] Preferencias por tipo
 - [ ] Jobs con pg_cron (`trabajos`, `recordatorios`, `votaciones`) y Vercel Cron (`lunes`, `nocturno`)

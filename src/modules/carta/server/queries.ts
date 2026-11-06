@@ -50,3 +50,8 @@ export async function rarezaEntre(userIds: string[]): Promise<Map<string, number
     conteos.map((c) => [code.get(c.badgeId)!, Math.max(1, Math.round((c._count._all / userIds.length) * 100))]),
   );
 }
+
+/** Una insignia del catálogo por su código (avisos de la campana) */
+export function insigniaPorCodigo(code: string) {
+  return db.badge.findUnique({ where: { code }, select: { code: true, nombre: true, descripcion: true, icon: true } });
+}
