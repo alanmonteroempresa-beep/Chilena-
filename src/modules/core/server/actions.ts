@@ -1,10 +1,14 @@
 "use server";
 
+import { refresh } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { db } from "@/shared/lib/db";
 import { logger } from "@/shared/lib/logger";
+import { ROLES, roleTypeDesdeRol, type Rol } from "@/shared/lib/roles";
 import { createSupabaseServerClient } from "@/shared/lib/supabase/server";
 import { cuentaDePruebaSchema, entrarSchema } from "../schemas";
+import { getCurrentUser } from "./auth";
 import { asegurarUsuario } from "./entrada";
 import { isEnabled } from "./flags";
 import {
@@ -115,6 +119,21 @@ export async function entrarConCuentaDePrueba(
   }
   const { usuario } = await asegurarUsuario(data.user);
   redirect(destinoTrasEntrar(usuario, next));
+}
+
+/** Cambiar de rol (pantalla 24): solo a un rol que la persona tiene. No toca nada más. */
+export async function cambiarRol(rol: Rol) {
+  const usuario = await getCurrentUser();
+  if (!usuario) redirect("/entrar");
+  if (!ROLES.includes(rol)) return;
+  const roleType = roleTypeDesdeRol(rol);
+  if (!usuario.roles.some((r) => r.role === roleType)) return;
+  if (usuario.activeRole !== roleType) {
+    await db.user.update({ where: { id: usuario.id }, data: { activeRole: roleType } });
+  }
+  // El header (selector y acento) vive en el layout, que Next conserva al navegar: hay que refrescarlo
+  refresh();
+  redirect("/inicio");
 }
 
 /** Cerrar sesión */

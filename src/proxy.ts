@@ -5,8 +5,20 @@ import { SUPABASE_PUBLIC_KEY, SUPABASE_URL, isSupabaseConfigured } from "@/share
 // Next 16: "middleware" ahora se llama "proxy". Refresca la sesión de Supabase en cada request
 // y hace las redirecciones de sesión (pantalla 01). Las de rol y onboarding fino llegan en la Fase 1.
 
-/** Rutas que piden sesión */
-const PRIVADAS = ["/inicio", "/perfil"];
+/** Rutas que piden sesión (el cascarón de la app: src/app/(app)) */
+const PRIVADAS = [
+  "/inicio",
+  "/perfil",
+  "/en-vivo",
+  "/mi-liga",
+  "/publicar",
+  "/arbitro",
+  "/admin",
+  "/buscar",
+  "/notificaciones",
+];
+/** /equipo/[slug] será público (pantalla 36); su gestión no */
+const PRIVADA_DE_EQUIPO = /^\/equipo\/[^/]+\/(pase-de-lista|gestion)(\/|$)/;
 /** Con sesión no tiene caso verlas: /auth/confirm decide si va a Completa tu perfil o a su inicio */
 const SOLO_SIN_SESION = ["/", "/entrar"];
 
@@ -36,7 +48,7 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
   const { pathname, search } = request.nextUrl;
 
-  if (!user && PRIVADAS.some((p) => empiezaCon(pathname, p))) {
+  if (!user && (PRIVADAS.some((p) => empiezaCon(pathname, p)) || PRIVADA_DE_EQUIPO.test(pathname))) {
     const destino = new URL("/entrar", request.url);
     destino.searchParams.set("next", `${pathname}${search}`);
     return redirigir(response, destino);

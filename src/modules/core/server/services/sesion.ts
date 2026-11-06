@@ -27,16 +27,12 @@ export function necesitaCompletarPerfil(u: { nombre: string; sobrenombre: string
   return !u.nombre.trim() || !u.sobrenombre?.trim();
 }
 
-/** Después de entrar: Completa tu perfil si le falta nombre o apodo; si no, a donde iba o a su inicio. */
-export function destinoTrasEntrar(
-  u: { nombre: string; sobrenombre: string | null },
-  next?: string | null,
-): string {
-  const seguro = rutaSegura(next);
-  if (necesitaCompletarPerfil(u)) {
-    return seguro ? `${DESTINO_COMPLETAR}?next=${encodeURIComponent(seguro)}` : DESTINO_COMPLETAR;
-  }
-  return seguro ?? DESTINO_INICIO;
+/**
+ * Después de entrar: a donde iba o a su inicio. Si le falta nombre o apodo, su inicio le muestra la
+ * tarjeta de Completa tu perfil (pantalla 40a: "una tarjeta en su inicio y pasos cortos").
+ */
+export function destinoTrasEntrar(_u: { nombre: string; sobrenombre: string | null }, next?: string | null): string {
+  return rutaSegura(next) ?? DESTINO_INICIO;
 }
 
 /** "El Chícharo" → "el-chicharo" */

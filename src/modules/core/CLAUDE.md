@@ -15,8 +15,9 @@ Auth (Supabase), sesión, personas (`User`), roles y selector de rol, reclamar p
 - Permisos por relación, no por rol activo (`docs/PERMISOS.md`).
 - Perfil sin reclamar = `authId` null. Reclamar liga `authId` y migra reacciones anónimas.
 - Nunca serialices datos privados: usa `publicUserSelect`.
-- Entrar (pantalla 01): link mágico al correo; Google con el flag `auth.google`. `/auth/confirm` (`server/entrada.ts`) abre la sesión, crea el `User` la primera vez y manda a Completa tu perfil (sin nombre o apodo) o a su inicio (`server/services/sesion.ts`). `src/proxy.ts` protege `/inicio` y `/perfil`.
+- Entrar (pantalla 01): link mágico al correo; Google con el flag `auth.google`. `/auth/confirm` (`server/entrada.ts`) abre la sesión, crea el `User` la primera vez y manda a Completa tu perfil (sin nombre o apodo) o a su inicio (`server/services/sesion.ts`). `src/proxy.ts` protege las rutas de la app (`PRIVADAS`).
 - Cuentas de prueba (flag `auth.demo_login`): solo entrar, nunca registrar con contraseña; exige `@prueba.chilena` y `app_metadata.cuenta_de_prueba` (lo pone `scripts/cuentas-de-prueba.ts`).
+- Selector de rol (07/24): `server/services/roles-sesion.ts` arma las opciones con los contextos que dan `equipos` y `ligas`; `cambiarRol` guarda `activeRole` y llama `refresh()` porque el header vive en el layout `src/app/(app)/layout.tsx`, que Next conserva al navegar.
 - `createSupabaseServerClient()` llama `connection()`: con `cacheComponents` + `partialPrefetching`, auth-js usa `Date.now()` y no puede correr al prerenderizar.
 
 ## Estructura

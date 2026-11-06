@@ -22,6 +22,8 @@ type Cuenta = {
   entraComo: string;
   /** username de la persona de la semilla demo a la que se liga */
   perfil?: string;
+  /** Con qué rol arranca (el que se ve al entrar; el selector deja cambiarlo) */
+  activo: RoleType;
   /** o una persona nueva, para las cuentas del equipo */
   nueva?: { nombre: string; apellidos: string; sobrenombre: string };
   roles: RoleType[];
@@ -30,27 +32,60 @@ type Cuenta = {
 const CUENTAS: Cuenta[] = [
   {
     clave: "alan",
+    activo: "JUGADOR",
     entraComo: "Alan · todos los roles",
     nueva: { nombre: "Alan", apellidos: "Montero", sobrenombre: "Alan" },
     roles: TODOS,
   },
   {
     clave: "hermano1",
+    activo: "JUGADOR",
     entraComo: "Hermano 1 · todos los roles",
     nueva: { nombre: "Hermano", apellidos: "Uno", sobrenombre: "Hermano 1" },
     roles: TODOS,
   },
   {
     clave: "hermano2",
+    activo: "JUGADOR",
     entraComo: "Hermano 2 · todos los roles",
     nueva: { nombre: "Hermano", apellidos: "Dos", sobrenombre: "Hermano 2" },
     roles: TODOS,
   },
-  { clave: "jugador", entraComo: "El Chícharo · jugador de Dep. Portales", perfil: "el-chicharo", roles: [] },
-  { clave: "delegado", entraComo: "Memo Salas · delegado de Dep. Portales", perfil: "memo-salas", roles: [] },
-  { clave: "arbitro", entraComo: "J. Mendoza · árbitro", perfil: "jorge-mendoza", roles: [] },
-  { clave: "liga", entraComo: "Don Toño · Liga Dominical Iztapalapa", perfil: "don-tono", roles: [] },
-  { clave: "aficionada", entraComo: "Doña Lupe · aficionada", perfil: "dona-lupe", roles: [] },
+  {
+    clave: "jugador",
+    activo: "JUGADOR",
+    entraComo: "El Chícharo · jugador de Dep. Portales",
+    perfil: "el-chicharo",
+    roles: [],
+  },
+  {
+    clave: "delegado",
+    activo: "DELEGADO",
+    entraComo: "Memo Salas · delegado de Dep. Portales",
+    perfil: "memo-salas",
+    roles: [],
+  },
+  {
+    clave: "arbitro",
+    activo: "ARBITRO",
+    entraComo: "J. Mendoza · árbitro",
+    perfil: "jorge-mendoza",
+    roles: [],
+  },
+  {
+    clave: "liga",
+    activo: "LIGA",
+    entraComo: "Don Toño · Liga Dominical Iztapalapa",
+    perfil: "don-tono",
+    roles: [],
+  },
+  {
+    clave: "aficionada",
+    activo: "AFICIONADO",
+    entraComo: "Doña Lupe · aficionada",
+    perfil: "dona-lupe",
+    roles: [],
+  },
 ];
 
 function fallar(m: string): never {
@@ -136,11 +171,11 @@ async function main() {
       }));
       await db.user.update({
         where: { id: persona.id },
-        data: { authId, claimedAt: new Date(), ...(correoLibre ? { email } : {}) },
+        data: { authId, claimedAt: new Date(), activeRole: cuenta.activo, ...(correoLibre ? { email } : {}) },
       });
       userId = persona.id;
     } else {
-      const datos = { ...cuenta.nueva!, email, claimedAt: new Date() };
+      const datos = { ...cuenta.nueva!, email, claimedAt: new Date(), activeRole: cuenta.activo };
       if (ligada) {
         await db.user.update({ where: { id: ligada.id }, data: datos });
         userId = ligada.id;
@@ -151,7 +186,6 @@ async function main() {
             ...datos,
             authId,
             username: tomado ? `${cuenta.clave}-prueba` : cuenta.clave,
-            activeRole: "JUGADOR",
           },
           select: { id: true },
         });
