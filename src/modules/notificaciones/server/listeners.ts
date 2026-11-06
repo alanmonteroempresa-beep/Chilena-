@@ -1,10 +1,10 @@
 import "server-only";
 import { insigniaPorCodigo } from "@/modules/carta/server-api";
 import { personasPorId } from "@/modules/core/server-api";
-import { plantillaDelEquipo } from "@/modules/equipos/server-api";
+import { delegadosDe, plantillaDelEquipo } from "@/modules/equipos/server-api";
 import { horarioCorto } from "@/modules/partidos";
-import { partidoDelDia } from "@/modules/partidos/server-api";
-import { nombreCorto } from "@/shared/lib/personas";
+import { cedulaDelPartido, partidoDelDia } from "@/modules/partidos/server-api";
+import { nombreCorto, nombreDeArbitro } from "@/shared/lib/personas";
 import { datosDeComentario, duenosDePost } from "@/modules/social/server-api";
 import { on } from "@/shared/events/bus";
 import { nombreVisible } from "@/shared/lib/personas";
@@ -17,6 +17,12 @@ const QUE_COSA: Record<string, string> = {
   AUTO_INSIGNIA: "tu insignia",
   AUTO_RACHA: "tu racha",
 };
+
+/** El equipo del delegado que señaló (va en la propuesta de la corrección) */
+function equipoQueSenala<T extends { id: string }>(m: { homeTeam: T; awayTeam: T }, propuesta: unknown): T {
+  const id = (propuesta as { equipoQueSenala?: string } | null)?.equipoQueSenala;
+  return id === m.awayTeam.id ? m.awayTeam : m.homeTeam;
+}
 
 async function persona(id: string) {
   const [p] = await personasPorId([id]);
@@ -106,6 +112,102 @@ export function registerListeners() {
       body: p.scheduledAt ? horarioCorto(p.scheduledAt, p.field?.nombre) : null,
       href: "/inicio",
     });
+  });
+
+  // ---- La cédula (PRD §7.7 · pantallas 04, 19 y 56b)
+  on("match.report_submitted", async ({ matchId }) => {
+    const m = await cedulaDelPartido(matchId);
+    if (!m?.report) return;
+    const r = m.report;
+    const titulo = `Cédula${m.round?.numero ? ` J${m.round.numero}` : ""} · ${nombreCorto(m.homeTeam.nombre)} ${r.homeScore ?? 0}–${r.awayScore ?? 0} ${nombreCorto(m.awayTeam.nombre)}`;
+    // A quien le falta firmar: revisa y firma (o señala)
+    // Quien firmó en el celular del árbitro: que sepa que su firma quedó (y avise si no fue él)
+    const arbitro = m.referee ? nombreDeArbitro(m.referee) : "el árbitro";
+    for (const [t, quien] of [
+      [m.homeTeam, r.homeSignedAt ? r.homeSignedBy : null],
+      [m.awayTeam, r.awaySignedAt ? r.awaySignedBy : null],
+    ] as const)
+      if (quien)
+        await notificar({
+          userIds: [quien.id],
+          actorId: m.refereeId,
+          type: "CEDULA_POR_FIRMAR",
+          title: `${titulo}: firmaste en el celular de ${arbitro}`,
+          body: "Si no fuiste tú, avísale a la liga.",
+          href: `/equipo/${t.slug}/cedula/${matchId}`,
+          data: { accion: "Ver cédula" },
+        });
+    const faltan = [r.homeSignedAt ? null : m.homeTeam, r.awaySignedAt ? null : m.awayTeam].filter((t) => t != null);
+    const delegados = await delegadosDe(faltan.map((t) => t.id));
+    for (const t of faltan)
+      await notificar({
+        userIds: delegados.filter((d) => d.teamId === t.id).map((d) => d.userId),
+        actorId: m.refereeId,
+        type: "CEDULA_POR_FIRMAR",
+        title: `${titulo}: revísala y fírmala`,
+        body: "Si algo está mal, señálalo antes de firmar.",
+        href: `/equipo/${t.slug}/cedula/${matchId}`,
+      });
+  });
+
+  on("match.report_signed", async ({ matchId, side }) => {
+    const m = await cedulaDelPartido(matchId);
+    if (!m?.report || !m.refereeId) return;
+    const quien = side === "home" ? m.report.homeSignedBy : m.report.awaySignedBy;
+    const ambas = m.report.homeSignedAt && m.report.awaySignedAt;
+    await notificar({
+      userIds: [m.refereeId],
+      actorId: quien?.id,
+      type: "CEDULA_POR_FIRMAR",
+      title: ambas
+        ? `Firmaron los dos: la cédula de ${nombreCorto(m.homeTeam.nombre)} vs ${nombreCorto(m.awayTeam.nombre)} ya está en la liga`
+        : `${quien ? nombreVisible(quien) : "Un delegado"} firmó la cédula de ${nombreCorto(m.homeTeam.nombre)} vs ${nombreCorto(m.awayTeam.nombre)}`,
+      href: `/arbitro/cedula/${matchId}`,
+      data: { accion: "Ver cédula" },
+    });
+  });
+
+  on("match.correction_requested", async ({ matchId, correctionId }) => {
+    const m = await cedulaDelPartido(matchId);
+    const c = m?.report?.corrections.find((x) => x.id === correctionId);
+    if (!m?.refereeId || !c) return;
+    const equipo = equipoQueSenala(m, c.propuesta);
+    await notificar({
+      userIds: [m.refereeId],
+      actorId: c.requestedById,
+      type: "CORRECCION_CEDULA",
+      title: `${nombreVisible(c.requestedBy)} (${nombreCorto(equipo.nombre)}) señaló algo en la cédula: te piden corregir`,
+      body: c.comentario,
+      href: `/arbitro/cedula/${matchId}`,
+    });
+  });
+
+  on("match.correction_answered", async ({ matchId, correctionId, accepted }) => {
+    const m = await cedulaDelPartido(matchId);
+    const c = m?.report?.corrections.find((x) => x.id === correctionId);
+    if (!m || !c) return;
+    const arbitro = m.referee ? nombreVisible(m.referee) : "El árbitro";
+    const equipo = equipoQueSenala(m, c.propuesta);
+    await notificar({
+      userIds: [c.requestedById],
+      actorId: m.refereeId,
+      type: "CORRECCION_CEDULA",
+      title: accepted ? `${arbitro} aceptó tu corrección: revisa y firma` : `${arbitro} rechazó tu corrección`,
+      body: accepted ? "La cédula cambió; los dos equipos vuelven a firmar." : "Puedes firmar o señalar otra cosa.",
+      href: `/equipo/${equipo.slug}/cedula/${matchId}`,
+    });
+    // Si la cédula cambió, el otro equipo también vuelve a firmar
+    if (accepted) {
+      const otro = equipo.id === m.homeTeam.id ? m.awayTeam : m.homeTeam;
+      const delegados = await delegadosDe([otro.id]);
+      await notificar({
+        userIds: delegados.map((d) => d.userId),
+        actorId: m.refereeId,
+        type: "CEDULA_POR_FIRMAR",
+        title: `La cédula de ${nombreCorto(m.homeTeam.nombre)} vs ${nombreCorto(m.awayTeam.nombre)} cambió: vuelve a firmar`,
+        href: `/equipo/${otro.slug}/cedula/${matchId}`,
+      });
+    }
   });
 
   on("card.recalculated", async ({ userId, media, delta }) => {

@@ -18,7 +18,7 @@ const PRIVADAS = [
   "/notificaciones",
 ];
 /** /equipo/[slug] será público (pantalla 36); su gestión no */
-const PRIVADA_DE_EQUIPO = /^\/equipo\/[^/]+\/(pase-de-lista|gestion|alineacion)(\/|$)/;
+const PRIVADA_DE_EQUIPO = /^\/equipo\/[^/]+\/(pase-de-lista|gestion|alineacion|cedula)(\/|$)/;
 /** Con sesión no tiene caso verlas: /auth/confirm decide si va a Completa tu perfil o a su inicio */
 const SOLO_SIN_SESION = ["/", "/entrar"];
 

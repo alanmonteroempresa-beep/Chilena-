@@ -9,6 +9,8 @@ const miembros = new Set(["memo:portales", "chicharo:portales", "poncho:tigres"]
 registerRule("attendance.sendLink", reglaDelegadoDelEquipo(async (u, t) => delegados.has(`${u}:${t}`)));
 registerRule("lineup.submit", reglaDelegadoDelEquipo(async (u, t) => delegados.has(`${u}:${t}`)));
 registerRule("attendance.respond", reglaContestarPorMi(async (u, t) => miembros.has(`${u}:${t}`)));
+registerRule("report.sign", reglaDelegadoDelEquipo(async (u, t) => delegados.has(`${u}:${t}`)));
+registerRule("report.requestCorrection", reglaDelegadoDelEquipo(async (u, t) => delegados.has(`${u}:${t}`)));
 
 describe("permisos del equipo (PERMISOS §3)", () => {
   it("el pase de lista y la alineación solo los manda el delegado de ESE equipo", async () => {
@@ -16,6 +18,14 @@ describe("permisos del equipo (PERMISOS §3)", () => {
     expect(await can("memo", "lineup.submit", { teamId: "tigres" })).toBe(false);
     expect(await can("chicharo", "lineup.submit", { teamId: "portales" })).toBe(false);
     expect(await can("memo", "lineup.submit")).toBe(false);
+  });
+
+  it("la cédula la firma y la señala el delegado de ESE equipo (también quien firma en el celular del árbitro)", async () => {
+    expect(await can("poncho", "report.sign", { teamId: "tigres", matchId: "j16" })).toBe(true);
+    expect(await can("poncho", "report.sign", { teamId: "portales", matchId: "j16" })).toBe(false);
+    expect(await can("chicharo", "report.sign", { teamId: "portales", matchId: "j16" })).toBe(false);
+    expect(await can("chicharo", "report.requestCorrection", { teamId: "portales" })).toBe(false);
+    expect(await can("memo", "report.requestCorrection", { teamId: "portales" })).toBe(true);
   });
 
   it("en la app cada quien contesta por sí mismo y solo en su equipo", async () => {

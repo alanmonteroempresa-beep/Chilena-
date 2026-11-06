@@ -38,7 +38,7 @@
 | Pase de lista: mandar link y recordatorio | — | — | ✅ | ✅ | — |
 | Marcar presentes en cancha | — | 🔸¹ | ✅ | ✅ | — |
 | Alineación | — | — | ✅ | ✅ | — |
-| Revisar, señalar y firmar la cédula | — | — | ✅ | ✅ | — |
+| Revisar, señalar y firmar la cédula (en su celular o en el del árbitro) | — | — | ✅ | ✅ | — |
 | "No hay juego" (solicitud) | — | — | ✅ | ✅ | — |
 | Crear cuota y confirmar pagos | — | — | ✅ | ✅ | — |
 | "Ya pagué" (propio) | ✅ | ✅ | ✅ | ✅ | — |

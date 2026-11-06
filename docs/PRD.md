@@ -387,6 +387,18 @@ Estados: `BORRADOR → INSCRIPCIONES_ABIERTAS → EN_CURSO → LIGUILLA → FINA
 
 **Firmas pendientes:** si después de 48 h un delegado no firma ni señala, la liga puede validar igual.
 
+**Cómo funciona en la app — POR APROBAR** (bloque D, `partidos/server/services/cedula.ts` y `estado-partido.ts`, con tests):
+- **Firma en el celular del árbitro:** el delegado firma con el dedo y se guarda el trazo en la copia de la cédula. Solo firma un delegado de ese equipo. Si firman los dos antes de enviar, la cédula llega a la liga ya `FIRMADA`. Si alguien no está, "que firme en su celular": se envía y le llega el aviso.
+- **Si el árbitro cambia algo después de una firma en su celular**, esa firma ya no vale y se vuelve a firmar.
+- **Cédula en pausa:** mientras haya una corrección sin contestar, nadie firma y la liga no valida.
+- **Quien ya firmó ya no señala.** Si no está de acuerdo, habla con la liga.
+- **Si el árbitro acepta una corrección**, la cédula cambia (con bitácora: antes → después) y **se borran las firmas que ya había**: los dos equipos vuelven a firmar. Si rechaza, la cédula queda igual y el delegado puede firmar o señalar otra cosa.
+- **Si acepta que fue otro jugador** y ese jugador no estaba marcado en "Jugaron", queda como que jugó.
+- **Segunda amarilla:** al capturarla, la app agrega sola su roja ("Doble amarilla").
+- **Sin señal:** la cédula se guarda en el celular y se manda sola al volver la señal (o al abrir otra vez la cédula). Si llega dos veces, cuenta una (`clientId`).
+- **Capturar la cédula** es del árbitro asignado que aceptó el partido (PERMISOS §4).
+- Todavía no se capturan en el modo "al terminar": cambios, penales fallados o atajados, el modo "en vivo" ni el dictado por voz.
+
 ### 7.8 Sanciones (pantalla 47)
 - **Automáticas** (salen solas de la cédula validada, con las reglas del torneo): roja = 1 partido (`partidosPorRoja`); 5 amarillas acumuladas = 1 partido (`amarillasParaSuspension`).
 - **Manuales:** partidos, multa, expulsión del torneo, pérdida del partido.

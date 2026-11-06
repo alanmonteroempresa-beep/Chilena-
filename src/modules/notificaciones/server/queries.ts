@@ -19,6 +19,7 @@ export function avisosDe(userId: string, tipos?: NotificationType[], take = 60) 
       href: true,
       readAt: true,
       createdAt: true,
+      data: true,
       actor: { select: { nombre: true, sobrenombre: true } },
     },
   });

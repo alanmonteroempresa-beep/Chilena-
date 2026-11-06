@@ -148,14 +148,32 @@
 .dark [data-role="aficionado"], .dark[data-role="aficionado"] { --role-accent: #ff7ad9; }
 .dark [data-role="liga"], .dark[data-role="liga"] { --role-accent: #c6d0dd; }
 
-/* ---------- Alto contraste (cédula del árbitro) ---------- */
-.alto-contraste {
-  --background: #000000;
-  --foreground: #ffffff;
-  --surface: #000000;
-  --card: #000000;
-  --border: #ffffff;
-  --muted-foreground: #e6e6e6;
+/* ---------- Alto contraste (cédula del árbitro, pantallas 02 y 56b): blanco y negro para leer a pleno sol ---------- */
+.alto-contraste,
+.dark .alto-contraste {
+  color-scheme: light;
+  --background: #ffffff;
+  --foreground: #000000;
+  --surface: #ffffff;
+  --surface-2: #e9e9e9;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --muted: #e9e9e9;
+  --muted-foreground: #1a1a1a;
+  --border: #000000;
+  --input: #000000;
+  --warning: #6b3d00;
+  --warning-soft: #ffe7b8;
+  --danger: #a3001b;
+  --success: #00552b;
+  --success-soft: #d4f0de;
+  --role-accent: #000000;
+}
+/* Fuera de las capas de Tailwind para ganarle a las utilidades: la acción principal va en negro */
+.alto-contraste .bg-brand-lime {
+  background-color: #000000;
+  color: #ffffff;
+  box-shadow: none;
 }
 
 @layer base {

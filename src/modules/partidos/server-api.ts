@@ -24,3 +24,10 @@ export {
 export { InicioArbitro } from "./components/inicio-arbitro";
 export { PaginaPartido } from "./components/pagina-partido";
 export { registerListeners } from "./server/listeners";
+// La cédula: árbitro (56a, 56b), delegado (19)
+export { arbitroDelPartido, cedulaDelPartido, correccionesParaElArbitro } from "./server/queries";
+export { vistaDeLaCedula, type VistaDeLaCedula } from "./server/cedula";
+export { proveerInscritos, type Inscrito } from "./server/puertos";
+export { CedulaArbitro } from "./components/cedula/cedula-arbitro";
+export { CedulaEnviada } from "./components/cedula/cedula-enviada";
+export { RevisarCedula } from "./components/cedula/revisar-cedula";

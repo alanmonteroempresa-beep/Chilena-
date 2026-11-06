@@ -8,7 +8,7 @@ Máquina de estados del partido, marcador desde la banda, alineación con alerta
 |---|---|
 | **Tablas (dueño)** | matches, lineups, lineup_players, match_events, live_score_updates, match_reports, match_report_corrections, match_suspension_requests, sanctions, player_tournament_stats |
 | **Pantallas** | 02 Árbitro hoy · 08b Sin conexión · 19 Corrección · 29 Tipo de gol · 32 Partido · 46 Revisar cédulas · 47 Sanciones · 53 Alineación · 55 Asignaciones · 56 Cédula al final |
-| **Emite** | match.started, match.live_score_updated, match.report_submitted, match.report_signed, match.correction_requested, match.validated |
+| **Emite** | match.started, match.live_score_updated, match.report_submitted, match.report_signed, match.correction_requested, match.correction_answered, match.validated |
 | **Escucha** | — |
 
 ## Reglas clave
@@ -19,6 +19,10 @@ Máquina de estados del partido, marcador desde la banda, alineación con alerta
 - Bitácora en la MISMA transacción (CLAUDE.md, Arquitectura): validar o corregir un resultado, cambiar eventos oficiales y crear o ajustar sanciones escriben su `AuditLog` en el mismo `db.$transaction` que el cambio.
 - El delegado no suspende; el árbitro solo durante su partido.
 - Cola offline con `clientId` idempotente.
+- **Cédula al final** (56a/56b, PRD §7.7): `/arbitro/cedula/[matchId]` a pantalla completa (fuera del cascarón). `components/cedula/cedula-arbitro.tsx` guarda el borrador en el celular (`localStorage`) y lo manda con `enviarCedula` (una transacción: eventos, quién jugó, cédula, estado y bitácora). La página compone con `equipos` (`plantillasParaLaCedula`: rojos, alineación y delegados).
+- **Firmas y correcciones** (19): el delegado revisa en `/equipo/[slug]/cedula/[matchId]` (`components/cedula/revisar-cedula.tsx`); el árbitro contesta en su cédula. Estados en `services/estado-partido.ts` (puro); reglas: `report.capture` y `report.respondCorrection` aquí (`server/reglas.ts`), `report.sign` y `report.requestCorrection` en `equipos` (sabe quién es delegado). Al aceptar una corrección se borran las firmas.
+- Quién está inscrito lo dice `ligas` por un puerto (`server/puertos.ts`, `proveerInscritos` en su `registerListeners`): `partidos` no lee `tournament_rosters`.
+- `scripts/reiniciar-prueba.ts` regresa la J16 Portales vs Tigres a "sin jugar" (lo usan los E2E).
 - Sanciones (PRD §7.8, `server/services/sanciones.ts`): automáticas desde la cédula validada; la liga ajusta la MISMA sanción con bitácora; 5 amarillas → suspensión y el acumulado vuelve a 0; doble amarilla = roja y no suma; la liguilla reinicia el acumulado.
 - Alineación (PRD §7.6, `server/services/alineacion.ts`): rojo bloquea (otro equipo, suspendido, no registrado); ámbar avisa (cuota pendiente, a una amarilla).
 - "Domingos sin faltar" (PRD §7.6, `server/services/asistencia.ts`): cuenta estar en la cédula, titular o banca; descansos y suspensiones pausan.
