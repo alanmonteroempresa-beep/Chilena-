@@ -32,3 +32,87 @@ export async function contextosEnLigas(userId: string) {
   ]);
   return { administra, arbitra };
 }
+
+const equipoSelect = {
+  id: true,
+  slug: true,
+  nombre: true,
+  siglas: true,
+  colorPrimario: true,
+  colorSecundario: true,
+} as const;
+const torneoSelect = {
+  id: true,
+  nombre: true,
+  amarillasParaSuspension: true,
+  partidosPorRoja: true,
+  costoArbitrajeCents: true,
+  league: { select: { id: true, slug: true, nombre: true, siglas: true } },
+} as const;
+
+/** Torneo vigente donde juega el equipo (inscripción aceptada) */
+export function torneoVigenteDelEquipo(teamId: string) {
+  return db.tournamentTeam.findFirst({
+    where: { teamId, status: "ACEPTADA", tournament: { status: { in: [...ACTIVOS] } } },
+    orderBy: { tournament: { fechaInicio: "desc" } },
+    select: { id: true, tournament: { select: torneoSelect } },
+  });
+}
+
+/** Torneo vigente de una liga (por slug) */
+export function torneoVigenteDeLaLiga(slug: string) {
+  return db.tournament.findFirst({
+    where: { league: { slug, deletedAt: null }, status: { in: [...ACTIVOS] } },
+    orderBy: { fechaInicio: "desc" },
+    select: torneoSelect,
+  });
+}
+
+/** Tabla del torneo ya calculada por `calcularTabla` (pantallas 05 y Mi liga) */
+export function tablaDelTorneo(tournamentId: string) {
+  return db.standingRow.findMany({
+    where: { tournamentId },
+    orderBy: [{ posicion: "asc" }, { pts: "desc" }, { dg: "desc" }],
+    select: {
+      posicion: true,
+      pj: true,
+      dg: true,
+      pts: true,
+      tournamentTeam: { select: { team: { select: equipoSelect } } },
+    },
+  });
+}
+
+const cargoSelect = {
+  id: true,
+  concept: true,
+  descripcion: true,
+  amountCents: true,
+  dueDate: true,
+  status: true,
+} as const;
+
+/** Lo que el equipo le debe o le pagó a la liga (pantalla 04: "Por pagar a la liga" y "Pagos a la liga") */
+export function cargosDelEquipo(tournamentTeamId: string) {
+  return db.leagueCharge.findMany({
+    where: { tournamentTeamId },
+    orderBy: [{ dueDate: "desc" }, { createdAt: "desc" }],
+    select: cargoSelect,
+  });
+}
+
+/** Cargos del torneo con su equipo (pantalla 18: cobrado del mes y pagos sin cubrir) */
+export function cargosDelTorneo(tournamentId: string) {
+  return db.leagueCharge.findMany({
+    where: { tournamentId },
+    select: { ...cargoSelect, tournamentTeam: { select: { team: { select: equipoSelect } } } },
+  });
+}
+
+/** Lo que la liga le debe al árbitro, partido por partido (pantalla 02: "Cobro de arbitraje") */
+export function pagosAlArbitro(refereeId: string) {
+  return db.refereePayment.findMany({
+    where: { refereeId, status: { in: ["PENDIENTE", "REPORTADO"] } },
+    select: { amountCents: true, matchId: true },
+  });
+}

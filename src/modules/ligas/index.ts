@@ -20,3 +20,13 @@ export {
   type EstadoCargo,
   type SancionConMulta,
 } from "./server/services/cargos";
+
+// Panel de la liga · Resumen (pantalla 18)
+export {
+  cobradoDelPeriodo,
+  enLista,
+  estaVencido,
+  pendientesDeLaLiga,
+  type CargoParaCobro,
+  type PendienteLiga,
+} from "./server/services/resumen";

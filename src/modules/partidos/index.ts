@@ -44,3 +44,13 @@ export {
   type NivelAlerta,
   type RevisionJugador,
 } from "./server/services/alineacion";
+
+// Próximo partido y goleo en los inicios (pantallas 02, 03, 04, 05 y 18)
+export {
+  cuandoTeToca,
+  cuentaRegresiva,
+  diaDeLaJornada,
+  horaCDMX,
+  horarioCorto,
+} from "./server/services/proximo";
+export { chipsDelJugador, lineaDeGol, posicionesDelGoleo, type FilaGoleo } from "./server/services/goleo";

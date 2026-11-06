@@ -429,6 +429,12 @@ Estados: `BORRADOR → INSCRIPCIONES_ABIERTAS → EN_CURSO → LIGUILLA → FINA
 | **Equipo → Liga** (inscripción, arbitraje y multas) | Cargo de la liga → "Por pagar a la liga" del delegado → "Ya pagué" → la liga confirma. Panel: "Cobrado en octubre $18,400 de $21,000". La multa va ligada a su sanción (§7.8) |
 | **Liga → Árbitro** | Control de lo que se le debe y se le pagó por partido |
 
+Cómo se cuenta en pantalla (inicios 03, 04 y 18):
+- **Plantilla:** *Suspendido* manda (no puede jugar); *Cuota pendiente* si no ha pagado la cuota más reciente; *En revisión* si tocó "Ya pagué" y el delegado no ha confirmado; *Habilitado* si está al corriente o se le condonó. Quien no tiene la cuota a su nombre (llegó después) no la debe.
+- **Vencido:** un cargo o cuota vence al terminar su día (hora de CDMX). Lo confirmado o condonado nunca está vencido.
+- **"Cobrado en {mes}"** (panel de la liga): los cargos que vencen ese mes; cobrado = confirmado; lo condonado no se espera ni se cobra; "Ya pagué" sin confirmar todavía no es cobrado.
+- **"Pagos sin cubrir"** (Hoy toca revisar): equipos con algún cargo vencido sin confirmar, aunque ya hayan tocado "Ya pagué".
+
 ### 7.12 Moderación (pantalla 50)
 Los **reportes de la porra** llegan al panel de la liga dueña del contenido. Acciones: Ocultar · Mantener · Avisar al usuario. El superadmin es respaldo.
 

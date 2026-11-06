@@ -12,6 +12,7 @@ Ligas, administradores, canchas, torneos (asistente), generador del rol, inscrip
 | **Escucha** | match.validated (recalcula tabla) |
 
 ## Reglas clave
+- Inicio de la liga = Resumen del panel (18): `server/inicio.ts` + `components/inicio-liga.tsx`; "Hoy toca revisar" y la cobranza del mes en `server/services/resumen.ts` (puro). Los reportes abiertos vienen de `social` y los pasa la página.
 - Un jugador no puede estar en dos equipos del mismo torneo.
 - El generador del rol es un servicio puro con tests exhaustivos.
 - Panel en escritorio y celular.

@@ -12,6 +12,7 @@ Máquina de estados del partido, marcador desde la banda, alineación con alerta
 | **Escucha** | — |
 
 ## Reglas clave
+- Inicio del árbitro (02): `components/inicio-arbitro.tsx`. El cobro pendiente viene de `ligas` y lo pasa la página (así `partidos` no depende de `ligas`). Próximo partido y goleo: `server/services/proximo.ts` y `goleo.ts` (puros).
 - Marcador oficial = cédula firmada (o papel) y validada; lo de la banda es NO OFICIAL.
 - Cédula firmada inmutable; corrige solo la liga con AuditLog.
 - Bitácora en la MISMA transacción (CLAUDE.md, Arquitectura): validar o corregir un resultado, cambiar eventos oficiales y crear o ajustar sanciones escriben su `AuditLog` en el mismo `db.$transaction` que el cambio.

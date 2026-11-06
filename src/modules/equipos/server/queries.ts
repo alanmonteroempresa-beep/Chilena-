@@ -41,3 +41,58 @@ export function equiposQueSigue(userId: string) {
     select: { team: { select: equipoSelect } },
   });
 }
+
+const personaSelect = { id: true, username: true, nombre: true, sobrenombre: true, fotoPath: true } as const;
+
+export function equipoPorSlug(slug: string) {
+  return db.team.findFirst({ where: { slug, deletedAt: null }, select: equipoSelect });
+}
+
+/** Plantilla activa (con dorsal) del equipo: pantalla 04 */
+export function plantillaDelEquipo(teamId: string) {
+  return db.teamMember.findMany({
+    where: { teamId, status: "ACTIVO", numero: { not: null } },
+    orderBy: { numero: "asc" },
+    select: { numero: true, posicion: true, role: true, user: { select: personaSelect } },
+  });
+}
+
+/** Lo que contestó cada quien al pase de lista de un partido (pantallas 04 y 20) */
+export function respuestasDelPaseDeLista(matchId: string, teamId: string) {
+  return db.matchAttendance.findMany({
+    where: { matchId, teamId },
+    select: { userId: true, status: true, nota: true, user: { select: personaSelect } },
+  });
+}
+
+/** La cuota más reciente del equipo con el estado de pago de cada quien (pantallas 31 y 54) */
+export function cuotaVigente(teamId: string) {
+  return db.teamDue.findFirst({
+    where: { teamId },
+    orderBy: { dueDate: "desc" },
+    select: {
+      concepto: true,
+      amountCents: true,
+      dueDate: true,
+      payments: { select: { userId: true, status: true } },
+    },
+  });
+}
+
+/** Equipos más seguidos (sugerencias para quien no sigue a nadie, PRD §6.16) */
+export function equiposMasSeguidos(take = 6) {
+  return db.team.findMany({
+    where: { deletedAt: null },
+    orderBy: [{ followersCount: "desc" }, { nombre: "asc" }],
+    take,
+    select: equipoSelect,
+  });
+}
+
+/** Equipo y dorsal de cada persona (para listas como "Sigue a más cracks") */
+export function equipoDeCadaQuien(userIds: string[]) {
+  return db.teamMember.findMany({
+    where: { userId: { in: userIds }, status: "ACTIVO", numero: { not: null } },
+    select: { userId: true, numero: true, posicion: true, team: { select: equipoSelect } },
+  });
+}

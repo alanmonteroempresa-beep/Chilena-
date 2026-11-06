@@ -12,6 +12,7 @@ Equipos, miembros, invitación (link/QR), dar de alta perfiles sin reclamar, pas
 | **Escucha** | tournament.finished (vitrina) |
 
 ## Reglas clave
+- Inicio del delegado (04): `server/inicio.ts` + `components/inicio-delegado.tsx`. La plantilla "primero los que necesitan atención", el pase de lista y las cuotas salen de `server/services/plantilla.ts` (puro).
 - El pase de lista por link no pide cuenta: el jugador elige su nombre.
 - La app no mueve dinero; solo control de pagos.
 - Datos de pago del equipo solo los ven sus miembros.
