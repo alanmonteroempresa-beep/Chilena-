@@ -54,7 +54,7 @@ async function InicioDelRol({
   slugEquipo?: string;
   slugLiga?: string;
   ligaCorta?: string;
-  usuario: { id: string; nombre: string; sobrenombre: string | null };
+  usuario: { id: string; username: string; nombre: string; sobrenombre: string | null };
   ahora: Date;
 }) {
   switch (rol) {

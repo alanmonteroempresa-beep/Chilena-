@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Plus } from "lucide-react";
 import { textoSobre } from "@/shared/lib/color";
 import { nombreCorto } from "@/shared/lib/personas";
@@ -57,7 +58,7 @@ export async function InicioAficionado({ userId, ahora }: { userId: string; ahor
           </Historia>
         ))}
         {d.sigue.cracks.map((c) => (
-          <Historia key={c.id} nombre={c.sobrenombre ?? c.nombre}>
+          <Historia key={c.id} nombre={c.sobrenombre ?? c.nombre} href={`/j/${c.username}`}>
             <Iniciales nombre={c.sobrenombre ?? c.nombre} tamano={50} aro />
           </Historia>
         ))}
@@ -159,11 +160,13 @@ export async function InicioAficionado({ userId, ahora }: { userId: string; ahor
           <ul className="mt-1 flex flex-col">
             {d.cracks.map((c) => (
               <li key={c.id} className="flex min-h-12 items-center gap-3">
-                <Iniciales nombre={c.nombre} tamano={34} />
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold">{c.nombre}</span>
-                  <span className="block truncate text-xs text-muted-foreground">{c.detalle}</span>
-                </span>
+                <Link href={`/j/${c.username}`} className="flex min-w-0 flex-1 items-center gap-3">
+                  <Iniciales nombre={c.nombre} tamano={34} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold">{c.nombre}</span>
+                    <span className="block truncate text-xs text-muted-foreground">{c.detalle}</span>
+                  </span>
+                </Link>
                 <SeguirPronto />
               </li>
             ))}
@@ -174,11 +177,22 @@ export async function InicioAficionado({ userId, ahora }: { userId: string; ahor
   );
 }
 
-function Historia({ nombre, children }: { nombre: string; children: React.ReactNode }) {
-  return (
-    <li className="flex w-[52px] shrink-0 flex-col items-center gap-1.5">
+function Historia({ nombre, href, children }: { nombre: string; href?: string; children: React.ReactNode }) {
+  const contenido = (
+    <>
       {children}
       <span className="w-full truncate text-center text-[11px] font-semibold">{nombre}</span>
+    </>
+  );
+  return (
+    <li className="w-[52px] shrink-0">
+      {href ? (
+        <Link href={href} className="flex flex-col items-center gap-1.5">
+          {contenido}
+        </Link>
+      ) : (
+        <div className="flex flex-col items-center gap-1.5">{contenido}</div>
+      )}
     </li>
   );
 }

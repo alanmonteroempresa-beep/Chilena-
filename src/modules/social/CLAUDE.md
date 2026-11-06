@@ -12,6 +12,7 @@ Feed (Para ti · Golazos · Siguiendo), publicar, la porra, reacciones (también
 | **Escucha** | match.validated (auto-posts), round.closed (portada y crónica), badge.awarded, poll.closed, tournament.finished |
 
 ## Reglas clave
+- Perfil público (06, `/j/[username]`) y pestaña Stats: `components/perfil/`, con los datos de `carta` (`datosDelJugador`). Lo ve el visitante (sin sesión): `src/proxy.ts` no lo protege y el layout le pone `CascaronVisitante`.
 - Inicios del jugador (03) y del aficionado (05): `server/inicio.ts` junta datos de partidos, equipos y ligas por su `server-api`; `components/inicio/`. Solo lectura por ahora (`AccionPronto`).
 - Textos automáticos solo con datos reales; picardía sobre el juego, nunca sobre personas (CARTA §5).
 - `media.posts` apagado en la beta: fotos y videos como "Próximamente".

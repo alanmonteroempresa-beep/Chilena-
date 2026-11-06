@@ -47,6 +47,7 @@ const torneoSelect = {
   amarillasParaSuspension: true,
   partidosPorRoja: true,
   costoArbitrajeCents: true,
+  numJornadas: true,
   league: { select: { id: true, slug: true, nombre: true, siglas: true } },
 } as const;
 
@@ -114,5 +115,30 @@ export function pagosAlArbitro(refereeId: string) {
   return db.refereePayment.findMany({
     where: { refereeId, status: { in: ["PENDIENTE", "REPORTADO"] } },
     select: { amountCents: true, matchId: true },
+  });
+}
+
+/** Plantillas de cada persona en los torneos (para su historial de partidos validados) */
+export function plantillasDeJugadores(userIds: string[]) {
+  return db.tournamentRoster.findMany({
+    where: { userId: { in: userIds }, status: { in: ["ACTIVO", "SUSPENDIDO", "BAJA"] } },
+    select: { userId: true, tournamentId: true, tournamentTeam: { select: { teamId: true } } },
+  });
+}
+
+/** Quiénes juegan el torneo (para la rareza de las insignias: "41% de la liga la tiene") */
+export async function jugadoresDelTorneo(tournamentId: string) {
+  const filas = await db.tournamentRoster.findMany({
+    where: { tournamentId, status: { in: ["ACTIVO", "SUSPENDIDO"] } },
+    select: { userId: true },
+  });
+  return filas.map((f) => f.userId);
+}
+
+/** Fila de la tabla de un equipo (pj y derrotas para la insignia Invictos) */
+export function filaDeLaTabla(tournamentTeamId: string) {
+  return db.standingRow.findUnique({
+    where: { tournamentTeamId },
+    select: { pj: true, pp: true, posicion: true },
   });
 }

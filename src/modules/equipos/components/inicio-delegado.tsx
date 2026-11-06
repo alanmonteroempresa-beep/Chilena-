@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { MessageCircle, Send, UserPlus } from "lucide-react";
 import { formatMXN } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
@@ -100,7 +101,8 @@ export async function InicioDelegado({ slugEquipo, ahora }: { slugEquipo: string
                   ? `Suspendido · ${j.faltanDeSuspension === 1 ? "le falta 1 partido" : `le faltan ${j.faltanDeSuspension} partidos`}`
                   : [r.texto, j.nota].filter(Boolean).join(" · ");
               return (
-                <li key={j.id} className="flex min-h-14 items-center gap-3 px-3.5 py-2">
+                <li key={j.id}>
+                  <Link href={`/j/${j.username}`} className="flex min-h-14 items-center gap-3 px-3.5 py-2">
                   <span className="font-display w-6 shrink-0 text-center text-[20px] leading-none font-black">{j.numero}</span>
                   <Iniciales nombre={j.nombre} tamano={36} />
                   <div className="min-w-0 flex-1">
@@ -108,6 +110,7 @@ export async function InicioDelegado({ slugEquipo, ahora }: { slugEquipo: string
                     <p className={cn("truncate text-xs", j.faltanDeSuspension != null ? "text-muted-foreground" : r.clase)}>{sub}</p>
                   </div>
                   <Chip tono={chip.tono}>{chip.texto}</Chip>
+                  </Link>
                 </li>
               );
             })}

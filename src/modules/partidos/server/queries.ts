@@ -205,3 +205,57 @@ export async function tarjetasParaAcumulado(tournamentId: string, userId: string
     })),
   }));
 }
+
+/**
+ * Historial VALIDADO de varias personas (carta e insignias, pantallas 14, 25 y 28): los partidos de los
+ * equipos en que estaban en la plantilla del torneo, sus alineaciones, sus eventos oficiales y sus
+ * suspensiones. Cuatro lecturas para todo el grupo (la rareza evalúa a todo el torneo).
+ */
+export async function historialDePlantillas(plantillas: { userId: string; tournamentId: string; teamId: string }[]) {
+  const userIds = [...new Set(plantillas.map((p) => p.userId))];
+  const pares = [...new Map(plantillas.map((p) => [`${p.tournamentId}:${p.teamId}`, p])).values()];
+  if (!pares.length) return { partidos: [], alineaciones: [], eventos: [], suspensiones: [] };
+
+  const partidos = await db.match.findMany({
+    where: {
+      status: "VALIDADO",
+      OR: pares.flatMap((p) => [
+        { tournamentId: p.tournamentId, homeTeamId: p.teamId },
+        { tournamentId: p.tournamentId, awayTeamId: p.teamId },
+      ]),
+    },
+    orderBy: { scheduledAt: "asc" },
+    select: {
+      id: true,
+      tournamentId: true,
+      scheduledAt: true,
+      homeTeamId: true,
+      awayTeamId: true,
+      homeScore: true,
+      awayScore: true,
+      round: { select: { numero: true } },
+    },
+  });
+  const matchIds = partidos.map((p) => p.id);
+  const [alineaciones, eventos, suspensiones] = await Promise.all([
+    db.lineupPlayer.findMany({
+      where: { userId: { in: userIds }, lineup: { matchId: { in: matchIds } } },
+      select: { userId: true, jugo: true, titular: true, posicion: true, lineup: { select: { matchId: true, teamId: true } } },
+    }),
+    db.matchEvent.findMany({
+      where: {
+        matchId: { in: matchIds },
+        oficial: true,
+        voided: false,
+        type: { in: ["GOL", "PENAL_ATAJADO", "AMARILLA", "ROJA"] },
+        OR: [{ playerId: { in: userIds } }, { assistPlayerId: { in: userIds } }],
+      },
+      select: { matchId: true, type: true, minute: true, tipoGol: true, teamId: true, playerId: true, assistPlayerId: true },
+    }),
+    db.sanction.findMany({
+      where: { userId: { in: userIds }, type: "SUSPENSION_PARTIDOS", status: { not: "ANULADA" }, matchId: { not: null } },
+      select: { userId: true, matchId: true, partidos: true },
+    }),
+  ]);
+  return { partidos, alineaciones, eventos, suspensiones };
+}

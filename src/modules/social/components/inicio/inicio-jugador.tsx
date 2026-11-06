@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { formatMXN } from "@/shared/lib/money";
 import { nombreVisible } from "@/shared/lib/personas";
 import { cn } from "@/shared/lib/utils";
@@ -23,7 +24,7 @@ export async function InicioJugador({
   userId: string;
   slugEquipo: string;
   ahora: Date;
-  persona: { nombre: string; sobrenombre?: string | null };
+  persona: { nombre: string; sobrenombre?: string | null; username: string };
 }) {
   const d = await datosInicioJugador(userId, slugEquipo, ahora);
   if (!d) return null;
@@ -42,8 +43,12 @@ export async function InicioJugador({
 
       {d.stats && (
         <Tarjeta className="flex items-center gap-3 p-3">
-          {/* La carta completa (media y atributos) llega con el bloque 3: aquí va su cara de frente */}
-          <div className="tarjeta-rol relative h-28 w-[84px] shrink-0 overflow-hidden rounded-[10px] text-white">
+          {/* Su cara de frente; la carta completa (media y atributos) está en /j/[username]/carta */}
+          <Link
+            href={`/j/${persona.username}/carta`}
+            aria-label="Ver mi carta"
+            className="tarjeta-rol relative h-28 w-[84px] shrink-0 overflow-hidden rounded-[10px] text-white"
+          >
             <span className="font-display absolute top-1.5 left-2 text-[13px] leading-none font-black text-brand-lime">
               {d.posicion ?? ""}
               {d.dorsal != null && <span className="block text-[22px]">#{d.dorsal}</span>}
@@ -54,7 +59,7 @@ export async function InicioJugador({
               className="absolute top-2 right-2 border-2 border-brand-lime bg-brand-silver text-brand-blue"
             />
             <span className="titular-momento absolute bottom-2 left-2 right-1 text-[17px] leading-[0.86]">{nombre}</span>
-          </div>
+          </Link>
           <dl className="grid flex-1 grid-cols-3 gap-1 text-center">
             {(
               [
@@ -123,10 +128,11 @@ export async function InicioJugador({
           <Sobretitulo className="text-muted-foreground">Goleo · {d.torneo.nombre}</Sobretitulo>
           <ol className="mt-1 flex flex-col gap-1">
             {d.goleo.map((g) => (
-              <li
-                key={g.userId}
-                className={cn("flex min-h-11 items-center gap-3 rounded-lg px-2", g.userId === d.yo && "bg-role/10")}
-              >
+              <li key={g.userId}>
+                <Link
+                  href={`/j/${g.username}`}
+                  className={cn("flex min-h-11 items-center gap-3 rounded-lg px-2", g.userId === d.yo && "bg-role/10")}
+                >
                 <span className="font-display w-4 text-[18px] font-black">{g.posicion}</span>
                 <Iniciales nombre={g.nombre} tamano={30} />
                 <span className="flex-1 text-sm font-semibold">
@@ -134,6 +140,7 @@ export async function InicioJugador({
                   {g.userId === d.yo ? " · tú" : ""}
                 </span>
                 <span className={cn("font-display text-[22px] font-black", g.userId === d.yo && "text-role")}>{g.goles}</span>
+                </Link>
               </li>
             ))}
           </ol>
