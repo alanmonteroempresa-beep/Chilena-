@@ -2,10 +2,10 @@ import Link from "next/link";
 import { ArrowRight, Flame } from "lucide-react";
 import { HexagonoInsignia, propsDeCarta, type DatosDelJugador } from "@/modules/carta/server-api";
 import { cn } from "@/shared/lib/utils";
-import { AccionPronto } from "@/shared/ui/accion-pronto";
-import { buttonVariants } from "@/shared/ui/button";
 import { CartaCrack } from "@/shared/ui/carta-crack";
 import { Sobretitulo, Tarjeta } from "@/shared/ui/tarjeta";
+import { BotonSeguir } from "../boton-seguir";
+import { Porra } from "../porra/porra";
 
 const formatoCorto = new Intl.NumberFormat("es-MX", { notation: "compact", maximumFractionDigits: 1 });
 
@@ -13,7 +13,17 @@ const formatoCorto = new Intl.NumberFormat("es-MX", { notation: "compact", maxim
  * Perfil público del jugador (pantalla 06 · PRD §4.2): su carta, sus números del torneo, sus seguidores
  * e insignias. Lo ve cualquiera, con o sin cuenta; solo `publicUserSelect` (regla 8).
  */
-export function PaginaPerfil({ d, esPropio }: { d: DatosDelJugador; esPropio: boolean }) {
+export function PaginaPerfil({
+  d,
+  esPropio,
+  yo,
+  siguiendo,
+}: {
+  d: DatosDelJugador;
+  esPropio: boolean;
+  yo: string | null;
+  siguiendo: boolean;
+}) {
   const base = `/j/${d.persona.username}`;
   if (!d.esJugador) {
     return (
@@ -25,6 +35,10 @@ export function PaginaPerfil({ d, esPropio }: { d: DatosDelJugador; esPropio: bo
           </p>
           <p className="text-xs text-muted-foreground">El perfil de aficionado y de árbitro llega pronto (pantallas 38 y 39).</p>
         </Tarjeta>
+        {!esPropio && <BotonSeguir persona={d.persona.id} siguiendo={siguiendo} conSesion={Boolean(yo)} className="w-full" />}
+        <div id="porra">
+          <Porra muroDe={d.persona.id} yo={yo} />
+        </div>
       </main>
     );
   }
@@ -67,13 +81,14 @@ export function PaginaPerfil({ d, esPropio }: { d: DatosDelJugador; esPropio: bo
 
       {!esPropio && (
         <div className="flex gap-2">
-          <AccionPronto className={buttonVariants({ variant: "lima", size: "cta", className: "flex-1" })}>Seguir</AccionPronto>
-          <AccionPronto
+          <BotonSeguir persona={d.persona.id} siguiendo={siguiendo} conSesion={Boolean(yo)} className="flex-1" />
+          <a
+            href="#porra"
             aria-label="Echarle porra"
             className="etiqueta inline-flex h-12 items-center gap-1.5 rounded-lg border border-border bg-surface px-5 text-sm font-extrabold"
           >
             🔥
-          </AccionPronto>
+          </a>
         </div>
       )}
 
@@ -102,6 +117,10 @@ export function PaginaPerfil({ d, esPropio }: { d: DatosDelJugador; esPropio: bo
           <p className="text-sm text-muted-foreground">Todavía ninguna: la primera sale jugando.</p>
         )}
       </Tarjeta>
+
+      <div id="porra">
+        <Porra muroDe={d.persona.id} yo={yo} />
+      </div>
     </main>
   );
 }

@@ -3,8 +3,8 @@ import { equipoPorSlug } from "@/modules/equipos/server-api";
 import { tablaDelTorneo, torneoVigenteDeLaLiga, torneoVigenteDelEquipo } from "@/modules/ligas/server-api";
 import { goleoDelTorneo, partidosValidadosConGoles, ultimaJornadaValidada } from "@/modules/partidos/server-api";
 import { nombreCorto, nombreDeArbitro, nombreVisible } from "@/shared/lib/personas";
-import { hayPostsGuardados, loQueSigue, postsCronologicos, postsDeLaJornada } from "./queries";
-import { autoPostsDeLaJornada, golazos, paraTi, siguiendo, type AutoPost, type EquipoJornada } from "./services/auto-posts";
+import { hayPostsGuardados, loQueSigue, postsCronologicos, postsDeLaJornada, reaccionesDe } from "./queries";
+import { autoPostsDeLaJornada, golazos, paraTi, siguiendo, type AutoPost, type EquipoJornada, type PostDeFeed } from "./services/auto-posts";
 
 export type VistaFeed = "para-ti" | "golazos" | "siguiendo";
 
@@ -83,12 +83,33 @@ async function feedCalculado(
   return { torneo, jornada, posts: lista as PostDelFeed[], arbitros, mas: null as MasDelFeed };
 }
 
-/** Un auto-post como lo pinta el feed, con su id de la base y sus conteos */
-export type PostDelFeed = AutoPost & { reacciones?: number; comentarios?: number };
+/** Un post como lo pinta el feed, con su id de la base, sus reacciones por tipo, la mía y la porra */
+export type PostDelFeed = PostDeFeed & { reacciones?: Record<string, number>; mia?: string | null; comentarios?: number };
 /** "Ver más": la jornada anterior (Para ti) o el cursor de lo cronológico */
 export type MasDelFeed = { jornada: number } | { antes: string } | null;
 
 const SEMANA = 7 * 86_400_000;
+
+type Fila = Awaited<ReturnType<typeof postsCronologicos>>[number];
+
+/** De la fila guardada a lo que pinta el feed (auto-post o publicación de una persona) */
+export function aPostDelFeed(p: Fila): PostDelFeed {
+  const fecha = p.createdAt.getTime();
+  const base =
+    p.type === "NORMAL" && p.author
+      ? {
+          tipo: "NORMAL" as const,
+          id: p.id,
+          fecha,
+          validado: fecha,
+          equipos: ((p.data as { equipos?: string[] } | null)?.equipos ?? []) as string[],
+          jugadores: [p.author.id],
+          texto: p.body ?? "",
+          autor: { nombre: nombreVisible(p.author), username: p.author.username },
+        }
+      : { ...(p.data as unknown as AutoPost), id: p.id, fecha };
+  return { ...base, comentarios: p.commentsCount };
+}
 
 /**
  * El feed (pantalla 10 · PRD §6.1) desde los posts GUARDADOS (los publica la cola de `match.validated`).
@@ -108,20 +129,19 @@ export async function datosDelFeed(
   if (!torneo) return null;
   if (!(await hayPostsGuardados(torneo.id))) return feedCalculado(contexto, vista);
 
-  const aPost = (p: Awaited<ReturnType<typeof postsCronologicos>>[number]): PostDelFeed => ({
-    ...(p.data as unknown as AutoPost),
-    id: p.id,
-    fecha: p.createdAt.getTime(),
-    reacciones: p.reactionsCount,
-    comentarios: p.commentsCount,
-  });
+  const aPost = aPostDelFeed;
+  /** Las reacciones por tipo y la mía (una consulta para todo lo que se ve) */
+  const conReacciones = async (posts: PostDelFeed[]) => {
+    const { conteos, mias } = await reaccionesDe(posts.map((p) => p.id), userId);
+    return posts.map((p) => ({ ...p, reacciones: conteos.get(p.id) ?? {}, mia: mias.get(p.id) ?? null }));
+  };
   const ultima = await ultimaJornadaValidada(torneo.id);
 
   if (vista === "para-ti") {
     const jornada = pagina.jornada && ultima && pagina.jornada <= ultima ? pagina.jornada : ultima;
     if (jornada == null) return { torneo, jornada: null, posts: [], arbitros: [], mas: null as MasDelFeed };
     const filas = await postsDeLaJornada(torneo.id, jornada, jornada === ultima ? new Date(Date.now() - 2 * SEMANA) : null);
-    const posts = paraTi(filas.map(aPost), equipo?.id) as PostDelFeed[];
+    const posts = await conReacciones(paraTi(filas.map(aPost), equipo?.id, { id: userId, ahora: Date.now() }));
     const arbitros = [
       ...new Set(posts.flatMap((p) => (p.tipo === "AUTO_RESULTADO" && p.arbitro ? [p.arbitro] : []))),
     ];
@@ -137,12 +157,12 @@ export async function datosDelFeed(
       : undefined;
   const antes = pagina.antes && !Number.isNaN(Date.parse(pagina.antes)) ? new Date(pagina.antes) : undefined;
   const filas = await postsCronologicos(torneo.id, { soloGoles: vista === "golazos", sigue }, antes);
-  const posts = filas.map(aPost);
+  const posts = await conReacciones(filas.map(aPost));
   const ultimo = filas.at(-1);
   return {
     torneo,
     jornada: ultima,
-    posts: vista === "golazos" ? (golazos(posts) as PostDelFeed[]) : posts,
+    posts: vista === "golazos" ? (golazos(posts as AutoPost[]) as PostDelFeed[]) : posts,
     arbitros: [],
     mas: (filas.length === 30 && ultimo ? { antes: ultimo.createdAt.toISOString() } : null) as MasDelFeed,
   };

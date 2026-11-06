@@ -13,6 +13,8 @@ export type DomainEvents = {
   "poll.closed": { pollId: string; winnerOptionId: string | null };
   "tournament.finished": { tournamentId: string; championTeamId: string | null };
   "post.created": { postId: string };
+  "post.reacted": { postId: string; userId: string; type: string };
+  "user.followed": { followerId: string; followedUserId?: string; teamId?: string };
   "comment.created": { commentId: string; postId: string | null };
   "badge.awarded": { userId: string; badgeCode: string };
   "card.recalculated": { userId: string; media: number | null; delta: number };

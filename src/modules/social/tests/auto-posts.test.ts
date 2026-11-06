@@ -180,3 +180,14 @@ describe("post de insignia", () => {
     expect(postDeInsignia({ ...base, insignia: { code: "PIONERO", nombre: "Pionero", descripcion: "", icon: null } })).toBeNull();
   });
 });
+
+describe("publicaciones de la gente en Para ti", () => {
+  it("lo que acabas de publicar va hasta arriba ese día", () => {
+    const ahora = Date.parse("2026-11-06T20:00:00Z");
+    const normal = { tipo: "NORMAL" as const, id: "n1", fecha: ahora - 3_600_000, validado: 0, equipos: [], jugadores: ["lupe"], texto: "¿Vas el domingo?", autor: { nombre: "Doña Lupe", username: "dona-lupe" } };
+    const otros = autoPostsDeLaJornada({ partidos: [PORTALES_CONDESA], tabla: [], goleo: [], rachas: [] });
+    expect(paraTi([...otros, normal], "DP", { id: "lupe", ahora })[0].id).toBe("n1");
+    // Al día siguiente ya compite como cualquier publicación
+    expect(paraTi([...otros, normal], "DP", { id: "lupe", ahora: ahora + 2 * 86_400_000 })[0].id).not.toBe("n1");
+  });
+});

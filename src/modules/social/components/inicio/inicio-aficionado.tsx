@@ -10,6 +10,7 @@ import { coloresDe, Escudo } from "@/shared/ui/escudo";
 import { Iniciales } from "@/shared/ui/iniciales";
 import { Sobretitulo, Tarjeta, TarjetaRol, TituloSeccion } from "@/shared/ui/tarjeta";
 import { datosInicioAficionado } from "../../server/inicio";
+import { BotonSeguir } from "../boton-seguir";
 
 /**
  * Inicio del aficionado · Siguiendo (pantalla 05 · export 05 claro): lo que sigue, cómo quedó su equipo
@@ -33,7 +34,7 @@ export async function InicioAficionado({ userId, ahora }: { userId: string; ahor
               <li key={e.id} className="flex min-h-14 items-center gap-3 px-3.5 py-2">
                 <Escudo {...coloresDe(e)} tamano={30} />
                 <span className="flex-1 text-sm font-semibold">{e.nombre}</span>
-                <SeguirPronto />
+                <BotonSeguir equipo={e.id} siguiendo={false} variante="texto" />
               </li>
             ))}
           </ul>
@@ -170,7 +171,7 @@ export async function InicioAficionado({ userId, ahora }: { userId: string; ahor
                     <span className="block truncate text-xs text-muted-foreground">{c.detalle}</span>
                   </span>
                 </Link>
-                <SeguirPronto />
+                <BotonSeguir persona={c.id} siguiendo={false} variante="texto" />
               </li>
             ))}
           </ul>
@@ -200,10 +201,4 @@ function Historia({ nombre, href, children }: { nombre: string; href?: string; c
   );
 }
 
-function SeguirPronto() {
-  return (
-    <AccionPronto className="etiqueta inline-flex min-h-11 items-center px-2 text-xs font-extrabold tracking-[0.12em] text-role">
-      Seguir
-    </AccionPronto>
-  );
-}
+
