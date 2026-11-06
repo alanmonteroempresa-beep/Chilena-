@@ -55,7 +55,9 @@ export async function datosDelFeed(
         .filter((e) => e.player && e.teamId)
         .map((e) => ({
           minuto: e.minute,
-          equipoId: e.teamId!,
+          // El autogol se anota con el equipo del jugador y suma al contrario (PRD §7.7)
+          equipoId: e.type === "AUTOGOL" ? (e.teamId === p.homeTeam.id ? p.awayTeam.id : p.homeTeam.id) : e.teamId!,
+          autogol: e.type === "AUTOGOL",
           jugadorId: e.player!.id,
           jugador: nombreVisible(e.player!),
           username: e.player!.username,

@@ -16,7 +16,10 @@ export type EquipoJornada = {
 };
 export type GolJornada = {
   minuto: number | null;
+  /** El equipo al que SUMA (en un autogol, el contrario del jugador) */
   equipoId: string;
+  /** Autogol: suma al contrario y no cuenta en el goleo de nadie (PRD §7.7) */
+  autogol?: boolean;
   jugadorId: string;
   jugador: string;
   username: string;
@@ -100,9 +103,9 @@ export function situacionDelPartido(p: PartidoJornada, liderAntesId?: string): {
   const pasos = recorrido(p);
   const completo = pasos.length === p.goles.length;
   const porJugador = new Map<string, GolJornada[]>();
-  for (const gol of p.goles) porJugador.set(gol.jugadorId, [...(porJugador.get(gol.jugadorId) ?? []), gol]);
+  for (const gol of p.goles.filter((x) => !x.autogol)) porJugador.set(gol.jugadorId, [...(porJugador.get(gol.jugadorId) ?? []), gol]);
   const hatTrick = [...porJugador.values()].find((x) => x.length >= 3);
-  const chilena = p.goles.find((x) => x.tipoGol === "CHILENA");
+  const chilena = p.goles.find((x) => x.tipoGol === "CHILENA" && !x.autogol);
   if (!g) return { situacion: "EMPATE" };
   const esGanador = (s: { local: number; visita: number }) => (g.ganador.id === p.local.id ? s.local - s.visita : s.visita - s.local);
   if (completo) {
@@ -127,7 +130,11 @@ export function situacionDelPartido(p: PartidoJornada, liderAntesId?: string): {
 
 const goleadoresDe = (goles: GolJornada[]) => {
   const conteo = new Map<string, { nombre: string; n: number }>();
-  for (const g of goles) conteo.set(g.jugadorId, { nombre: g.jugador, n: (conteo.get(g.jugadorId)?.n ?? 0) + 1 });
+  for (const g of goles) {
+    const clave = g.autogol ? `autogol:${g.jugadorId}` : g.jugadorId;
+    const nombre = g.autogol ? `autogol de ${g.jugador}` : g.jugador;
+    conteo.set(clave, { nombre, n: (conteo.get(clave)?.n ?? 0) + 1 });
+  }
   const nombres = [...conteo.values()].map((c) => (c.n > 1 ? `${c.nombre} (${c.n})` : c.nombre));
   return nombres.length <= 1 ? nombres.join("") : `${nombres.slice(0, -1).join(", ")} y ${nombres.at(-1)}`;
 };
@@ -199,7 +206,7 @@ export function autoPostsDeLaJornada(entrada: {
     const fecha = inicio + 120 * 60_000;
     const equipos = [p.local.id, p.visita.id];
     const marcador = { local: p.local, visita: p.visita, golesLocal: p.golesLocal, golesVisita: p.golesVisita };
-    const jugadores = [...new Set(p.goles.map((g) => g.jugadorId))];
+    const jugadores = [...new Set(p.goles.filter((g) => !g.autogol).map((g) => g.jugadorId))];
     const c = cronicaDelPartido(p, entrada.liderAntesId);
     posts.push({ tipo: "AUTO_CRONICA", id: `cronica:${p.id}`, matchId: p.id, jornada: p.jornada, fecha: fecha + 1, validado, equipos, jugadores, marcador, ...c });
     posts.push({
@@ -219,12 +226,14 @@ export function autoPostsDeLaJornada(entrada: {
           texto: p.goles
             .filter((g) => g.equipoId === e.id)
             .sort((a, b) => (a.minuto ?? 999) - (b.minuto ?? 999))
-            .map((g) => `${g.jugador}${g.minuto != null ? ` ${g.minuto}'` : ""}`)
+            .map((g) => `${g.autogol ? `Autogol de ${g.jugador}` : g.jugador}${g.minuto != null ? ` ${g.minuto}'` : ""}`)
             .join(" · "),
         }))
         .filter((x) => x.texto),
     });
     for (const [i, g] of p.goles.entries()) {
+      // El autogol no es gol de nadie: sale en el resultado y en la crónica, no como post de gol
+      if (g.autogol) continue;
       const tipo = g.tipoGol ? DE_TIPO[g.tipoGol] : undefined;
       posts.push({
         tipo: "AUTO_GOL",
@@ -262,7 +271,7 @@ export function autoPostsDeLaJornada(entrada: {
     });
   }
   // Rachas: quien anotó esta jornada y ya lleva 3 o más partidos seguidos anotando
-  const anotaron = new Set(entrada.partidos.flatMap((p) => p.goles.map((g) => g.jugadorId)));
+  const anotaron = new Set(entrada.partidos.flatMap((p) => p.goles.filter((g) => !g.autogol).map((g) => g.jugadorId)));
   for (const r of entrada.rachas.filter((x) => x.racha >= 3 && anotaron.has(x.jugadorId))) {
     const suyo = entrada.partidos.find((p) => p.goles.some((g) => g.jugadorId === r.jugadorId));
     posts.push({

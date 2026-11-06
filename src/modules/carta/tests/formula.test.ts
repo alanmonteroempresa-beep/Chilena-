@@ -93,13 +93,14 @@ describe("grupo de posición (§1.1)", () => {
 });
 
 describe("niveles (§1.5)", () => {
-  it("bronce, plata, oro y leyenda", () => {
-    expect(nivelDeCarta(64, 14)).toBe("bronce");
-    expect(nivelDeCarta(65, 14)).toBe("plata");
+  it("bronce < 67, plata 67–74, oro 75+, leyenda 78+ con 30 partidos (cortes por aprobar)", () => {
+    expect(nivelDeCarta(66, 14)).toBe("bronce");
+    expect(nivelDeCarta(67, 14)).toBe("plata");
     expect(nivelDeCarta(74, 14)).toBe("plata");
     expect(nivelDeCarta(75, 14)).toBe("oro");
     expect(nivelDeCarta(90, 29)).toBe("oro");
-    expect(nivelDeCarta(85, 30)).toBe("leyenda");
+    expect(nivelDeCarta(78, 30)).toBe("leyenda");
+    expect(nivelDeCarta(77, 30)).toBe("oro");
   });
 
   it("en construcción siempre es bronce", () => {

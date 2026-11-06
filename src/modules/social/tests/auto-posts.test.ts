@@ -152,3 +152,21 @@ describe("Siguiendo es cronológico por hora del partido", () => {
     expect(s.at(-1)).toMatchObject({ tipo: "AUTO_GOL", matchId: "jt-ap", minuto: 87 });
   });
 });
+
+describe("autogol en el feed (PRD §7.7)", () => {
+  it("suma al contrario, no es post de gol ni cuenta para hat-trick y la crónica dice 'autogol de X'", () => {
+    const p = partido("ag", DP, RC, [
+      gol(10, DP, "El Chícharo"),
+      gol(20, DP, "El Chícharo"),
+      { ...gol(30, DP, "El Güero"), autogol: true },
+      gol(40, RC, "El Pelón"),
+    ]);
+    // 3–1: dos del Chícharo y el autogol del Güero suman a Portales
+    expect(situacionDelPartido(p).situacion).toBe("VICTORIA");
+    expect(cronicaDelPartido(p).cuerpo[1]).toBe("Por Portales: El Chícharo (2) y autogol de El Güero. Por Condesa: El Pelón.");
+    const posts = autoPostsDeLaJornada({ partidos: [p], tabla: [], goleo: [], rachas: [] });
+    const deGol = posts.filter((x) => x.tipo === "AUTO_GOL");
+    expect(deGol).toHaveLength(3);
+    expect(deGol.some((x) => x.jugadores.includes("El Güero"))).toBe(false);
+  });
+});

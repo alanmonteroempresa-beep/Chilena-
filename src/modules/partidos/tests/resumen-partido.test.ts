@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { alineacionConMarcas, esGolazo, resumenDelPartido, type EventoCedula } from "../server/services/resumen-partido";
+import { alineacionConMarcas, esGolazo, marcadorDeEventos, resumenDelPartido, type EventoCedula } from "../server/services/resumen-partido";
 
 // Pantalla 32a: Portales 3–2 Condesa (J15), la cédula de la semilla
 const e = (minuto: number, tipo: string, equipoId: string, jugadorId: string, extra: Partial<EventoCedula> = {}): EventoCedula => ({
@@ -57,5 +57,23 @@ describe("alineaciones con marcas (32a)", () => {
     expect(filas.find((f) => f.userId === "chicharo")).toMatchObject({ goles: 2 });
     expect(filas.find((f) => f.userId === "beto")).toMatchObject({ salio: true });
     expect(filas.find((f) => f.userId === "kike")).toMatchObject({ entro: true, titular: false });
+  });
+});
+
+describe("autogol (PRD §7.7)", () => {
+  it("se anota con el equipo del jugador y suma al contrario", () => {
+    const eventos = [e(10, "GOL", "DP", "chicharo"), e(20, "AUTOGOL", "DP", "memo"), e(30, "AUTOGOL", "RC", "guero")];
+    expect(marcadorDeEventos(eventos, "DP", "RC")).toEqual({ local: 2, visita: 1 });
+    const r = resumenDelPartido(eventos, "DP", "RC");
+    expect(r.golesLocal.map((g) => [g.tipo, g.jugadorId])).toEqual([["GOL", "chicharo"], ["AUTOGOL", "guero"]]);
+    expect(r.golesVisita.map((g) => [g.tipo, g.jugadorId])).toEqual([["AUTOGOL", "memo"]]);
+  });
+
+  it("no cuenta como gol del jugador en la alineación", () => {
+    const [memo] = alineacionConMarcas(
+      [{ userId: "memo", username: "memo", nombre: "Memo", numero: 3, titular: true, posicion: "DFC", capitan: true }],
+      [e(20, "AUTOGOL", "DP", "memo")],
+    );
+    expect(memo.goles).toBe(0);
   });
 });

@@ -20,7 +20,7 @@ export const TITULARES: Record<Situacion, string[]> = {
   CHILENA: ["¡{JUGADOR} SE AVENTÓ DE CHILENA!"],
   LIDER_PIERDE: ["¡LOS BAJARON DE LA NUBE!"],
   HAT_TRICK: ["¡LA PELOTA SE LA LLEVA {JUGADOR}!"],
-  // Victoria sin nada especial (propuesta en CARTA §5)
+  // Victoria sin nada especial (CARTA §5, aprobado)
   VICTORIA: ["¡{GANADOR} SE LLEVÓ LOS TRES PUNTOS!", "¡TRES PUNTOS PARA {GANADOR}!"],
 };
 

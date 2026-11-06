@@ -383,6 +383,8 @@ Estados: `BORRADOR → INSCRIPCIONES_ABIERTAS → EN_CURSO → LIGUILLA → FINA
 
 **Sin árbitro con celular:** la liga captura desde la cédula de papel (`ReportSource = PAPEL_LIGA`) y valida directo.
 
+**Autogol:** se anota con el equipo del jugador que lo hizo y **suma al equipo contrario**. No cuenta en el goleo de nadie (ni en la carta ni en las insignias) y se muestra como "autogol de X". El marcador de la cédula sale de sus eventos (`marcadorDeEventos`, con test).
+
 **Firmas pendientes:** si después de 48 h un delegado no firma ni señala, la liga puede validar igual.
 
 ### 7.8 Sanciones (pantalla 47)
@@ -429,7 +431,7 @@ Estados: `BORRADOR → INSCRIPCIONES_ABIERTAS → EN_CURSO → LIGUILLA → FINA
 | **Equipo → Liga** (inscripción, arbitraje y multas) | Cargo de la liga → "Por pagar a la liga" del delegado → "Ya pagué" → la liga confirma. Panel: "Cobrado en octubre $18,400 de $21,000". La multa va ligada a su sanción (§7.8) |
 | **Liga → Árbitro** | Control de lo que se le debe y se le pagó por partido |
 
-Cómo se cuenta en pantalla (inicios 03, 04 y 18):
+Cómo se cuenta en pantalla (inicios 03, 04 y 18) — **POR APROBAR**:
 - **Plantilla:** *Suspendido* manda (no puede jugar); *Cuota pendiente* si no ha pagado la cuota más reciente; *En revisión* si tocó "Ya pagué" y el delegado no ha confirmado; *Habilitado* si está al corriente o se le condonó. Quien no tiene la cuota a su nombre (llegó después) no la debe.
 - **Vencido:** un cargo o cuota vence al terminar su día (hora de CDMX). Lo confirmado o condonado nunca está vencido.
 - **"Cobrado en {mes}"** (panel de la liga): los cargos que vencen ese mes; cobrado = confirmado; lo condonado no se espera ni se cobra; "Ya pagué" sin confirmar todavía no es cobrado.

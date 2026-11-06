@@ -33,15 +33,34 @@ export type EventoCedula = {
 
 const porMinuto = (a: EventoCedula, b: EventoCedula) => (a.minuto ?? 999) - (b.minuto ?? 999);
 
-/** Goles por equipo, tarjetas, cambios y cuántos eventos tiene la cédula ("7 eventos en la cédula") */
+/**
+ * El marcador que sale de los eventos de la cédula (PRD §7.7): el gol suma a su equipo y el autogol,
+ * que se anota con el equipo del jugador que lo hizo, suma al CONTRARIO.
+ */
+export function marcadorDeEventos(eventos: Pick<EventoCedula, "tipo" | "equipoId">[], localId: string, visitaId: string) {
+  let local = 0;
+  let visita = 0;
+  for (const e of eventos) {
+    if (e.tipo === "GOL") {
+      if (e.equipoId === localId) local++;
+      else if (e.equipoId === visitaId) visita++;
+    } else if (e.tipo === "AUTOGOL") {
+      if (e.equipoId === localId) visita++;
+      else if (e.equipoId === visitaId) local++;
+    }
+  }
+  return { local, visita };
+}
+
+/** Goles por equipo (el autogol va del lado al que suma), tarjetas, cambios y cuántos eventos tiene la cédula */
 export function resumenDelPartido(eventos: EventoCedula[], localId: string, visitaId: string) {
   const ordenados = [...eventos].sort(porMinuto);
-  const goles = ordenados.filter((e) => e.tipo === "GOL");
+  const sumaA = (e: EventoCedula) =>
+    e.tipo === "GOL" ? e.equipoId : e.tipo === "AUTOGOL" ? (e.equipoId === localId ? visitaId : localId) : null;
+  const goles = ordenados.filter((e) => e.tipo === "GOL" || e.tipo === "AUTOGOL");
   return {
-    golesLocal: goles.filter((e) => e.equipoId === localId),
-    golesVisita: goles.filter((e) => e.equipoId === visitaId),
-    // A quién se le suma un autogol no lo define la cédula todavía: se muestran aparte
-    autogoles: ordenados.filter((e) => e.tipo === "AUTOGOL"),
+    golesLocal: goles.filter((e) => sumaA(e) === localId),
+    golesVisita: goles.filter((e) => sumaA(e) === visitaId),
     tarjetas: ordenados.filter((e) => e.tipo === "AMARILLA" || e.tipo === "ROJA"),
     cambios: ordenados.filter((e) => e.tipo === "CAMBIO"),
     penales: ordenados.filter((e) => e.tipo === "PENAL_ATAJADO" || e.tipo === "PENAL_FALLADO"),
