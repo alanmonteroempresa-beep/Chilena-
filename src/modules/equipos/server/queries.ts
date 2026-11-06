@@ -113,9 +113,10 @@ export async function esMiembroDe(userId: string, teamId: string) {
 export async function delegadosDe(teamIds: string[]) {
   const filas = await db.teamMember.findMany({
     where: { teamId: { in: teamIds }, status: "ACTIVO", role: { in: ["DELEGADO_PRINCIPAL", "DELEGADO_AUXILIAR"] } },
-    select: { userId: true, teamId: true },
+    select: { userId: true, teamId: true, role: true },
   });
-  return filas;
+  // El principal primero ("Pásale el celular a Memo", pantalla 56b)
+  return filas.sort((a, b) => Number(b.role === "DELEGADO_PRINCIPAL") - Number(a.role === "DELEGADO_PRINCIPAL"));
 }
 
 /** El link de pase de lista de un partido y equipo (pantalla 20) */

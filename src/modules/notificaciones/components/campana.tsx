@@ -80,7 +80,8 @@ export async function Campana({ userId, pestana, ahora }: { userId: string; pest
           <ul className="flex flex-col gap-2">
             {lista.map((a) => {
               const Icono = ICONO[a.type];
-              const accion = accionDe(a.type);
+              // Un aviso puede traer su propio chip ("Ver cédula" al árbitro); si no, el de su tipo
+              const accion = (a.data as { accion?: string } | null)?.accion ?? accionDe(a.type);
               return (
                 <li key={a.id}>
                   <Link

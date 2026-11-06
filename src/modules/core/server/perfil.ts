@@ -38,5 +38,5 @@ export function perfilesDeJugadores(userIds: string[]) {
 
 /** Nombre y username públicos de varias personas (avisos de la campana) */
 export function personasPorId(ids: string[]) {
-  return db.user.findMany({ where: { id: { in: ids } }, select: { id: true, username: true, nombre: true, sobrenombre: true } });
+  return db.user.findMany({ where: { id: { in: ids } }, select: { id: true, username: true, nombre: true, apellidos: true, sobrenombre: true } });
 }

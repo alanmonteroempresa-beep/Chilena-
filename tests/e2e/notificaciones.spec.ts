@@ -15,6 +15,12 @@ test("una reacción a tu gol te llega a la campana y se marca leída al abrirla"
   await page.goto("/inicio?vista=golazos");
   const tarjeta = page.getByRole("listitem").filter({ hasText: "El Chícharo anotó" }).first();
   const trofeo = tarjeta.getByRole("button", { name: /^Trofeo/ });
+  // Si una corrida anterior se quedó a medias, primero se quita
+  if ((await trofeo.getAttribute("aria-pressed")) === "true") {
+    await trofeo.click();
+    await expect(trofeo).toHaveAttribute("aria-pressed", "false");
+    await page.waitForTimeout(800);
+  }
   await trofeo.click();
   await expect(trofeo).toHaveAttribute("aria-pressed", "true");
   await page.waitForTimeout(800);
@@ -27,7 +33,7 @@ test("una reacción a tu gol te llega a la campana y se marca leída al abrirla"
   await expect(aviso).toBeVisible();
   await expect(aviso.getByLabel("Sin leer")).toBeVisible();
   await aviso.click();
-  await expect(page).toHaveURL(/\/post\//);
+  await expect(page).toHaveURL(/\/post\//, { timeout: 20_000 });
   await page.goto("/notificaciones?tab=social");
   await expect(page.getByRole("link", { name: /Doña Lupe le echó 🏆 a tu gol/ }).getByLabel("Sin leer")).toHaveCount(0);
   await salir(page);

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { PaginaLink } from "@/modules/equipos/server-api";
 import { Skeleton } from "@/shared/ui/skeleton";
@@ -18,6 +19,8 @@ export default function LinkPage({ params }: PageProps<"/p/[token]">) {
 async function Link({ params }: Pick<PageProps<"/p/[token]">, "params">) {
   const { token } = await params;
   if (!/^[A-Za-z0-9_-]{8,40}$/.test(token)) notFound();
+  // La hora de "ahora" es de la petición, no del prerender
+  await connection();
   const pagina = await PaginaLink({ token, ahora: new Date() });
   if (!pagina) notFound();
   return pagina;

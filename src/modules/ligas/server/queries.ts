@@ -140,6 +140,15 @@ export function plantillasDeJugadores(userIds: string[]) {
   });
 }
 
+/** Inscritos (activos o suspendidos) de varios equipos en el torneo, con dorsal: la cédula (`partidos`) */
+export async function inscritosDeEquipos(tournamentId: string, teamIds: string[]) {
+  const filas = await db.tournamentRoster.findMany({
+    where: { tournamentId, status: { in: ["ACTIVO", "SUSPENDIDO"] }, tournamentTeam: { teamId: { in: teamIds } } },
+    select: { userId: true, numero: true, tournamentTeam: { select: { teamId: true } } },
+  });
+  return filas.map((f) => ({ userId: f.userId, teamId: f.tournamentTeam.teamId, numero: f.numero }));
+}
+
 /** Quiénes juegan el torneo (para la rareza de las insignias: "41% de la liga la tiene") */
 export async function jugadoresDelTorneo(tournamentId: string) {
   const filas = await db.tournamentRoster.findMany({

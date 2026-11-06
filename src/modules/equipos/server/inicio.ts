@@ -110,8 +110,10 @@ export async function datosInicioDelegado(slugEquipo: string, ahora: Date) {
     })),
     cedulaPorFirmar: porFirmar
       ? {
+          href: `/equipo/${slugEquipo}/cedula/${porFirmar.match.id}`,
+          enPausa: porFirmar.status === "EN_CORRECCION",
           jornada: porFirmar.match.round?.numero ?? null,
-          partido: `${nombreCorto(porFirmar.match.homeTeam.nombre)} ${porFirmar.match.homeScore ?? 0}–${porFirmar.match.awayScore ?? 0} ${nombreCorto(porFirmar.match.awayTeam.nombre)}`,
+          partido: `${nombreCorto(porFirmar.match.homeTeam.nombre)} ${porFirmar.homeScore ?? 0}–${porFirmar.awayScore ?? 0} ${nombreCorto(porFirmar.match.awayTeam.nombre)}`,
         }
       : null,
   };

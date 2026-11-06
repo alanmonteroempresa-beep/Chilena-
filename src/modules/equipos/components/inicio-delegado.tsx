@@ -38,9 +38,11 @@ export async function InicioDelegado({ slugEquipo, ahora }: { slugEquipo: string
         <Tarjeta className="flex items-center gap-3 border-warning/40 bg-warning-soft p-3.5">
           <div className="flex-1">
             <p className="text-sm font-bold">Cédula{d.cedulaPorFirmar.jornada ? ` J${d.cedulaPorFirmar.jornada}` : ""} · {d.cedulaPorFirmar.partido}</p>
-            <p className="text-xs text-warning">Falta tu firma</p>
+            <p className="text-xs text-warning">{d.cedulaPorFirmar.enPausa ? "En pausa · corrección con el árbitro" : "Falta tu firma"}</p>
           </div>
-          <AccionPronto className={buttonVariants({ variant: "lima", size: "cta", className: "h-10 px-4" })}>Firmar</AccionPronto>
+          <Link href={d.cedulaPorFirmar.href} className={buttonVariants({ variant: "lima", size: "cta", className: "h-10 px-4" })}>
+            {d.cedulaPorFirmar.enPausa ? "Ver" : "Revisar"}
+          </Link>
         </Tarjeta>
       )}
 

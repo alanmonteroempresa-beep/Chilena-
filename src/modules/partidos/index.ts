@@ -53,3 +53,14 @@ export {
   horarioCorto,
 } from "./server/services/proximo";
 export { chipsDelJugador, lineaDeGol, posicionesDelGoleo, type FilaGoleo } from "./server/services/goleo";
+
+// La cédula (PRD §7.7): servicios puros y el contrato con las páginas
+export {
+  lineaDeGoles,
+  marcadorDeLaCedula,
+  problemasDeLaCedula,
+  textoDelEvento,
+  type EventoCapturado,
+} from "./server/services/cedula";
+export { HORAS_PARA_VALIDAR_SIN_FIRMAS, transicion, type Estado as EstadoDeCedula } from "./server/services/estado-partido";
+export type { EquipoCedula } from "./components/cedula/tipos";

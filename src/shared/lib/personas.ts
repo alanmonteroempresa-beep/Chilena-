@@ -3,6 +3,14 @@
 /** El apodo manda: "El Chícharo"; sin apodo, el nombre */
 export const nombreVisible = (p: { sobrenombre?: string | null; nombre: string }) => p.sobrenombre?.trim() || p.nombre;
 
+/** Firmas como las dice la banda: "Memo Salas", "Chava Ríos" (el apodo de una palabra va con su apellido) */
+export function nombreDeFirma(p: { sobrenombre?: string | null; nombre: string; apellidos?: string | null }): string {
+  const apellido = p.apellidos?.trim().split(/\s+/)[0];
+  const apodo = p.sobrenombre?.trim();
+  if (apodo) return apodo.includes(" ") || !apellido ? apodo : `${apodo} ${apellido}`;
+  return [p.nombre, apellido].filter(Boolean).join(" ");
+}
+
 const ARTICULOS = new Set(["el", "la", "los", "las"]);
 
 /**

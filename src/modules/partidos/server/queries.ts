@@ -88,9 +88,13 @@ export async function jornadaQueViene(tournamentId: string) {
   return r?.numero ?? null;
 }
 
-/** Partidos asignados a un árbitro: lo que viene y lo último que cerró (pantallas 02 y 55) */
+/**
+ * Partidos asignados a un árbitro (pantallas 02 y 55): lo que viene, las cédulas que siguen abiertas de días
+ * pasados (sin mandar o por firmar) y lo último que cerró.
+ */
 export async function partidosDelArbitro(refereeId: string, ahora: Date) {
-  const [vienen, cerrados] = await Promise.all([
+  const hace = (ms: number) => new Date(ahora.getTime() - ms);
+  const [vienen, porCerrar, cerrados] = await Promise.all([
     db.match.findMany({
       where: {
         refereeId,
@@ -102,13 +106,25 @@ export async function partidosDelArbitro(refereeId: string, ahora: Date) {
       select: partidoSelect,
     }),
     db.match.findMany({
+      where: {
+        refereeId,
+        OR: [
+          { status: { in: [...POR_JUGAR] }, scheduledAt: { lt: hace(VENTANA_MS), gte: hace(7 * 24 * 3_600_000) } },
+          { status: { in: ["POR_FIRMAR", "FINALIZADO"] }, scheduledAt: { lt: hace(VENTANA_MS) } },
+        ],
+      },
+      orderBy: { scheduledAt: "desc" },
+      take: 6,
+      select: partidoSelect,
+    }),
+    db.match.findMany({
       where: { refereeId, status: "VALIDADO" },
       orderBy: { scheduledAt: "desc" },
       take: 4,
       select: partidoSelect,
     }),
   ]);
-  return { vienen, cerrados };
+  return { vienen, porCerrar, cerrados };
 }
 
 /** Cédulas que esperan a la liga: enviadas, en corrección o firmadas (pantallas 18 y 46) */
@@ -132,7 +148,8 @@ export function cedulaPorFirmar(teamId: string) {
         { match: { awayTeamId: teamId }, awaySignedAt: null },
       ],
     },
-    select: { match: { select: partidoSelect } },
+    orderBy: { submittedAt: "desc" },
+    select: { status: true, homeScore: true, awayScore: true, match: { select: partidoSelect } },
   });
 }
 
@@ -387,4 +404,64 @@ export function partidoDelDia(matchId: string) {
       report: { select: { status: true } },
     },
   });
+}
+
+/** El árbitro asignado y si aceptó (reglas de authz `report.capture` y `report.respondCorrection`) */
+export function arbitroDelPartido(matchId: string) {
+  return db.match.findUnique({ where: { id: matchId }, select: { refereeId: true, refereeStatus: true } });
+}
+
+/**
+ * La cédula de un partido como la ven el árbitro y los delegados (pantallas 19, 56a y 56b): estado,
+ * firmas, eventos oficiales vigentes, quién jugó y las correcciones.
+ */
+export function cedulaDelPartido(matchId: string) {
+  return db.match.findUnique({
+    where: { id: matchId },
+    select: {
+      ...partidoSelect,
+      tournamentId: true,
+      refereeId: true,
+      report: {
+        select: {
+          id: true,
+          status: true,
+          source: true,
+          homeScore: true,
+          awayScore: true,
+          observaciones: true,
+          submittedAt: true,
+          homeSignedAt: true,
+          awaySignedAt: true,
+          homeSignedBy: { select: personaSelect },
+          awaySignedBy: { select: personaSelect },
+          corrections: {
+            orderBy: { createdAt: "asc" },
+            select: {
+              id: true,
+              kind: true,
+              eventId: true,
+              propuesta: true,
+              comentario: true,
+              status: true,
+              createdAt: true,
+              requestedById: true,
+              requestedBy: { select: personaSelect },
+            },
+          },
+        },
+      },
+      events: {
+        where: { oficial: true, voided: false, type: { in: ["GOL", "AUTOGOL", "AMARILLA", "ROJA"] } },
+        orderBy: [{ minute: "asc" }, { createdAt: "asc" }],
+        select: { id: true, type: true, minute: true, teamId: true, playerId: true, tipoGol: true, nota: true },
+      },
+      lineups: { select: { teamId: true, players: { select: { userId: true, numero: true, jugo: true, user: { select: personaSelect } } } } },
+    },
+  });
+}
+
+/** Cédulas del árbitro que esperan algo de él: correcciones por contestar (pantalla 02) */
+export function correccionesParaElArbitro(refereeId: string) {
+  return db.matchReportCorrection.count({ where: { status: "PENDIENTE", report: { match: { refereeId } } } });
 }

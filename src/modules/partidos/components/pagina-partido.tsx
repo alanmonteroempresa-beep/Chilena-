@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowDown, ArrowLeft, ArrowLeftRight, ArrowUp, FileCheck2, Share2 } from "lucide-react";
 import { formatCDMX } from "@/shared/lib/dates";
-import { nombreCorto, nombreDeArbitro, nombreVisible } from "@/shared/lib/personas";
+import { nombreCorto, nombreDeArbitro, nombreVisible, nombreDeFirma as firma } from "@/shared/lib/personas";
 import { cn } from "@/shared/lib/utils";
 import { AccionPronto } from "@/shared/ui/accion-pronto";
 import { buttonVariants } from "@/shared/ui/button";
@@ -25,14 +25,7 @@ type Partido = NonNullable<Awaited<ReturnType<typeof partidoCompleto>>>;
 type Persona = { id: string; nombre: string; apellidos: string | null; sobrenombre: string | null } | null;
 
 const nombre = (p: Persona) => (p ? nombreVisible(p) : null);
-/** Firmas como las dice la banda: "Memo Salas", "Chava Ríos" (el apodo de una palabra va con su apellido) */
-const nombreDeFirma = (p: Persona) => {
-  if (!p) return null;
-  const apellido = p.apellidos?.trim().split(/\s+/)[0];
-  const apodo = p.sobrenombre?.trim();
-  if (apodo) return apodo.includes(" ") || !apellido ? apodo : `${apodo} ${apellido}`;
-  return [p.nombre, apellido].filter(Boolean).join(" ");
-};
+const nombreDeFirma = (p: Persona) => (p ? firma(p) : null);
 const conMayuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /**

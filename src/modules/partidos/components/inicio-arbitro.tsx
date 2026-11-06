@@ -2,18 +2,19 @@ import Link from "next/link";
 import { hoyCDMX } from "@/shared/lib/dates";
 import { formatMXN } from "@/shared/lib/money";
 import { nombreCorto } from "@/shared/lib/personas";
+import { buttonVariants } from "@/shared/ui/button";
 import { Chip } from "@/shared/ui/chip";
 import { ChipMarcador } from "@/shared/ui/chip-marcador";
 import { coloresDe, Escudo } from "@/shared/ui/escudo";
 import { Sobretitulo, Tarjeta, TarjetaRol, TituloSeccion } from "@/shared/ui/tarjeta";
-import { partidosDelArbitro } from "../server/queries";
+import { correccionesParaElArbitro, partidosDelArbitro } from "../server/queries";
 import { cuandoTeToca, horaCDMX, horarioCorto } from "../server/services/proximo";
 
 type Partido = Awaited<ReturnType<typeof partidosDelArbitro>>["vienen"][number];
 
 /**
  * Inicio del árbitro (pantalla 02 · PRD §7.5): sus partidos de hoy o los que vienen, el cobro de arbitraje
- * y lo último que cerró. Solo lectura: la cédula en vivo llega con su propio bloque.
+ * y lo último que cerró. Cada partido de hoy (o que sigue abierto) lleva a su cédula (pantallas 56a y 56b).
  */
 export async function InicioArbitro({
   userId,
@@ -27,7 +28,7 @@ export async function InicioArbitro({
   /** Lo que la liga le debe de partidos ya pitados (`referee_payments`, módulo ligas) */
   porCobrarCents?: number;
 }) {
-  const { vienen, cerrados } = await partidosDelArbitro(userId, ahora);
+  const [{ vienen, porCerrar, cerrados }, correcciones] = await Promise.all([partidosDelArbitro(userId, ahora), correccionesParaElArbitro(userId)]);
   const hoy = hoyCDMX(ahora);
   const dia = (p: Partido) => (p.scheduledAt ? hoyCDMX(p.scheduledAt) : null);
   const siguiente = vienen[0];
@@ -75,13 +76,30 @@ export async function InicioArbitro({
         </TarjetaRol>
       )}
 
+      {correcciones > 0 && (
+        <Tarjeta className="border-danger/40 bg-danger/12 p-3.5 text-sm font-semibold">
+          Te piden corregir {correcciones === 1 ? "una cédula" : `${correcciones} cédulas`}: contesta para que puedan firmar.
+        </Tarjeta>
+      )}
+
+      {porCerrar.length > 0 && (
+        <section className="flex flex-col gap-2.5" aria-labelledby="arbitro-por-cerrar">
+          <TituloSeccion>
+            <span id="arbitro-por-cerrar">Cédulas abiertas</span>
+          </TituloSeccion>
+          {porCerrar.map((p) => (
+            <PartidoQueViene key={p.id} p={p} conDia conCedula />
+          ))}
+        </section>
+      )}
+
       {vienen.length > 0 && (
         <section className="flex flex-col gap-2.5" aria-labelledby="arbitro-vienen">
           <TituloSeccion>
             <span id="arbitro-vienen">{esHoy ? "Hoy" : "Lo que viene"}</span>
           </TituloSeccion>
           {vienen.map((p) => (
-            <PartidoQueViene key={p.id} p={p} conDia={dia(p) !== hoy} />
+            <PartidoQueViene key={p.id} p={p} conDia={dia(p) !== hoy} conCedula={dia(p) === hoy || p.status === "POR_FIRMAR" || p.status === "FINALIZADO"} />
           ))}
         </section>
       )}
@@ -122,19 +140,22 @@ export async function InicioArbitro({
   );
 }
 
-function PartidoQueViene({ p, conDia }: { p: Partido; conDia: boolean }) {
+/** "Llenar cédula" el día del partido; después, "Ver cédula" (por firmar o firmada) */
+function PartidoQueViene({ p, conDia, conCedula = false }: { p: Partido; conDia: boolean; conCedula?: boolean }) {
   const chip =
     p.status === "EN_JUEGO" ? (
       <Chip tono="rojo">En vivo</Chip>
     ) : p.status === "POR_FIRMAR" ? (
       <Chip tono="ambar">Por firmar</Chip>
+    ) : p.status === "FINALIZADO" ? (
+      <Chip tono="verde">Firmada</Chip>
     ) : p.refereeStatus === "ASIGNADO" ? (
       <Chip tono="ambar">Por confirmar</Chip>
     ) : (
       <Chip tono="verde">Confirmado</Chip>
     );
   return (
-    <Link href={`/partido/${p.id}`} className="block">
+    <Link href={conCedula ? `/arbitro/cedula/${p.id}` : `/partido/${p.id}`} className="block">
       <Tarjeta className="flex flex-col gap-2.5 p-3.5">
         <div className="flex items-center gap-2.5">
           <span className="font-display text-[26px] leading-none font-black">
@@ -162,6 +183,11 @@ function PartidoQueViene({ p, conDia }: { p: Partido; conDia: boolean }) {
           </span>
           <Escudo {...coloresDe(p.awayTeam)} tamano={26} />
         </div>
+        {conCedula && (
+          <span className={buttonVariants({ variant: p.status === "PROGRAMADO" || p.status === "EN_JUEGO" ? "lima" : "quieto", size: "cta", className: "w-full border border-border" })}>
+            {p.status === "PROGRAMADO" || p.status === "EN_JUEGO" ? "Llenar cédula" : "Ver cédula"}
+          </span>
+        )}
       </Tarjeta>
     </Link>
   );
