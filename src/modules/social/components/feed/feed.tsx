@@ -45,12 +45,15 @@ export async function Feed({
   contexto,
   vista,
   conTitulo = false,
+  pagina = {},
 }: {
   contexto: { userId: string; slugEquipo?: string; slugLiga?: string };
   vista: VistaFeed;
   conTitulo?: boolean;
+  /** `jornada` (Para ti) o `antes` (cursor de Golazos y Siguiendo) */
+  pagina?: { jornada?: number; antes?: string };
 }) {
-  const d = await datosDelFeed(contexto, vista);
+  const d = await datosDelFeed(contexto, vista, pagina);
   if (!d || d.jornada == null || d.posts.length === 0) {
     return <p className="mx-4 mt-4 rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">{VACIO[vista]}</p>;
   }
@@ -73,6 +76,14 @@ export async function Feed({
           </li>
         ))}
       </ul>
+      {d.mas && (
+        <Link
+          href={"jornada" in d.mas ? `/inicio?j=${d.mas.jornada}` : `/inicio?vista=${vista}&antes=${encodeURIComponent(d.mas.antes)}`}
+          className="etiqueta inline-flex min-h-12 items-center justify-center rounded-xl border border-border bg-surface text-sm font-extrabold tracking-[0.12em]"
+        >
+          {"jornada" in d.mas ? `Ver lo que dejó la J${d.mas.jornada}` : "Ver más"}
+        </Link>
+      )}
     </section>
   );
 }

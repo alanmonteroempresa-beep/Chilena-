@@ -11,3 +11,4 @@ export {
 } from "./server/queries";
 export { contextosDeRolEnEquipos } from "./server/contextos";
 export { InicioDelegado } from "./components/inicio-delegado";
+export { registerListeners } from "./server/listeners";

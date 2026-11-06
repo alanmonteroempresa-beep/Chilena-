@@ -4,6 +4,7 @@ import {
   cronicaDelPartido,
   golazos,
   paraTi,
+  postDeInsignia,
   siguiendo,
   situacionDelPartido,
   type EquipoJornada,
@@ -168,5 +169,14 @@ describe("autogol en el feed (PRD §7.7)", () => {
     const deGol = posts.filter((x) => x.tipo === "AUTO_GOL");
     expect(deGol).toHaveLength(3);
     expect(deGol.some((x) => x.jugadores.includes("El Güero"))).toBe(false);
+  });
+});
+
+describe("post de insignia", () => {
+  it("se anuncia, salvo la de pionero", () => {
+    const base = { userId: "brujo", nombre: "El Brujo", username: "el-brujo", veces: 1, fecha: 1 };
+    const p = postDeInsignia({ ...base, insignia: { code: "DE_CHILENA", nombre: "De Chilena", descripcion: "Gol de chilena", icon: "🤸" } });
+    expect(p).toMatchObject({ tipo: "AUTO_INSIGNIA", id: "insignia:brujo:DE_CHILENA:1", jugadores: ["brujo"] });
+    expect(postDeInsignia({ ...base, insignia: { code: "PIONERO", nombre: "Pionero", descripcion: "", icon: null } })).toBeNull();
   });
 });

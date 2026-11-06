@@ -1,63 +1,69 @@
 import "server-only";
 import { perfilPublico } from "@/modules/core/server-api";
 import { equipoDeCadaQuien } from "@/modules/equipos/server-api";
-import {
-  filaDeLaTabla,
-  jugadoresDelTorneo,
-  plantillasDeJugadores,
-  torneoVigenteDelEquipo,
-} from "@/modules/ligas/server-api";
+import { filaDeLaTabla, jugadoresDelTorneo, torneoVigenteDelEquipo } from "@/modules/ligas/server-api";
 import { posicionesDelGoleo } from "@/modules/partidos";
-import { estadisticasDelJugador, goleoDelTorneo, historialDePlantillas, jornadaQueViene } from "@/modules/partidos/server-api";
-import { evaluarInsignias, laMasCercana, rarezas, type CriterioInsignia, type HistorialJugador } from "./badges";
-import { calcularCarta, grupoDePosicion } from "./formula";
-import { catalogoDeInsignias } from "./queries";
-import { armarHistoriales, posicionMasJugada, ventanaDe } from "./services/historial";
-
-async function historiales(userIds: string[]) {
-  const plantillas = (await plantillasDeJugadores(userIds)).map((p) => ({
-    userId: p.userId,
-    tournamentId: p.tournamentId,
-    teamId: p.tournamentTeam.teamId,
-  }));
-  return armarHistoriales(plantillas, await historialDePlantillas(plantillas));
-}
+import { estadisticasDelJugador, goleoDelTorneo, jornadaQueViene } from "@/modules/partidos/server-api";
+import {
+  evaluarInsignia,
+  evaluarInsignias,
+  laMasCercana,
+  type CriterioInsignia,
+  type EstadoInsignia,
+  type HistorialJugador,
+} from "./badges";
+import type { Carta, GrupoPosicion, NivelCarta, Ventana } from "./formula";
+import { calcularCartas } from "./persistir";
+import { cartaGuardada, catalogoDeInsignias, insigniasGuardadas, rarezaEntre } from "./queries";
 
 /**
  * Todo lo del jugador para su perfil, su carta y sus insignias (pantallas 06, 14, 25 y 28).
- * Se calcula al leer con lo VALIDADO (regla 2); cuando exista la cola de `match.validated`, esto mismo
- * llenará `player_cards` y `user_badges`.
+ * Lee lo GUARDADO (`player_cards`, `user_badges`, que llena la cola de `match.validated`); si todavía no
+ * hay nada guardado, lo calcula con lo validado (regla 2).
  */
 export async function datosDelJugador(username: string, { conRareza = false } = {}) {
   const persona = await perfilPublico(username);
   if (!persona) return null;
-  const [[miembro], catalogo, mios] = await Promise.all([
+  const [[miembro], catalogo, guardada, guardadas] = await Promise.all([
     equipoDeCadaQuien([persona.id]),
     catalogoDeInsignias(),
-    historiales([persona.id]),
+    cartaGuardada(persona.id),
+    insigniasGuardadas(persona.id),
   ]);
-  const historial = mios.get(persona.id) ?? [];
   const inscripcion = miembro ? await torneoVigenteDelEquipo(miembro.team.id) : null;
   const torneo = inscripcion?.tournament ?? null;
-  const [stats, goleo, fila, jornadaSiguiente] = await Promise.all([
+  const [stats, goleo, fila, jornadaSiguiente, calculada] = await Promise.all([
     torneo ? estadisticasDelJugador(torneo.id, persona.id) : null,
     torneo ? goleoDelTorneo(torneo.id, 200) : [],
     inscripcion ? filaDeLaTabla(inscripcion.id) : null,
     torneo ? jornadaQueViene(torneo.id) : null,
+    guardada ? null : calcularCartas([persona.id]).then((m) => m.get(persona.id) ?? null),
   ]);
 
   const posicion = persona.playerProfile?.posicionPrincipal ?? miembro?.posicion ?? null;
-  const grupo = grupoDePosicion(posicion, posicionMasJugada(historial));
-  const partidosValidados = historial.filter((p) => p.jugo).length;
-  const ventana = ventanaDe(historial);
-  const carta = calcularCarta(ventana, grupo, partidosValidados);
+  const guardado = guardada?.atributos as { atributos: Carta["atributos"]; ventana: Ventana } | null;
+  const carta: Carta =
+    guardada && guardado
+      ? {
+          grupo: guardada.positionGroup as GrupoPosicion,
+          atributos: guardado.atributos,
+          media: guardada.media,
+          enConstruccion: guardada.enConstruccion,
+          nivel: guardada.tier.toLowerCase() as NivelCarta,
+          partidosValidados: guardada.partidosValidados,
+        }
+      : calculada!.carta;
+  const ventana: Ventana = guardado?.ventana ?? calculada!.ventana;
   const posicionGoleo = posicionesDelGoleo(goleo).get(persona.id);
+  const esJugador = guardada != null || (calculada?.historial.length ?? 0) > 0 || miembro != null;
 
-  const esJugador = historial.length > 0 || miembro != null;
-  const insignias = catalogo.map((b) => ({ ...b, criteria: b.criteria as CriterioInsignia }));
-  const h: HistorialJugador = {
-    partidos: historial,
-    esPortero: grupo === "PORTERO",
+  const insignias = catalogo
+    .filter((b) => b.categoria !== "AFICIONADO")
+    .map((b) => ({ ...b, criteria: b.criteria as CriterioInsignia }));
+  // Contexto del torneo para las pistas de lo que depende del cierre ("Vas 1º · J15/18")
+  const contexto: HistorialJugador = {
+    partidos: calculada?.historial ?? [],
+    esPortero: carta.grupo === "PORTERO",
     esPionero: persona.isPionero || persona.claimedAt != null,
     torneo: torneo
       ? {
@@ -73,19 +79,23 @@ export async function datosDelJugador(username: string, { conRareza = false } = 
         }
       : undefined,
   };
-  const estados = esJugador ? evaluarInsignias(insignias, h) : [];
+  let estados: EstadoInsignia[] = [];
+  if (esJugador) {
+    if (guardada) {
+      const porCodigo = new Map(guardadas.map((g) => [g.badge.code, g]));
+      estados = insignias.map((b) => {
+        const g = porCodigo.get(b.code);
+        const pista = evaluarInsignia(b, { ...contexto, partidos: [] });
+        if (!g) return pista;
+        return { code: b.code, veces: g.veces, progreso: g.progreso ?? undefined, meta: g.meta ?? undefined, pista: g.veces ? undefined : pista.pista };
+      });
+    } else {
+      estados = evaluarInsignias(insignias, contexto);
+    }
+  }
 
   // Rareza: % de los jugadores del torneo que la tienen (solo en la colección, pantalla 28)
-  let rareza = new Map<string, number>();
-  if (conRareza && torneo) {
-    const ids = await jugadoresDelTorneo(torneo.id);
-    const todos = await historiales(ids);
-    rareza = rarezas(
-      ids.map((id) =>
-        evaluarInsignias(insignias, { partidos: todos.get(id) ?? [], esPortero: false, esPionero: false }),
-      ),
-    );
-  }
+  const rareza = conRareza && torneo ? await rarezaEntre(await jugadoresDelTorneo(torneo.id)) : new Map<string, number>();
 
   return {
     persona,
@@ -97,9 +107,7 @@ export async function datosDelJugador(username: string, { conRareza = false } = 
     ventana,
     stats,
     posicionGoleo,
-    insignias: insignias
-      .filter((b) => b.categoria !== "AFICIONADO")
-      .map((b) => ({ ...b, estado: estados.find((e) => e.code === b.code)!, rareza: rareza.get(b.code) })),
+    insignias: insignias.map((b) => ({ ...b, estado: estados.find((e) => e.code === b.code) ?? { code: b.code, veces: 0 }, rareza: rareza.get(b.code) })),
     masCercana: laMasCercana(estados),
   };
 }

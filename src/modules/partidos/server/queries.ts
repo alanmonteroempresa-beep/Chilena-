@@ -329,3 +329,49 @@ export function partidosValidadosConGoles(tournamentId: string, numero: number) 
     },
   });
 }
+
+/** GOL · PJ · AST del torneo vigente de cada jugador (frente de la carta) */
+export function estadisticasVigentes(userIds: string[]) {
+  return db.playerTournamentStat.findMany({
+    where: { userId: { in: userIds }, tournament: { status: { in: ["EN_CURSO", "LIGUILLA"] } } },
+    select: { userId: true, goles: true, partidos: true, asistencias: true },
+  });
+}
+
+/** Un partido VALIDADO con sus goles y su jornada (publicar sus auto-posts al validarlo) */
+export function partidoValidadoParaFeed(matchId: string) {
+  return db.match.findFirst({
+    where: { id: matchId, status: "VALIDADO" },
+    select: {
+      ...partidoSelect,
+      validatedAt: true,
+      tournamentId: true,
+      roundId: true,
+      tournament: { select: { leagueId: true } },
+      events: {
+        where: { type: { in: ["GOL", "AUTOGOL"] }, oficial: true, voided: false },
+        orderBy: { minute: "asc" },
+        select: { type: true, minute: true, tipoGol: true, teamId: true, player: { select: personaSelect } },
+      },
+    },
+  });
+}
+
+/** ¿Ya se validaron todos los partidos de la jornada? (fin de jornada: tabla y rachas) */
+export async function jornadaCompleta(roundId: string) {
+  const partidos = await db.match.findMany({
+    where: { roundId, status: { notIn: ["CANCELADO", "SUSPENDIDO", "REPROGRAMADO"] } },
+    select: { status: true },
+  });
+  return partidos.length > 0 && partidos.every((p) => p.status === "VALIDADO");
+}
+
+/** Los partidos VALIDADOS de los torneos vigentes, en orden (recalcular todo) */
+export async function partidosValidadosVigentes() {
+  const filas = await db.match.findMany({
+    where: { status: "VALIDADO", tournament: { status: { in: ["EN_CURSO", "LIGUILLA"] } } },
+    orderBy: { scheduledAt: "asc" },
+    select: { id: true },
+  });
+  return filas.map((f) => f.id);
+}

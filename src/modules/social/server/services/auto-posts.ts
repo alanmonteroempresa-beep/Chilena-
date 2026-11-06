@@ -76,7 +76,40 @@ export type AutoPost =
       tabla: { equipo: EquipoJornada; pts: number; posicion: number | null }[];
       goleo: { nombre: string; username: string; goles: number }[];
     })
-  | (Base & { tipo: "AUTO_RACHA"; jornada: number; autor: { nombre: string; username: string }; racha: number });
+  | (Base & { tipo: "AUTO_RACHA"; jornada: number; autor: { nombre: string; username: string }; racha: number })
+  | (Base & {
+      tipo: "AUTO_INSIGNIA";
+      autor: { nombre: string; username: string };
+      insignia: { code: string; nombre: string; descripcion: string; icon: string | null };
+      veces: number;
+    });
+
+/** Insignias que no se anuncian en el feed (se ganan solas o no dicen nada del juego) */
+const SIN_ANUNCIO = new Set(["PIONERO"]);
+
+/** "El Brujo ganó la insignia De Chilena" (PRD §6.1 · auto-post de insignia) */
+export function postDeInsignia(entrada: {
+  userId: string;
+  nombre: string;
+  username: string;
+  equipoId?: string;
+  insignia: { code: string; nombre: string; descripcion: string; icon: string | null };
+  veces: number;
+  fecha: number;
+}): AutoPost | null {
+  if (SIN_ANUNCIO.has(entrada.insignia.code)) return null;
+  return {
+    tipo: "AUTO_INSIGNIA",
+    id: `insignia:${entrada.userId}:${entrada.insignia.code}:${entrada.veces}`,
+    fecha: entrada.fecha,
+    validado: entrada.fecha,
+    equipos: entrada.equipoId ? [entrada.equipoId] : [],
+    jugadores: [entrada.userId],
+    autor: { nombre: entrada.nombre, username: entrada.username },
+    insignia: entrada.insignia,
+    veces: entrada.veces,
+  };
+}
 
 type Ganador = { ganador: EquipoJornada; perdedor: EquipoJornada } | null;
 
@@ -289,7 +322,7 @@ export function autoPostsDeLaJornada(entrada: {
   return posts;
 }
 
-const PESO: Record<AutoPost["tipo"], number> = { AUTO_CRONICA: 30, AUTO_RESULTADO: 20, AUTO_TABLA: 15, AUTO_RACHA: 12, AUTO_GOL: 5 };
+const PESO: Record<AutoPost["tipo"], number> = { AUTO_CRONICA: 30, AUTO_RESULTADO: 20, AUTO_TABLA: 15, AUTO_RACHA: 12, AUTO_INSIGNIA: 10, AUTO_GOL: 5 };
 
 /**
  * Para ti (PRD §6.1): primero lo de tu equipo, luego crónicas y resultados de la liga, la tabla, rachas y

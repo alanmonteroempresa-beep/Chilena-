@@ -222,8 +222,35 @@ function TarjetaRacha({ p }: { p: Extract<AutoPost, { tipo: "AUTO_RACHA" }> }) {
   );
 }
 
+function TarjetaInsignia({ p }: { p: Extract<AutoPost, { tipo: "AUTO_INSIGNIA" }> }) {
+  return (
+    <Tarjeta className="overflow-hidden">
+      <Link href={`/j/${p.autor.username}/insignias`} className="flex items-center gap-3 p-3.5">
+        <span
+          aria-hidden
+          className="inline-flex size-12 shrink-0 items-center justify-center bg-brand-lime text-[22px]"
+          style={{ clipPath: "polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)" }}
+        >
+          {p.insignia.icon}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-bold">
+            {p.autor.nombre} ganó la insignia {p.insignia.nombre}
+            {p.veces > 1 ? ` (×${p.veces})` : ""}
+          </span>
+          <span className="block truncate text-xs text-muted-foreground">{p.insignia.descripcion}</span>
+        </span>
+        {chipAuto}
+      </Link>
+      <Pie texto={`🏅 ${p.autor.nombre} ganó la insignia ${p.insignia.nombre}`} ruta={`/j/${p.autor.username}/insignias`} />
+    </Tarjeta>
+  );
+}
+
 export function TarjetaPost({ p }: { p: AutoPost }) {
   switch (p.tipo) {
+    case "AUTO_INSIGNIA":
+      return <TarjetaInsignia p={p} />;
     case "AUTO_GOL":
       return <TarjetaGol p={p} />;
     case "AUTO_CRONICA":

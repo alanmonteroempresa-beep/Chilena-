@@ -5,6 +5,8 @@ export {
   contextosEnLigas,
   filaDeLaTabla,
   jornadasDelTorneo,
+  jugadoresDelPartido,
+  jugadoresDeTorneosVigentes,
   jugadoresDelTorneo,
   pagosAlArbitro,
   plantillasDeJugadores,
@@ -22,3 +24,4 @@ export { HubMiLiga } from "./components/mi-liga/hub";
 export { RolDeJuegos } from "./components/mi-liga/rol-de-juegos";
 export { TablaCompleta } from "./components/mi-liga/tabla";
 export { MiLigaVacia } from "./components/mi-liga/vacia";
+export { registerListeners } from "./server/listeners";
