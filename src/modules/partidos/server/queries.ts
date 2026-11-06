@@ -142,7 +142,7 @@ export function goleoDelTorneo(tournamentId: string, take = 10) {
     where: { tournamentId, goles: { gt: 0 } },
     orderBy: [{ goles: "desc" }, { asistencias: "desc" }],
     take,
-    select: { userId: true, goles: true, user: { select: personaSelect } },
+    select: { userId: true, goles: true, partidos: true, asistencias: true, user: { select: personaSelect } },
   });
 }
 
@@ -258,4 +258,47 @@ export async function historialDePlantillas(plantillas: { userId: string; tourna
     }),
   ]);
   return { partidos, alineaciones, eventos, suspensiones };
+}
+
+/** La página del partido (pantalla 32): marcador, cédula con sus firmas, eventos oficiales y alineaciones */
+export function partidoCompleto(id: string) {
+  return db.match.findUnique({
+    where: { id },
+    select: {
+      ...partidoSelect,
+      validatedAt: true,
+      tournament: { select: { nombre: true, league: { select: { slug: true, nombre: true, siglas: true } } } },
+      report: {
+        select: {
+          status: true,
+          source: true,
+          homeSignedBy: { select: personaSelect },
+          awaySignedBy: { select: personaSelect },
+        },
+      },
+      events: {
+        where: { oficial: true, voided: false },
+        orderBy: [{ minute: "asc" }, { createdAt: "asc" }],
+        select: {
+          id: true,
+          minute: true,
+          type: true,
+          tipoGol: true,
+          teamId: true,
+          nota: true,
+          player: { select: personaSelect },
+          assistPlayer: { select: personaSelect },
+          playerOut: { select: personaSelect },
+        },
+      },
+      lineups: {
+        select: {
+          teamId: true,
+          players: {
+            select: { numero: true, titular: true, posicion: true, capitan: true, user: { select: personaSelect } },
+          },
+        },
+      },
+    },
+  });
 }

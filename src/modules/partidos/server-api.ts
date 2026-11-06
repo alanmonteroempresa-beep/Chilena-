@@ -7,6 +7,7 @@ export {
   historialDePlantillas,
   jornadaQueViene,
   partidosDeLaJornada,
+  partidoCompleto,
   partidosDelArbitro,
   proximoPartidoDelEquipo,
   sancionesActivas,
@@ -14,3 +15,4 @@ export {
   ultimoResultadoDelEquipo,
 } from "./server/queries";
 export { InicioArbitro } from "./components/inicio-arbitro";
+export { PaginaPartido } from "./components/pagina-partido";

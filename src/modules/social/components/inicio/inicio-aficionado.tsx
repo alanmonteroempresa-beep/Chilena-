@@ -107,9 +107,12 @@ export async function InicioAficionado({ userId, ahora }: { userId: string; ahor
             ) : (
               <span className="flex-1 text-[13px] text-muted-foreground">Final</span>
             )}
-            <AccionPronto className={buttonVariants({ variant: "lima", size: "cta", className: "h-9 px-3 text-xs" })}>
+            <Link
+              href={`/partido/${d.ultimo.id}`}
+              className={buttonVariants({ variant: "lima", size: "cta", className: "h-9 px-3 text-xs" })}
+            >
               Ver partido
-            </AccionPronto>
+            </Link>
           </div>
         </Tarjeta>
       )}

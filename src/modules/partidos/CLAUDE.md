@@ -12,6 +12,7 @@ Máquina de estados del partido, marcador desde la banda, alineación con alerta
 | **Escucha** | — |
 
 ## Reglas clave
+- La página del partido (32, `/partido/[id]`, pública): `components/pagina-partido.tsx` con `services/resumen-partido.ts` (puro). FINAL y OFICIAL solo si está VALIDADO; si no, "Cédula por validar". El autogol se muestra aparte hasta que la cédula defina a qué equipo se suma.
 - Inicio del árbitro (02): `components/inicio-arbitro.tsx`. El cobro pendiente viene de `ligas` y lo pasa la página (así `partidos` no depende de `ligas`). Próximo partido y goleo: `server/services/proximo.ts` y `goleo.ts` (puros).
 - Marcador oficial = cédula firmada (o papel) y validada; lo de la banda es NO OFICIAL.
 - Cédula firmada inmutable; corrige solo la liga con AuditLog.

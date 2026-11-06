@@ -48,6 +48,7 @@ const torneoSelect = {
   partidosPorRoja: true,
   costoArbitrajeCents: true,
   numJornadas: true,
+  equiposLiguilla: true,
   league: { select: { id: true, slug: true, nombre: true, siglas: true } },
 } as const;
 
@@ -77,8 +78,14 @@ export function tablaDelTorneo(tournamentId: string) {
     select: {
       posicion: true,
       pj: true,
+      pg: true,
+      pe: true,
+      pp: true,
+      gf: true,
+      gc: true,
       dg: true,
       pts: true,
+      racha: true,
       tournamentTeam: { select: { team: { select: equipoSelect } } },
     },
   });
@@ -140,5 +147,31 @@ export function filaDeLaTabla(tournamentTeamId: string) {
   return db.standingRow.findUnique({
     where: { tournamentTeamId },
     select: { pj: true, pp: true, posicion: true },
+  });
+}
+
+/** Jornadas del torneo (rol de juegos: J1 … J18 y liguilla) */
+export function jornadasDelTorneo(tournamentId: string) {
+  return db.round.findMany({
+    where: { tournamentId },
+    orderBy: { numero: "asc" },
+    select: { numero: true, nombre: true, fase: true, fechaInicio: true, cerrada: true },
+  });
+}
+
+/** La inscripción vigente de un equipo por su slug (Mi liga desde el contexto del jugador o aficionado) */
+export function inscripcionVigentePorSlug(slugEquipo: string) {
+  return db.tournamentTeam.findFirst({
+    where: { team: { slug: slugEquipo, deletedAt: null }, status: "ACEPTADA", tournament: { status: { in: [...ACTIVOS] } } },
+    orderBy: { tournament: { fechaInicio: "desc" } },
+    select: { id: true, team: { select: equipoSelect }, tournament: { select: torneoSelect } },
+  });
+}
+
+/** Equipo de cada jugador en un torneo (goleo: "El Tanque · Tigres") */
+export function equiposEnElTorneo(tournamentId: string, userIds: string[]) {
+  return db.tournamentRoster.findMany({
+    where: { tournamentId, userId: { in: userIds } },
+    select: { userId: true, numero: true, tournamentTeam: { select: { team: { select: equipoSelect } } } },
   });
 }

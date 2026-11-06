@@ -139,6 +139,7 @@ export async function datosInicioAficionado(userId: string, ahora: Date) {
     torneo: torneo ? { nombre: torneo.nombre, liga: torneo.league } : null,
     ultimo: ultimo
       ? {
+          id: ultimo.id,
           jornada: ultimo.round?.numero ?? null,
           local: ultimo.homeTeam,
           visita: ultimo.awayTeam,

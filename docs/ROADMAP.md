@@ -35,7 +35,7 @@ Para revisar la app en `chilena.vercel.app` con las cuentas de prueba antes de c
 - [x] 1. Esqueleto: header con selector de rol y barra inferior (Inicio · En vivo · central por rol · Mi liga · Perfil); el rol cambia el acento, el botón central y el inicio. Al entrar se va a `/inicio`. Rutas de la barra y del botón central con "Próximamente"
 - [x] 2. Inicio de cada rol con sus datos: Jugador (03), Delegado (04), Aficionado (05), Árbitro (02) y Liga (18 resumen). Sin equipo o liga: estados vacíos (§6.16). Las acciones (confirmar, pagar, recordatorio, seguir…) avisan "Llega pronto"
 - [x] 3. Perfil público y carta: perfil del jugador (06) en `/j/[username]` con pestañas Carta · Insignias · Golazos · Stats, carta frente y reverso volteable con portero y en construcción (25), insignias con rareza y progreso (14/28), y vista de visitante. Se calcula al leer con lo validado (todavía sin `player_cards` ni `user_badges`)
-- [ ] 4. Mi liga: tabla, rol de juegos, goleo y la página de un partido (32, estado final)
+- [x] 4. Mi liga: hub (`/mi-liga`) con el rol de la jornada, la tabla y el goleo; `/mi-liga/tabla`, `/mi-liga/rol?j=` y `/mi-liga/goleo`; la página del partido (`/partido/[id]`, 32) en estado final (resumen y alineaciones de la cédula validada) y programado. Votaciones, rankings, quiniela y bolsa avisan "Llega pronto"
 - [ ] 5. Feed (10): resultados, goles y crónicas automáticas de la J15
 
 **Prompt:**
