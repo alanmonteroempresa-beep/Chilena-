@@ -36,7 +36,7 @@ Para revisar la app en `chilena.vercel.app` con las cuentas de prueba antes de c
 - [x] 2. Inicio de cada rol con sus datos: Jugador (03), Delegado (04), Aficionado (05), Árbitro (02) y Liga (18 resumen). Sin equipo o liga: estados vacíos (§6.16). Las acciones (confirmar, pagar, recordatorio, seguir…) avisan "Llega pronto"
 - [x] 3. Perfil público y carta: perfil del jugador (06) en `/j/[username]` con pestañas Carta · Insignias · Golazos · Stats, carta frente y reverso volteable con portero y en construcción (25), insignias con rareza y progreso (14/28), y vista de visitante. Se calcula al leer con lo validado (todavía sin `player_cards` ni `user_badges`)
 - [x] 4. Mi liga: hub (`/mi-liga`) con el rol de la jornada, la tabla y el goleo; `/mi-liga/tabla`, `/mi-liga/rol?j=` y `/mi-liga/goleo`; la página del partido (`/partido/[id]`, 32) en estado final (resumen y alineaciones de la cédula validada) y programado. Votaciones, rankings, quiniela y bolsa avisan "Llega pronto"
-- [ ] 5. Feed (10): resultados, goles y crónicas automáticas de la J15
+- [x] 5. Feed (10): pestañas Para ti · Golazos · Siguiendo en el inicio de jugador, delegado y aficionado; auto-posts de la última jornada validada (crónica con plantilla, resultado, gol con su tipo, tabla y rachas) armados al leer; WhatsApp comparte el partido público; reaccionar y comentar llegan pronto
 
 **Prompt:**
 ```
@@ -106,7 +106,7 @@ y después la semilla demo. No cambies prisma/schema.prisma sin preguntarme.
 
 ### S1 — Red social núcleo ⭐
 **PRD §6.1–6.3 · pantallas 05, 10, 33, 34, 35**
-- [ ] Feed `/inicio` con *Para ti · Golazos · Siguiendo*, scroll infinito por cursor, skeletons
+- [ ] Feed `/inicio` con *Para ti · Golazos · Siguiendo*, scroll infinito por cursor, skeletons — pestañas y auto-posts de la jornada hechos en el recorrido; faltan los posts guardados, el scroll infinito y las publicaciones de la gente
 - [ ] Tarjetas de cada `PostType` (gol con tipo, resultado, crónica, once, MVP, tabla, insignia, racha, campeón, fichaje)
 - [ ] Publicar texto ligado a partido o equipo, con etiquetas (fotos y videos "Próximamente")
 - [ ] La porra: comentarios con respuestas, reacciones 🔥 ⚽ 🏆, reportar, ocultar y bloquear

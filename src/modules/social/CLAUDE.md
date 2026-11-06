@@ -12,6 +12,7 @@ Feed (Para ti · Golazos · Siguiendo), publicar, la porra, reacciones (también
 | **Escucha** | match.validated (auto-posts), round.closed (portada y crónica), badge.awarded, poll.closed, tournament.finished |
 
 ## Reglas clave
+- Feed (10) y pestañas del inicio: `services/auto-posts.ts` (puro) arma los auto-posts de la última jornada validada con `templates/titulares.ts` (CARTA §5); `server/feed.ts` los ordena para Para ti, Golazos y Siguiendo. Hoy se calculan al leer: con la cola de `match.validated` se guardarán en `posts` y entonces llegan reacciones y comentarios.
 - Perfil público (06, `/j/[username]`) y pestaña Stats: `components/perfil/`, con los datos de `carta` (`datosDelJugador`). Lo ve el visitante (sin sesión): `src/proxy.ts` no lo protege y el layout le pone `CascaronVisitante`.
 - Inicios del jugador (03) y del aficionado (05): `server/inicio.ts` junta datos de partidos, equipos y ligas por su `server-api`; `components/inicio/`. Solo lectura por ahora (`AccionPronto`).
 - Textos automáticos solo con datos reales; picardía sobre el juego, nunca sobre personas (CARTA §5).
