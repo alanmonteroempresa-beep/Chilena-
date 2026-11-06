@@ -142,7 +142,7 @@ export function goleoDelTorneo(tournamentId: string, take = 10) {
     where: { tournamentId, goles: { gt: 0 } },
     orderBy: [{ goles: "desc" }, { asistencias: "desc" }],
     take,
-    select: { userId: true, goles: true, partidos: true, asistencias: true, user: { select: personaSelect } },
+    select: { userId: true, goles: true, partidos: true, asistencias: true, rachaGoles: true, user: { select: personaSelect } },
   });
 }
 
@@ -298,6 +298,33 @@ export function partidoCompleto(id: string) {
             select: { numero: true, titular: true, posicion: true, capitan: true, user: { select: personaSelect } },
           },
         },
+      },
+    },
+  });
+}
+
+/** La última jornada con partidos VALIDADOS (lo que dejó la J15 · pantalla 10) */
+export async function ultimaJornadaValidada(tournamentId: string) {
+  const r = await db.round.findFirst({
+    where: { tournamentId, matches: { some: { status: "VALIDADO" } } },
+    orderBy: { numero: "desc" },
+    select: { numero: true },
+  });
+  return r?.numero ?? null;
+}
+
+/** Los partidos VALIDADOS de una jornada con sus goles oficiales (auto-posts del feed) */
+export function partidosValidadosConGoles(tournamentId: string, numero: number) {
+  return db.match.findMany({
+    where: { tournamentId, round: { numero }, status: "VALIDADO" },
+    orderBy: { scheduledAt: "asc" },
+    select: {
+      ...partidoSelect,
+      validatedAt: true,
+      events: {
+        where: { type: "GOL", oficial: true, voided: false },
+        orderBy: { minute: "asc" },
+        select: { minute: true, tipoGol: true, teamId: true, player: { select: personaSelect } },
       },
     },
   });

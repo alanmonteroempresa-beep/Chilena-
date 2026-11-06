@@ -140,5 +140,8 @@ Las no ganadas se muestran en gris con su progreso (`UserBadge.progreso / meta`)
 | Gol de chilena | "¡{JUGADOR} SE AVENTÓ DE CHILENA!" |
 | Líder pierde | "¡LOS BAJARON DE LA NUBE!" |
 | Hat-trick | "¡LA PELOTA SE LA LLEVA {JUGADOR}!" |
+| Victoria (sin nada especial) | "¡{GANADOR} SE LLEVÓ LOS TRES PUNTOS!" · "¡TRES PUNTOS PARA {GANADOR}!" *(propuesta del recorrido, por aprobar)* |
+
+Cuál situación manda (de la más fuerte a la más normal): remontada → gol agónico (el que lo puso arriba para siempre, al 85' o después) → hat-trick → líder pierde → goleada → gol de chilena → victoria; si no hay ganador, empate. El cuerpo de la crónica (2–3 líneas) dice el resultado, los goleadores y lo que pasó, solo con datos de la cédula. Mientras no se guarden los posts, el titular del banco es estable por partido (el "no repetir en 4 semanas" llega con la cola de `match.validated`).
 
 Reglas: solo datos reales; la picardía es sobre el juego, nunca sobre una persona (físico, edad, vida). La liga puede editar o borrar cualquier texto automático.

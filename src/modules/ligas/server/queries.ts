@@ -77,6 +77,7 @@ export function tablaDelTorneo(tournamentId: string) {
     orderBy: [{ posicion: "asc" }, { pts: "desc" }, { dg: "desc" }],
     select: {
       posicion: true,
+      posicionAnterior: true,
       pj: true,
       pg: true,
       pe: true,

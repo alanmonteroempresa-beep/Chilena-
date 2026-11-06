@@ -8,10 +8,12 @@ export {
   jornadaQueViene,
   partidosDeLaJornada,
   partidoCompleto,
+  partidosValidadosConGoles,
   partidosDelArbitro,
   proximoPartidoDelEquipo,
   sancionesActivas,
   tarjetasParaAcumulado,
+  ultimaJornadaValidada,
   ultimoResultadoDelEquipo,
 } from "./server/queries";
 export { InicioArbitro } from "./components/inicio-arbitro";
