@@ -48,6 +48,7 @@ export async function datosInicioDelegado(slugEquipo: string, ahora: Date) {
       const faltan = suspensionDeCadaQuien.get(m.user.id);
       return {
         id: m.user.id,
+        username: m.user.username,
         numero: m.numero,
         nombre: nombreVisible(m.user),
         respuesta: respuestaDe(r?.status),

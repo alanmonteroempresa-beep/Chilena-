@@ -34,7 +34,7 @@ Falta:
 Para revisar la app en `chilena.vercel.app` con las cuentas de prueba antes de construir las funciones. Un PR por bloque; sin publicar ni editar todavía.
 - [x] 1. Esqueleto: header con selector de rol y barra inferior (Inicio · En vivo · central por rol · Mi liga · Perfil); el rol cambia el acento, el botón central y el inicio. Al entrar se va a `/inicio`. Rutas de la barra y del botón central con "Próximamente"
 - [x] 2. Inicio de cada rol con sus datos: Jugador (03), Delegado (04), Aficionado (05), Árbitro (02) y Liga (18 resumen). Sin equipo o liga: estados vacíos (§6.16). Las acciones (confirmar, pagar, recordatorio, seguir…) avisan "Llega pronto"
-- [ ] 3. Perfil público y carta: perfil del jugador (06), carta frente y reverso (25), insignias (14/28)
+- [x] 3. Perfil público y carta: perfil del jugador (06) en `/j/[username]` con pestañas Carta · Insignias · Golazos · Stats, carta frente y reverso volteable con portero y en construcción (25), insignias con rareza y progreso (14/28), y vista de visitante. Se calcula al leer con lo validado (todavía sin `player_cards` ni `user_badges`)
 - [ ] 4. Mi liga: tabla, rol de juegos, goleo y la página de un partido (32, estado final)
 - [ ] 5. Feed (10): resultados, goles y crónicas automáticas de la J15
 
@@ -49,7 +49,7 @@ y después la semilla demo. No cambies prisma/schema.prisma sin preguntarme.
 **PRD §3, §4 · pantallas 01, 01b, 06, 07, 11, 24, 40, 41, 42, 43**
 - [ ] Entrar sin elegir rol; deducción de rol por link (`/i/[token]` del delegado → entra al equipo) o por perfil compartido
 - [ ] **Reclamar perfil** (`/j/[username]/reclamar`): liga `authId`, migra reacciones anónimas, "No soy yo"
-- [ ] Perfil público `/j/[username]` con `publicUserSelect` (carta, stats, insignias, porra)
+- [ ] Perfil público `/j/[username]` con `publicUserSelect` (carta, stats, insignias, porra) — hecho en el recorrido salvo la porra y los golazos (feed)
 - [ ] **Visitante**: todo lo público, 🔥 anónimo, invitación a registrarse a la 3ª interacción
 - [ ] Selector de rol y liga (hecho en el recorrido: `cambiarRol`, contextos de equipos y ligas); falta activar roles ("Crear mi equipo", "Registrar mi liga", "Soy árbitro")
 - [ ] Completa tu perfil (progresivo, un paso por pantalla) y subida de avatar comprimido
@@ -124,10 +124,10 @@ y después la semilla demo. No cambies prisma/schema.prisma sin preguntarme.
 
 ### S3 — La Carta e insignias ⭐
 **`docs/CARTA_E_INSIGNIAS.md` · pantallas 14, 25, 28, 29**
-- [ ] `formula.ts` puro con tests de cada tramo (campo, portero, bono de defensa, niveles, en construcción)
+- [x] `formula.ts` puro con tests de cada tramo (campo, portero, bono de defensa, niveles, en construcción)
 - [ ] Recalcular al validar + foto del lunes + delta "↑ +2"
-- [ ] Carta (frente y reverso volteable, portero, en construcción, especiales) y "Comparar con…" (duelo)
-- [ ] Motor de insignias por `criteria`, progreso, rareza nocturna, colección con gris + progreso, auto-post `AUTO_INSIGNIA`
+- [ ] Carta (frente y reverso volteable, portero, en construcción, especiales) y "Comparar con…" (duelo) — hecha en el recorrido salvo especiales y el duelo
+- [ ] Motor de insignias por `criteria`, progreso, rareza nocturna, colección con gris + progreso, auto-post `AUTO_INSIGNIA` — motor (`server/badges.ts`), progreso, rareza al leer y colección hechos; faltan `user_badges`, la rareza nocturna y el auto-post
 - [ ] Plantilla para compartir la carta
 
 ### S4 — Votaciones, quiniela, rankings y portada ⭐

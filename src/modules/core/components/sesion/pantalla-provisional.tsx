@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { LogOut } from "lucide-react";
+import { Award, ChevronRight, IdCard, LogOut, UserRound } from "lucide-react";
 import { ETIQUETA_ROL, rolDesdeRoleType, type Rol } from "@/shared/lib/roles";
 import { buttonVariants } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
@@ -16,13 +16,13 @@ const TEXTOS: Record<Variante, { titulo: string; cuerpo: string }> = {
   },
   perfil: {
     titulo: "Tu perfil",
-    cuerpo: "Tu perfil público con tu carta e insignias llega en el bloque 3 del recorrido.",
+    cuerpo: "Tu perfil público, tu carta y tus insignias. Los ajustes llegan con su pantalla (41).",
   },
 };
 
 /**
- * PROVISIONAL: /perfil (hasta el bloque 3, perfil público 06) y /perfil/completar (hasta la pantalla 40).
- * Confirma con quién entraste, tus roles, y deja salir. Va dentro del cascarón (header y barra).
+ * PROVISIONAL: /perfil (hasta el menú de la pantalla 07) y /perfil/completar (hasta la pantalla 40).
+ * Confirma con quién entraste y tus roles, lleva a tu perfil público y deja salir. Va dentro del cascarón.
  */
 export function PantallaProvisional({ variante }: { variante: Variante }) {
   const t = TEXTOS[variante];
@@ -80,6 +80,23 @@ async function QuienEntro({ variante }: { variante: Variante }) {
           </p>
         )}
       </div>
+      {variante === "perfil" && (
+        <nav aria-label="Tu perfil" className="flex flex-col divide-y divide-border rounded-xl bg-surface">
+          {(
+            [
+              [`/j/${usuario.username}`, "Mi perfil público", UserRound],
+              [`/j/${usuario.username}/carta`, "Mi carta", IdCard],
+              [`/j/${usuario.username}/insignias`, "Mis insignias", Award],
+            ] as const
+          ).map(([href, texto, Icono]) => (
+            <Link key={href} href={href} className="flex min-h-12 items-center gap-3 px-4 text-[15px] font-semibold">
+              <Icono aria-hidden className="size-5 text-role" />
+              <span className="flex-1">{texto}</span>
+              <ChevronRight aria-hidden className="size-4 text-muted-foreground" />
+            </Link>
+          ))}
+        </nav>
+      )}
       {variante === "completar" && (
         <Link href="/inicio" className={buttonVariants({ variant: "lima", size: "cta" })}>
           Ir a mi inicio

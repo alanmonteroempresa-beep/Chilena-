@@ -2,3 +2,5 @@
 export { loQueSigue, reportesAbiertos } from "./server/queries";
 export { InicioAficionado } from "./components/inicio/inicio-aficionado";
 export { InicioJugador } from "./components/inicio/inicio-jugador";
+export { PaginaPerfil } from "./components/perfil/pagina-perfil";
+export { PaginaStats } from "./components/perfil/pagina-stats";

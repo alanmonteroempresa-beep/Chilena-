@@ -4,6 +4,7 @@ export {
   cedulasPorRevisar,
   estadisticasDelJugador,
   goleoDelTorneo,
+  historialDePlantillas,
   jornadaQueViene,
   partidosDeLaJornada,
   partidosDelArbitro,

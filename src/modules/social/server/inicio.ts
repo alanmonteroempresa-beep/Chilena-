@@ -100,6 +100,7 @@ export async function datosInicioJugador(userId: string, slugEquipo: string, aho
       : null,
     goleo: goleo.slice(0, 3).map((g) => ({
       userId: g.userId,
+      username: g.user.username,
       nombre: nombreVisible(g.user),
       goles: g.goles,
       posicion: posiciones.get(g.userId) ?? 0,
@@ -157,6 +158,7 @@ export async function datosInicioAficionado(userId: string, ahora: Date) {
       const e = equipos.find((x) => x.userId === g.userId);
       return {
         id: g.userId,
+        username: g.user.username,
         nombre: nombreVisible(g.user),
         detalle: [e ? nombreCorto(e.team.nombre) : null, `${g.goles} ${g.goles === 1 ? "gol" : "goles"}`]
           .filter(Boolean)
