@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { horaCDMX } from "@/modules/partidos";
 import { formatMXN } from "@/shared/lib/money";
@@ -37,7 +38,9 @@ export async function InicioLiga({
   const d = await datosInicioLiga(slugLiga, ahora, reportesAbiertos);
   if (!d) return null;
   const siglas = d.torneo.liga.siglas ?? d.torneo.liga.nombre;
-  const avance = d.cobrado.esperadoCents ? Math.round((d.cobrado.cobradoCents / d.cobrado.esperadoCents) * 100) : 0;
+  const avance = d.cobrado.esperadoCents
+    ? Math.round((d.cobrado.cobradoCents / d.cobrado.esperadoCents) * 100)
+    : 0;
   return (
     <main className="flex flex-col gap-3 px-4 pt-3.5 pb-6">
       <TarjetaRol className="flex flex-col gap-2">
@@ -85,7 +88,9 @@ export async function InicioLiga({
         <Tarjeta className="col-span-2 flex flex-col gap-1.5 p-3.5">
           <Sobretitulo className="text-muted-foreground">Cobrado en {d.cobrado.mes}</Sobretitulo>
           <p className="flex items-baseline gap-2">
-            <span className="font-display text-[34px] leading-none font-black">{formatMXN(d.cobrado.cobradoCents)}</span>
+            <span className="font-display text-[34px] leading-none font-black">
+              {formatMXN(d.cobrado.cobradoCents)}
+            </span>
             <span className="text-sm text-muted-foreground">de {formatMXN(d.cobrado.esperadoCents)}</span>
           </p>
           <div
@@ -122,35 +127,37 @@ export async function InicioLiga({
           <Tarjeta>
             <ul className="divide-y divide-border">
               {d.partidos.map((p) => (
-                <li key={p.id} className="flex min-h-14 items-center gap-3 px-3.5 py-2.5">
-                  <span className="font-display w-14 shrink-0 text-[22px] leading-none font-black">
-                    {p.scheduledAt ? horaCDMX(p.scheduledAt) : "—"}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="flex items-center gap-1.5 text-sm font-semibold">
-                      <Escudo {...coloresDe(p.homeTeam)} tamano={14} conSiglas={false} />
-                      <span className="truncate">
-                        {nombreCorto(p.homeTeam.nombre)} vs {nombreCorto(p.awayTeam.nombre)}
-                      </span>
-                      <Escudo {...coloresDe(p.awayTeam)} tamano={14} conSiglas={false} />
-                    </p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {p.field?.nombre}
-                      {" · "}
-                      {p.referee ? (
-                        nombreDeArbitro(p.referee)
-                      ) : (
-                        <span className="font-semibold text-warning">Sin árbitro</span>
-                      )}
-                    </p>
-                  </div>
-                  {!p.referee ? (
-                    <Chip tono="ambar">Pendiente</Chip>
-                  ) : p.refereeStatus === "ASIGNADO" ? (
-                    <Chip tono="ambar">Por confirmar</Chip>
-                  ) : (
-                    <Chip>Programado</Chip>
-                  )}
+                <li key={p.id}>
+                  <Link href={`/partido/${p.id}`} className="flex min-h-14 items-center gap-3 px-3.5 py-2.5">
+                    <span className="font-display w-14 shrink-0 text-[22px] leading-none font-black">
+                      {p.scheduledAt ? horaCDMX(p.scheduledAt) : "—"}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="flex items-center gap-1.5 text-sm font-semibold">
+                        <Escudo {...coloresDe(p.homeTeam)} tamano={14} conSiglas={false} />
+                        <span className="truncate">
+                          {nombreCorto(p.homeTeam.nombre)} vs {nombreCorto(p.awayTeam.nombre)}
+                        </span>
+                        <Escudo {...coloresDe(p.awayTeam)} tamano={14} conSiglas={false} />
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {p.field?.nombre}
+                        {" · "}
+                        {p.referee ? (
+                          nombreDeArbitro(p.referee)
+                        ) : (
+                          <span className="font-semibold text-warning">Sin árbitro</span>
+                        )}
+                      </p>
+                    </div>
+                    {!p.referee ? (
+                      <Chip tono="ambar">Pendiente</Chip>
+                    ) : p.refereeStatus === "ASIGNADO" ? (
+                      <Chip tono="ambar">Por confirmar</Chip>
+                    ) : (
+                      <Chip>Programado</Chip>
+                    )}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -172,7 +179,9 @@ export async function InicioLiga({
                 <Escudo {...coloresDe(equipo)} tamano={16} conSiglas={false} />
                 <span className="min-w-0 flex-1 truncate text-sm font-semibold">{equipo.nombre}</span>
                 {pendienteCents > 0 && (
-                  <span className="font-display text-[18px] leading-none font-black">{formatMXN(pendienteCents)}</span>
+                  <span className="font-display text-[18px] leading-none font-black">
+                    {formatMXN(pendienteCents)}
+                  </span>
                 )}
                 {vencido ? (
                   <Chip tono="rojo">Vencido</Chip>

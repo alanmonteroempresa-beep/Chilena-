@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { hoyCDMX } from "@/shared/lib/dates";
 import { formatMXN } from "@/shared/lib/money";
 import { nombreCorto } from "@/shared/lib/personas";
@@ -57,7 +58,9 @@ export async function InicioArbitro({
           </Sobretitulo>
           {delDia.length > 0 && (
             <>
-              <span className="font-display text-[44px] leading-none font-black">{formatMXN(cobroCents)}</span>
+              <span className="font-display text-[44px] leading-none font-black">
+                {formatMXN(cobroCents)}
+              </span>
               <span className="text-[13px] text-white/80">
                 {delDia.length} {delDia.length === 1 ? "partido" : "partidos"}
                 {tarifas.size === 1 ? ` × ${formatMXN([...tarifas][0])}` : ""} · se paga al cerrar cédula
@@ -65,7 +68,9 @@ export async function InicioArbitro({
             </>
           )}
           {porCobrarCents > 0 && (
-            <span className="text-[13px] font-semibold">Te deben {formatMXN(porCobrarCents)} de partidos pasados</span>
+            <span className="text-[13px] font-semibold">
+              Te deben {formatMXN(porCobrarCents)} de partidos pasados
+            </span>
           )}
         </TarjetaRol>
       )}
@@ -88,19 +93,27 @@ export async function InicioArbitro({
           </TituloSeccion>
           <Tarjeta className="divide-y divide-border">
             {cerrados.map((p) => (
-              <div key={p.id} className="flex flex-col gap-1.5 px-3.5 py-3">
+              <Link key={p.id} href={`/partido/${p.id}`} className="flex flex-col gap-1.5 px-3.5 py-3">
                 <span className="etiqueta text-[11px] tracking-[0.12em] text-muted-foreground">
                   J{p.round?.numero} · {p.scheduledAt ? horarioCorto(p.scheduledAt, p.field?.nombre) : ""}
                 </span>
                 <ChipMarcador
-                  local={{ ...coloresDe(p.homeTeam), siglas: p.homeTeam.siglas ?? "", nombre: nombreCorto(p.homeTeam.nombre).toUpperCase() }}
-                  visitante={{ ...coloresDe(p.awayTeam), siglas: p.awayTeam.siglas ?? "", nombre: nombreCorto(p.awayTeam.nombre).toUpperCase() }}
+                  local={{
+                    ...coloresDe(p.homeTeam),
+                    siglas: p.homeTeam.siglas ?? "",
+                    nombre: nombreCorto(p.homeTeam.nombre).toUpperCase(),
+                  }}
+                  visitante={{
+                    ...coloresDe(p.awayTeam),
+                    siglas: p.awayTeam.siglas ?? "",
+                    nombre: nombreCorto(p.awayTeam.nombre).toUpperCase(),
+                  }}
                   golesLocal={p.homeScore ?? 0}
                   golesVisitante={p.awayScore ?? 0}
                   fuente={{ tipo: "cedula" }}
                   conNombres
                 />
-              </div>
+              </Link>
             ))}
           </Tarjeta>
         </section>
@@ -121,27 +134,35 @@ function PartidoQueViene({ p, conDia }: { p: Partido; conDia: boolean }) {
       <Chip tono="verde">Confirmado</Chip>
     );
   return (
-    <Tarjeta className="flex flex-col gap-2.5 p-3.5">
-      <div className="flex items-center gap-2.5">
-        <span className="font-display text-[26px] leading-none font-black">
-          {p.scheduledAt ? horaCDMX(p.scheduledAt) : "—"}
-        </span>
-        <span className="flex-1 text-[13px] text-muted-foreground">
-          {[conDia && p.scheduledAt ? horarioCorto(p.scheduledAt).split(" · ")[0] : null, p.field?.nombre, `J${p.round?.numero}`]
-            .filter(Boolean)
-            .join(" · ")}
-        </span>
-        {chip}
-      </div>
-      <div className="flex items-center gap-2">
-        <Escudo {...coloresDe(p.homeTeam)} tamano={26} />
-        <span className="font-display flex-1 truncate text-[19px] font-black uppercase italic">{nombreCorto(p.homeTeam.nombre)}</span>
-        <span className="etiqueta text-[13px] text-muted-foreground">VS</span>
-        <span className="font-display flex-1 truncate text-right text-[19px] font-black uppercase italic">
-          {nombreCorto(p.awayTeam.nombre)}
-        </span>
-        <Escudo {...coloresDe(p.awayTeam)} tamano={26} />
-      </div>
-    </Tarjeta>
+    <Link href={`/partido/${p.id}`} className="block">
+      <Tarjeta className="flex flex-col gap-2.5 p-3.5">
+        <div className="flex items-center gap-2.5">
+          <span className="font-display text-[26px] leading-none font-black">
+            {p.scheduledAt ? horaCDMX(p.scheduledAt) : "—"}
+          </span>
+          <span className="flex-1 text-[13px] text-muted-foreground">
+            {[
+              conDia && p.scheduledAt ? horarioCorto(p.scheduledAt).split(" · ")[0] : null,
+              p.field?.nombre,
+              `J${p.round?.numero}`,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+          {chip}
+        </div>
+        <div className="flex items-center gap-2">
+          <Escudo {...coloresDe(p.homeTeam)} tamano={26} />
+          <span className="font-display flex-1 truncate text-[19px] font-black uppercase italic">
+            {nombreCorto(p.homeTeam.nombre)}
+          </span>
+          <span className="etiqueta text-[13px] text-muted-foreground">VS</span>
+          <span className="font-display flex-1 truncate text-right text-[19px] font-black uppercase italic">
+            {nombreCorto(p.awayTeam.nombre)}
+          </span>
+          <Escudo {...coloresDe(p.awayTeam)} tamano={26} />
+        </div>
+      </Tarjeta>
+    </Link>
   );
 }
