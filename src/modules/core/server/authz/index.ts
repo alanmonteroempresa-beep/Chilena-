@@ -20,6 +20,7 @@ export type Action =
   | "team.removeMember"
   | "team.register"
   | "attendance.sendLink"
+  | "attendance.respond"
   | "lineup.submit"
   | "match.reportLiveScore"
   | "match.requestSuspension"

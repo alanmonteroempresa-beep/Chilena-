@@ -14,7 +14,7 @@ import { armarHistoriales, posicionMasJugada, ventanaDe, type PartidoDelJugador 
 
 /** El historial validado de cada persona (plantillas de `ligas` + partidos, alineaciones y eventos) */
 export async function historiales(userIds: string[]) {
-  const plantillas = (await plantillasDeJugadores(userIds)).map((p) => ({
+  const plantillas = (await plantillasDeJugadores(userIds)).filter((p) => p.status !== "PENDIENTE_APROBACION").map((p) => ({
     userId: p.userId,
     tournamentId: p.tournamentId,
     teamId: p.tournamentTeam.teamId,

@@ -188,14 +188,17 @@ function PaseDeLista({ d }: { d: Datos }) {
         {sinContestar > 0 && <span className="text-[13px] font-bold text-gold">{sinContestar} sin contestar</span>}
       </div>
       <div className="flex gap-2">
-        <AccionPronto className={buttonVariants({ variant: "lima", size: "cta", className: "h-11 flex-1" })}>
+        <Link href={`/equipo/${d.equipo.slug}/pase-de-lista`} className={buttonVariants({ variant: "lima", size: "cta", className: "h-11 flex-1" })}>
           <Send aria-hidden />
-          Recordatorio
-        </AccionPronto>
-        <AccionPronto className="etiqueta inline-flex h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-extrabold tracking-[0.14em] text-white">
+          Pase de lista
+        </Link>
+        <Link
+          href={`/equipo/${d.equipo.slug}/alineacion`}
+          className="etiqueta inline-flex h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-extrabold tracking-[0.14em] text-white"
+        >
           <MessageCircle aria-hidden className="size-4" />
-          WhatsApp
-        </AccionPronto>
+          Alineación
+        </Link>
       </div>
     </TarjetaRol>
   );

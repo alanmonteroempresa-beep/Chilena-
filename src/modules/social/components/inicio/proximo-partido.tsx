@@ -1,14 +1,11 @@
-import { Check } from "lucide-react";
-import type { Respuesta } from "@/modules/equipos";
-import { cn } from "@/shared/lib/utils";
-import { AccionPronto } from "@/shared/ui/accion-pronto";
-import { buttonVariants } from "@/shared/ui/button";
+import { BotonesAsistencia, type Respuesta } from "@/modules/equipos";
 import { coloresDe, Escudo } from "@/shared/ui/escudo";
 import { Sobretitulo, TarjetaRol } from "@/shared/ui/tarjeta";
 
 type Equipo = { siglas: string | null; colorPrimario: string | null; colorSecundario: string | null; nombre: string };
 
 export type ProximoPartido = {
+  matchId: string;
   jornada: number | null;
   horario: string;
   cuando: string;
@@ -28,8 +25,6 @@ const ARO_BLANCO = "shadow-[0_0_0_2px_rgba(255,255,255,0.85)]";
  * muestran lo que ya contestó y avisan que confirmar llega pronto.
  */
 export function TarjetaProximoPartido({ p, conPaseDeLista = true }: { p: ProximoPartido; conPaseDeLista?: boolean }) {
-  const va = p.miRespuesta === "VA";
-  const noVa = p.miRespuesta === "NO_VA" || p.miRespuesta === "LESIONADO";
   return (
     <TarjetaRol className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
@@ -65,32 +60,7 @@ export function TarjetaProximoPartido({ p, conPaseDeLista = true }: { p: Proximo
           </div>
         ))}
       </div>
-      {conPaseDeLista && (
-        <>
-          <div className="flex gap-2">
-            <AccionPronto
-              aria-pressed={va}
-              className={buttonVariants({ variant: "lima", size: "cta", className: "h-11 flex-1 px-3" })}
-            >
-              {va && <Check aria-hidden />}
-              {va ? "Ya confirmaste" : "Confirmo que voy"}
-            </AccionPronto>
-            <AccionPronto
-              aria-pressed={noVa}
-              className={cn(
-                "etiqueta inline-flex h-11 items-center gap-1.5 rounded-xl border-[1.5px] px-3.5 text-sm font-extrabold tracking-[0.14em] uppercase",
-                noVa ? "border-white bg-white text-ink" : "border-white/50 text-white",
-              )}
-            >
-              {noVa && <Check aria-hidden className="size-4" />}
-              No voy
-            </AccionPronto>
-          </div>
-          <span className="text-xs text-white/75">
-            {p.van}/{p.convocados} ya confirmaron
-          </span>
-        </>
-      )}
+      {conPaseDeLista && <BotonesAsistencia matchId={p.matchId} respuesta={p.miRespuesta} van={p.van} convocados={p.convocados} />}
     </TarjetaRol>
   );
 }

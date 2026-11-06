@@ -3,6 +3,8 @@ export type DomainEvents = {
   "user.claimed": { userId: string };
   "team.member_joined": { teamId: string; userId: string };
   "attendance.responded": { matchId: string; userId: string; status: string };
+  "attendance.link_opened": { matchId: string; teamId: string; byUserId: string };
+  "match.correction_answered": { matchId: string; correctionId: string; accepted: boolean };
   "match.started": { matchId: string };
   "match.live_score_updated": { matchId: string; home: number; away: number; minute?: number };
   "match.report_submitted": { matchId: string; reportId: string };

@@ -375,3 +375,16 @@ export async function partidosValidadosVigentes() {
   });
   return filas.map((f) => f.id);
 }
+
+/** Lo básico de un partido para el día de partido (pase de lista, alineación, cédula) */
+export function partidoDelDia(matchId: string) {
+  return db.match.findUnique({
+    where: { id: matchId },
+    select: {
+      ...partidoSelect,
+      tournamentId: true,
+      refereeId: true,
+      report: { select: { status: true } },
+    },
+  });
+}

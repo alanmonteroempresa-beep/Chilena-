@@ -66,6 +66,13 @@ const CUENTAS: Cuenta[] = [
     roles: [],
   },
   {
+    clave: "delegado2",
+    activo: "DELEGADO",
+    entraComo: "Poncho Ibarra · delegado de Tigres del Llano",
+    perfil: "poncho-ibarra",
+    roles: [],
+  },
+  {
     clave: "arbitro",
     activo: "ARBITRO",
     entraComo: "J. Mendoza · árbitro",

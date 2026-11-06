@@ -10,6 +10,7 @@ export {
   jornadaQueViene,
   partidosDeLaJornada,
   partidoCompleto,
+  partidoDelDia,
   partidoValidadoParaFeed,
   partidosValidadosVigentes,
   partidosValidadosConGoles,
