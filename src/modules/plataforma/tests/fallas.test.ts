@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { can, registerRule } from "@/modules/core";
+import { reglaReportarFalla } from "../server/reglas";
 import { reporteFallaSchema } from "../schemas";
 import { descripcionDelReporte } from "../server/services/fallas";
 
@@ -13,5 +15,14 @@ describe("reportar falla", () => {
     expect(reporteFallaSchema.safeParse({ ...base, texto: "x" }).success).toBe(false);
     expect(reporteFallaSchema.safeParse({ ...base, pantalla: "https://otro.com" }).success).toBe(false);
     expect(reporteFallaSchema.safeParse({ ...base, pantalla: null }).success).toBe(true);
+  });
+});
+
+describe("quién puede reportar (PERMISOS)", () => {
+  it("una cuenta reclamada sí; sin reclamar o sin sesión, no", async () => {
+    registerRule("bug.report", reglaReportarFalla(async (u) => u === "lupe"));
+    expect(await can("lupe", "bug.report")).toBe(true);
+    expect(await can("sin-reclamar", "bug.report")).toBe(false);
+    expect(await can(null, "bug.report")).toBe(false);
   });
 });

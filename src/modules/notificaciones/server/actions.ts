@@ -3,17 +3,20 @@
 import { headers } from "next/headers";
 import { refresh } from "next/cache";
 import { assertCan, DomainError } from "@/modules/core";
-import { getCurrentUser } from "@/modules/core/server-api";
+import { getCurrentUser, isEnabled } from "@/modules/core/server-api";
 import { asegurarListeners } from "@/shared/events/bus";
 import { db } from "@/shared/lib/db";
 import { logger } from "@/shared/lib/logger";
 import { quitarSuscripcionSchema, suscripcionSchema } from "../schemas";
 import { mandarPush } from "./push";
+import { MAXIMO_CELULARES } from "./services/push";
 
 export type Resultado<T = object> = ({ ok: true } & T) | { ok: false; error: string };
 
 function fallo(error: unknown): { ok: false; error: string } {
   if (error instanceof DomainError) return { ok: false, error: error.message };
+  if (error && typeof error === "object" && "issues" in error)
+    return { ok: false, error: "Tu navegador no dejó activar los avisos. Prueba con Chrome (Android) o con la app instalada (iPhone)." };
   logger.error("acción de avisos falló", { error: String(error) });
   return { ok: false, error: "Se fue la señal en la cancha. Intenta otra vez." };
 }
@@ -23,6 +26,7 @@ async function quien() {
   if (!usuario) throw new DomainError("Entra para activar los avisos.", "SIN_SESION");
   await asegurarListeners();
   await assertCan(usuario.id, "push.subscribe");
+  if (!(await isEnabled("push.enabled"))) throw new DomainError("Los avisos al celular están apagados por ahora.");
   return usuario;
 }
 
@@ -37,6 +41,14 @@ export async function guardarSuscripcion(entrada: unknown): Promise<Resultado> {
       create: { userId: usuario.id, endpoint: s.endpoint, p256dh: s.keys.p256dh, auth: s.keys.auth, userAgent },
       update: { userId: usuario.id, p256dh: s.keys.p256dh, auth: s.keys.auth, userAgent },
     });
+    // Máximo 5 celulares por cuenta: se van los más viejos
+    const viejos = await db.pushSubscription.findMany({
+      where: { userId: usuario.id },
+      orderBy: { createdAt: "desc" },
+      skip: MAXIMO_CELULARES,
+      select: { id: true },
+    });
+    if (viejos.length) await db.pushSubscription.deleteMany({ where: { id: { in: viejos.map((v) => v.id) } } });
     return { ok: true };
   } catch (e) {
     return fallo(e);

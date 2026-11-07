@@ -12,3 +12,4 @@ export { CascaronVisitante } from "./components/app/cascaron-visitante";
 export { InicioVacio, TarjetaCompletarPerfil } from "./components/app/inicio-vacio";
 export { Proximamente } from "./components/app/proximamente";
 export { necesitaCompletarPerfil } from "./server/services/sesion";
+export { cuentaReclamada } from "./server/perfil";

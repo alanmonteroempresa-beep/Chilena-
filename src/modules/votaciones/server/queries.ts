@@ -73,8 +73,3 @@ export async function puntosDeLaQuiniela(tournamentId: string) {
     exactos: exactos.find((e) => e.userId === p.userId)?._count._all ?? 0,
   }));
 }
-
-/** ¿Cuenta reclamada y activa? (votar y pronosticar, PERMISOS §2) */
-export async function cuentaReclamada(userId: string) {
-  return (await db.user.count({ where: { id: userId, deletedAt: null, authId: { not: null } } })) > 0;
-}

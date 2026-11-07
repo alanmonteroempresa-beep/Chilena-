@@ -1,5 +1,5 @@
 import "server-only";
-import type { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 import { asegurarListeners } from "@/shared/events/bus";
 import { db } from "@/shared/lib/db";
 import { logger } from "@/shared/lib/logger";
@@ -26,6 +26,31 @@ export async function enqueueJob(type: string, payload: Prisma.InputJsonValue, o
     return;
   }
   await db.job.create({ data: { type, payload, runAt: opts?.runAt } });
+}
+
+/**
+ * "Una sola vez" con la llave única de la cola: de estas claves, aparta las que nadie ha apartado y las
+ * regresa. Dos corridas a la vez nunca apartan la misma (la base no deja repetir `dedupeKey`).
+ * Lo usa el recordatorio "Te toca jugar": una clave por persona, partido y hora.
+ */
+export async function apartarUnaVez(claves: string[]): Promise<string[]> {
+  if (!claves.length) return [];
+  const ya = new Set((await db.job.findMany({ where: { dedupeKey: { in: claves } }, select: { dedupeKey: true } })).map((j) => j.dedupeKey));
+  const apartadas: string[] = [];
+  for (const clave of claves.filter((c) => !ya.has(c))) {
+    try {
+      await db.job.create({ data: { type: "una-vez", payload: {}, dedupeKey: clave, status: "HECHO" } });
+      apartadas.push(clave);
+    } catch (e) {
+      if (!(e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002")) throw e;
+    }
+  }
+  return apartadas;
+}
+
+/** Suelta las claves que empiezan así (el partido de prueba vuelve a "sin jugar") */
+export async function soltarUnaVez(prefijo: string) {
+  return (await db.job.deleteMany({ where: { type: "una-vez", dedupeKey: { startsWith: prefijo } } })).count;
 }
 
 const MAX_ATTEMPTS = 5;

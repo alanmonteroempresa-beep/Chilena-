@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { Award, ChevronRight, IdCard, LogOut, Smartphone, UserRound } from "lucide-react";
+import { Award, ChevronRight, IdCard, Smartphone, UserRound } from "lucide-react";
 import { ETIQUETA_ROL, rolDesdeRoleType, type Rol } from "@/shared/lib/roles";
 import { buttonVariants } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
-import { salir } from "../../server/actions";
+import { BotonSalir } from "./boton-salir";
 import { getCurrentUser } from "../../server/auth";
 
 type Variante = "completar" | "perfil";
@@ -105,15 +105,7 @@ async function QuienEntro({ variante, avisos }: { variante: Variante; avisos?: R
           Ir a mi inicio
         </Link>
       )}
-      <form action={salir}>
-        <button
-          type="submit"
-          className={buttonVariants({ variant: "quieto", size: "cta", className: "w-full border border-border" })}
-        >
-          <LogOut aria-hidden />
-          Salir
-        </button>
-      </form>
+      <BotonSalir />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import "server-only";
 import { registerRule } from "@/modules/core";
 import { insigniaPorCodigo } from "@/modules/carta/server-api";
-import { personasPorId } from "@/modules/core/server-api";
+import { cuentaReclamada, personasPorId } from "@/modules/core/server-api";
 import { delegadosDe, plantillaDelEquipo } from "@/modules/equipos/server-api";
 import { horarioCorto } from "@/modules/partidos";
 import { alertasDeAmarillas, cedulaDelPartido, partidoDelDia, sancionesDelPartido } from "@/modules/partidos/server-api";
@@ -9,12 +9,9 @@ import { nombreCorto, nombreDeArbitro } from "@/shared/lib/personas";
 import { datosDeComentario, duenosDePost } from "@/modules/social/server-api";
 import { cuandoCierra } from "@/modules/votaciones";
 import { on } from "@/shared/events/bus";
-import { db } from "@/shared/lib/db";
 import { nombreVisible } from "@/shared/lib/personas";
 import { notificar } from "./notificar";
 import { reglaCuentaReclamada } from "./reglas";
-
-const reclamada = async (userId: string) => (await db.user.count({ where: { id: userId, deletedAt: null, authId: { not: null } } })) > 0;
 
 const EMOJI: Record<string, string> = { FUEGO: "🔥", GOLAZO: "⚽", TROFEO: "🏆" };
 const QUE_COSA: Record<string, string> = {
@@ -38,7 +35,7 @@ async function persona(id: string) {
 // Eventos que escucha el módulo `notificaciones` (docs/NOTIFICACIONES.md §2)
 export function registerListeners() {
   // Activar avisos en su celular (push)
-  registerRule("push.subscribe", reglaCuentaReclamada(reclamada));
+  registerRule("push.subscribe", reglaCuentaReclamada(cuentaReclamada));
 
   on("post.reacted", async ({ postId, userId, type }) => {
     const post = await duenosDePost(postId);
@@ -120,6 +117,7 @@ export function registerListeners() {
       title: `${delegado?.nombreVisible ?? "Tu delegado"} abrió el pase de lista: ¿vas vs ${nombreCorto(rival.nombre)}?`,
       body: p.scheduledAt ? horarioCorto(p.scheduledAt, p.field?.nombre) : null,
       href: "/inicio",
+      partidoEn: p.scheduledAt,
     });
   });
 

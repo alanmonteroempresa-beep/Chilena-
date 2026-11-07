@@ -2,56 +2,45 @@ import "server-only";
 import { confirmadosDelPartido } from "@/modules/equipos/server-api";
 import { horaCDMX } from "@/modules/partidos";
 import { partidosPorEmpezar } from "@/modules/partidos/server-api";
+import { apartarUnaVez, soltarUnaVez } from "@/modules/plataforma/server-api";
 import { db } from "@/shared/lib/db";
 import { nombreCorto } from "@/shared/lib/personas";
 import { notificar } from "./notificar";
-
-/** "Te toca jugar" sale 1 h antes del partido (docs/NOTIFICACIONES.md §2) */
-export const ANTES_DEL_PARTIDO_MS = 60 * 60_000;
+import { ANTES_DEL_PARTIDO_MS, claveDeRecordatorio, prefijoDeRecordatorio, quienesRecordar } from "./services/recordatorios";
 
 /**
- * Recordatorio del partido (`RECORDATORIO_PARTIDO`, push ★): a los que dijeron "Voy" y al árbitro, una hora
- * antes. Corre cada minuto con la cola (`/api/cron/trabajos`); cada quien recibe uno por partido.
+ * Recordatorio del partido (`RECORDATORIO_PARTIDO`, push ★): "Te toca jugar" a los que dijeron "Voy" y
+ * "Te toca pitar" al árbitro que aceptó, una hora antes. Corre cada minuto (`/api/cron/trabajos`): quien
+ * confirme tarde lo recibe en la siguiente vuelta. Cada persona se aparta su clave en la cola antes de
+ * avisarle, así dos vueltas a la vez nunca mandan dos.
  */
 export async function mandarRecordatorios(ahora = new Date()) {
   const partidos = await partidosPorEmpezar(ahora, new Date(ahora.getTime() + ANTES_DEL_PARTIDO_MS));
   let avisos = 0;
   for (const p of partidos) {
-    if (!p.scheduledAt) continue;
-    const ya = new Set(
-      (
-        await db.notification.findMany({
-          where: { type: "RECORDATORIO_PARTIDO", data: { path: ["matchId"], equals: p.id } },
-          select: { userId: true },
-        })
-      ).map((n) => n.userId),
-    );
-    const partido = `${nombreCorto(p.homeTeam.nombre)} vs ${nombreCorto(p.awayTeam.nombre)} a las ${horaCDMX(p.scheduledAt)}`;
-    const cancha = [p.field?.nombre, p.field?.venue.nombre].filter(Boolean).join(" · ") || null;
-    const van = (await confirmadosDelPartido(p.id)).map((c) => c.userId).filter((u) => !ya.has(u));
-    avisos += await notificar({
-      userIds: van,
-      type: "RECORDATORIO_PARTIDO",
-      title: `Te toca jugar: ${partido}`,
-      body: cancha,
-      href: `/partido/${p.id}`,
-      data: { matchId: p.id },
+    const inicio = p.scheduledAt;
+    if (!inicio) continue;
+    const { jugadores, arbitro } = quienesRecordar({
+      confirmados: (await confirmadosDelPartido(p.id)).map((c) => c.userId),
+      arbitro: p.refereeId ? { id: p.refereeId, aceptado: p.refereeStatus === "ACEPTADO" } : null,
     });
-    if (p.refereeId && !ya.has(p.refereeId) && !van.includes(p.refereeId))
-      avisos += await notificar({
-        userIds: [p.refereeId],
-        type: "RECORDATORIO_PARTIDO",
-        title: `Te toca pitar: ${partido}`,
-        body: cancha,
-        href: "/arbitro/hoy",
-        data: { matchId: p.id },
-      });
+    const todos = [...jugadores, ...(arbitro ? [arbitro] : [])];
+    const apartadas = new Set(await apartarUnaVez(todos.map((u) => claveDeRecordatorio(p.id, inicio, u))));
+    const nuevos = (u: string) => apartadas.has(claveDeRecordatorio(p.id, inicio, u));
+    const partido = `${nombreCorto(p.homeTeam.nombre)} vs ${nombreCorto(p.awayTeam.nombre)} a las ${horaCDMX(inicio)}`;
+    const cancha = [p.field?.nombre, p.field?.venue.nombre].filter(Boolean).join(" · ") || null;
+    const comun = { type: "RECORDATORIO_PARTIDO" as const, body: cancha, data: { matchId: p.id }, partidoEn: inicio };
+    avisos += await notificar({ ...comun, userIds: jugadores.filter(nuevos), title: `Te toca jugar: ${partido}`, href: `/partido/${p.id}` });
+    if (arbitro && nuevos(arbitro)) avisos += await notificar({ ...comun, userIds: [arbitro], title: `Te toca pitar: ${partido}`, href: "/arbitro/hoy" });
   }
   return { partidos: partidos.length, avisos };
 }
 
 /** El partido de prueba vuelve a "sin jugar": su recordatorio puede volver a salir */
 export async function olvidarRecordatorios(matchId: string) {
-  const r = await db.notification.deleteMany({ where: { type: "RECORDATORIO_PARTIDO", data: { path: ["matchId"], equals: matchId } } });
-  return r.count;
+  const [claves, avisos] = await Promise.all([
+    soltarUnaVez(prefijoDeRecordatorio(matchId)),
+    db.notification.deleteMany({ where: { type: "RECORDATORIO_PARTIDO", data: { path: ["matchId"], equals: matchId } } }),
+  ]);
+  return { claves, avisos: avisos.count };
 }

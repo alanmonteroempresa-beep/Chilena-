@@ -14,7 +14,8 @@ PWA, imágenes OG para compartir (1080×1920), reportar falla, analítica, error
 ## Reglas clave
 - Vercel Hobby: crons 1 vez al día; lo frecuente va por pg_cron → /api/cron/*.
 - Todo debe caber en planes gratis.
-- **Reportar falla** (42): `components/reportar-falla.tsx` (botón flotante arriba de la barra; lo pone el cascarón con el flag `beta.bug_button`), `reportarFalla` guarda en `bug_reports` ("¿qué pasó?" al inicio del texto, la pantalla y el celular si los dejó), máximo 10 por hora. Regla `bug.report` (`server/listeners.ts`). Para leerlos: `node scripts/supabase-dev.mjs sql "select … from bug_reports"`.
+- **Reportar falla** (42): `components/reportar-falla.tsx` (botón flotante arriba de la barra; lo pone el cascarón con el flag `beta.bug_button`), `reportarFalla` guarda en `bug_reports` ("¿qué pasó?" al inicio del texto, la ruta sin lo que va después del "?" y el celular si los dejó), máximo 10 por hora; revisa el flag. Regla `bug.report` (`server/reglas.ts`).
+- **Una sola vez** (`server/jobs.ts`): `apartarUnaVez(claves)` aparta claves únicas en `jobs` (tipo `una-vez`) para que dos corridas no hagan lo mismo; `soltarUnaVez(prefijo)` las suelta. Para leerlos: `node scripts/supabase-dev.mjs sql "select … from bug_reports"`.
 - **PWA**: `src/app/manifest.ts` (íconos y atajos), `public/sw.js` escrito a mano (sin build): páginas siempre de la red y, sin señal, `/sin-conexion` (08b, estática, la guarda al instalarse); `/_next/static` y `/brand` del celular; push con `href`. No guarda páginas ni datos de nadie. `RegistrarServiceWorker` (en el layout raíz) lo registra solo en producción. Si cambias `sw.js`, sube `VERSION`. `/instalar` (43) detecta iPhone o Android y en Android instala directo si se puede.
 
 ## Estructura

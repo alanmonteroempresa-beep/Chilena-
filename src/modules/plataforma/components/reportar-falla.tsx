@@ -39,7 +39,8 @@ export function ReportarFalla({ rol }: { rol: string | null }) {
       const r = await reportarFalla({
         tipo,
         texto,
-        pantalla: conPantalla ? `${pantalla}${window.location.search}`.slice(0, 300) : null,
+        // Solo la ruta (lo que se ve en el interruptor), sin lo que va después del "?"
+        pantalla: conPantalla ? pantalla.slice(0, 300) : null,
         dispositivo: conCelular
           ? {
               userAgent: navigator.userAgent.slice(0, 400),

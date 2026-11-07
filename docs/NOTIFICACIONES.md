@@ -8,7 +8,9 @@
 - Horario silencioso de 23:00 a 07:00 para push (excepto si tu partido es en menos de 3 h).
 - Los perfiles sin reclamar no reciben nada.
 - iPhone: push solo si la app está instalada en la pantalla de inicio. La pantalla 43 guía la instalación después de reclamar el perfil.
-- **Cómo funciona (beta):** "Activar avisos" (Perfil, campana e Instala la app) pide el permiso y guarda el celular en `push_subscriptions`. `notificar()` manda el push de los tipos ★ después de responder (`after`) con `web-push` y las llaves VAPID; las suscripciones muertas (404/410) se borran y `pushedAt` marca lo que llegó. "Mandarme uno de prueba" manda uno al momento. El service worker (`public/sw.js`) lo enseña y al tocarlo abre su liga. Flag `push.enabled`.
+- **Cómo funciona (beta):** "Activar avisos" (Perfil, campana e Instala la app) pide el permiso y guarda el celular en `push_subscriptions` (solo servicios de push conocidos, máximo 5 celulares por cuenta). `notificar()` manda el push de los tipos ★ después de responder (`after`) con `web-push` y las llaves VAPID; las suscripciones muertas (404/410) se borran y `pushedAt` marca lo que llegó. "Mandarme uno de prueba" manda uno al momento. El service worker (`public/sw.js`) lo enseña y al tocarlo abre su liga. **Salir** apaga los avisos de ese celular. Flag `push.enabled` (apagado: no se ofrece ni se guarda).
+- **Horario silencioso:** el push que cae de 23:00 a 07:00 no suena (queda en la campana), salvo si el aviso trae la hora de un partido que es en menos de 3 h. El recordatorio vive 1 h en el servicio de push; lo demás, 6 h.
+- **"Te toca jugar":** una clave por persona, partido y hora en la cola (`apartarUnaVez`), así dos vueltas a la vez nunca mandan dos; quien confirma tarde lo recibe en la siguiente vuelta; si reprograman el partido, sale otro.
 - Pestañas en la campana (pantalla 09): Todas · Partidos · Social · Liga.
 
 ## 2. Catálogo

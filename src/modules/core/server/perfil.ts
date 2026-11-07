@@ -40,3 +40,8 @@ export function perfilesDeJugadores(userIds: string[]) {
 export function personasPorId(ids: string[]) {
   return db.user.findMany({ where: { id: { in: ids } }, select: { id: true, username: true, nombre: true, apellidos: true, sobrenombre: true } });
 }
+
+/** ¿Cuenta reclamada y activa? (permisos de "cualquier cuenta reclamada": votar, avisos, reportar falla) */
+export async function cuentaReclamada(userId: string) {
+  return (await db.user.count({ where: { id: userId, deletedAt: null, authId: { not: null } } })) > 0;
+}

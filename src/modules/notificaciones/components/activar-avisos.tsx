@@ -89,7 +89,8 @@ export function ActivarAvisos({ compacto = false }: { compacto?: boolean }) {
       const r = await registro();
       const sub = await r?.pushManager.getSubscription();
       if (sub) {
-        await quitarSuscripcion({ endpoint: sub.endpoint });
+        const r = await quitarSuscripcion({ endpoint: sub.endpoint });
+        if (!r.ok) return void toast.error(r.error);
         await sub.unsubscribe();
       }
       setEstado("apagados");

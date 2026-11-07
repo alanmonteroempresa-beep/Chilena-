@@ -72,11 +72,19 @@ async function reiniciarPrueba(params: URLSearchParams) {
   return { ...r, paseDeLista, votaciones, recordatorios, tabla, posts, cartas };
 }
 
-// Jobs (docs/NOTIFICACIONES.md §3). pg_cron llama `trabajos`, `recordatorios`, `votaciones`;
+// Jobs (docs/NOTIFICACIONES.md §3). pg_cron llama `trabajos` (que ya incluye los recordatorios);
 // Vercel Cron (vercel.json) llama `lunes` y `nocturno`. Todos con Authorization: Bearer CRON_SECRET.
 const JOBS: Record<string, (params: URLSearchParams) => Promise<unknown>> = {
-  // Cada minuto (pg_cron): la cola y "Te toca jugar" (1 h antes del partido)
-  trabajos: async () => ({ cola: await runPendingJobs(), recordatorios: await mandarRecordatorios() }),
+  // Cada minuto (pg_cron): la cola y "Te toca jugar" (1 h antes del partido). Si una falla, la otra corre igual.
+  trabajos: async () => {
+    const [cola, recordatorios] = await Promise.allSettled([runPendingJobs(), mandarRecordatorios()]);
+    for (const r of [cola, recordatorios]) if (r.status === "rejected") logger.error("trabajos: una parte falló", { error: String(r.reason) });
+    return {
+      cola: cola.status === "fulfilled" ? cola.value : "falló",
+      recordatorios: recordatorios.status === "fulfilled" ? recordatorios.value : "falló",
+    };
+  },
+  recordatorios: () => mandarRecordatorios(),
   recalcular: recalcularTodo,
   "recalcular-torneo": recalcularTorneos,
   "reiniciar-prueba": reiniciarPrueba,

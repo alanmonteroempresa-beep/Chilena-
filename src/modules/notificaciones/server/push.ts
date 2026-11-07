@@ -1,9 +1,10 @@
 import "server-only";
 import webpush, { WebPushError } from "web-push";
+import type { NotificationType } from "@/generated/prisma/client";
 import { isEnabled } from "@/modules/core/server-api";
 import { db } from "@/shared/lib/db";
 import { logger } from "@/shared/lib/logger";
-import { hrefSeguro, type PayloadPush } from "./services/push";
+import { hrefSeguro, vidaDelPush, type PayloadPush } from "./services/push";
 
 // Push web con VAPID (docs/NOTIFICACIONES.md). Las llaves viven solo en el servidor (CLAUDE.md, Variables).
 let listo: boolean | null = null;
@@ -23,12 +24,12 @@ function configurar() {
  * Manda un push a todos los celulares de estas personas (sus suscripciones). Las que el servicio da por
  * muertas (404/410) se borran. Respeta el flag `push.enabled` y la preferencia por tipo si se pasa `tipo`.
  */
-export async function mandarPush(userIds: string[], payload: PayloadPush, { tipo }: { tipo?: string } = {}) {
+export async function mandarPush(userIds: string[], payload: PayloadPush, { tipo }: { tipo?: NotificationType } = {}) {
   const nada = { enviados: 0, muertos: 0, personas: new Set<string>() };
   if (!userIds.length || !configurar() || !(await isEnabled("push.enabled"))) return nada;
   const apagados = tipo
     ? new Set(
-        (await db.notificationPreference.findMany({ where: { userId: { in: userIds }, type: tipo as never, push: false }, select: { userId: true } })).map(
+        (await db.notificationPreference.findMany({ where: { userId: { in: userIds }, type: tipo, push: false }, select: { userId: true } })).map(
           (p) => p.userId,
         ),
       )
@@ -41,7 +42,7 @@ export async function mandarPush(userIds: string[], payload: PayloadPush, { tipo
   const resultados = await Promise.allSettled(
     subs.map((s) =>
       webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, cuerpo, {
-        TTL: 6 * 3600,
+        TTL: vidaDelPush(tipo ?? ""),
         urgency: "high",
         timeout: 8000,
       }),
@@ -52,7 +53,11 @@ export async function mandarPush(userIds: string[], payload: PayloadPush, { tipo
     if (r.status === "fulfilled") return;
     const e = r.reason;
     if (e instanceof WebPushError && (e.statusCode === 404 || e.statusCode === 410)) muertos.push(subs[i].id);
-    else logger.warn("push falló", { error: String(e).slice(0, 200) });
+    logger.warn("push falló", {
+      status: e instanceof WebPushError ? e.statusCode : null,
+      servicio: new URL(subs[i].endpoint).hostname,
+      cuerpo: e instanceof WebPushError ? String(e.body).slice(0, 200) : String(e).slice(0, 200),
+    });
   });
   if (muertos.length) await db.pushSubscription.deleteMany({ where: { id: { in: muertos } } });
   const enviados = resultados.filter((r) => r.status === "fulfilled").length;

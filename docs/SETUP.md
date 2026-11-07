@@ -96,10 +96,7 @@ select cron.schedule('trabajos', '* * * * *', $$
   select net.http_post(url := 'https://TU-APP.vercel.app/api/cron/trabajos',
     headers := jsonb_build_object('Authorization', 'Bearer TU_CRON_SECRET'));
 $$);
-select cron.schedule('recordatorios', '*/15 * * * *', $$
-  select net.http_post(url := 'https://TU-APP.vercel.app/api/cron/recordatorios',
-    headers := jsonb_build_object('Authorization', 'Bearer TU_CRON_SECRET'));
-$$);
+-- "Te toca jugar" ya corre dentro de `trabajos` (cada minuto): no hace falta un job `recordatorios` aparte
 select cron.schedule('votaciones', '*/15 * * * *', $$
   select net.http_post(url := 'https://TU-APP.vercel.app/api/cron/votaciones',
     headers := jsonb_build_object('Authorization', 'Bearer TU_CRON_SECRET'));

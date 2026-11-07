@@ -1,7 +1,7 @@
 "use server";
 
 import { assertCan, DomainError } from "@/modules/core";
-import { getCurrentUser } from "@/modules/core/server-api";
+import { getCurrentUser, isEnabled } from "@/modules/core/server-api";
 import type { Prisma } from "@/generated/prisma/client";
 import { asegurarListeners } from "@/shared/events/bus";
 import { db } from "@/shared/lib/db";
@@ -19,6 +19,7 @@ export async function reportarFalla(entrada: unknown): Promise<Resultado<{ numer
     if (!usuario) throw new DomainError("Entra para reportar.", "SIN_SESION");
     await asegurarListeners();
     await assertCan(usuario.id, "bug.report");
+    if (!(await isEnabled("beta.bug_button"))) throw new DomainError("Reportar fallas está apagado por ahora.");
     const recientes = await db.bugReport.count({ where: { userId: usuario.id, createdAt: { gte: new Date(Date.now() - 3_600_000) } } });
     if (recientes >= MAXIMO_POR_HORA) throw new DomainError("Ya mandaste varios esta hora. Espera un ratito y mándalo.");
     await db.bugReport.create({

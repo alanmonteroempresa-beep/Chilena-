@@ -15,6 +15,8 @@ type Aviso = {
   body?: string | null;
   href?: string | null;
   data?: Record<string, unknown>;
+  /** La hora del partido del que habla: de noche el push sí suena si falta menos de 3 h */
+  partidoEn?: Date | null;
   /** Lo social se agrupa (docs/NOTIFICACIONES.md §1): mismo aviso sin leer de los últimos 10 min */
   agrupar?: { clave: string; nombre: string; titulo: (quienes: string, cuantos: number) => string };
 };
@@ -76,7 +78,7 @@ export async function notificar(a: Aviso) {
     nuevos.push(creado);
     n++;
   }
-  if (nuevos.length && debeMandarPush(a.type, new Date())) despachar(() => empujar(a, nuevos));
+  if (nuevos.length && debeMandarPush(a.type, new Date(), a.partidoEn)) despachar(() => empujar(a, nuevos));
   return n;
 }
 

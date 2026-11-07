@@ -9,6 +9,7 @@ import { marcarLeidas } from "../server/actions";
 import { avisosDe } from "../server/queries";
 import { accionDe, haceCuanto, pestanaDe, seccionDe, type Pestana } from "../server/services/campana";
 import { ActivarAvisos } from "./activar-avisos";
+import { isEnabled } from "@/modules/core/server-api";
 
 const PESTANAS: [Pestana, string][] = [
   ["todas", "Todas"],
@@ -36,7 +37,8 @@ const ICONO: Partial<Record<NotificationType, typeof Flame>> = {
 
 /** La campana (pantalla 09): pestañas Todas · Partidos · Social · Liga; Hoy · Esta semana · Antes */
 export async function Campana({ userId, pestana, ahora }: { userId: string; pestana: Pestana; ahora: Date }) {
-  const avisos = (await avisosDe(userId)).filter((a) => pestana === "todas" || pestanaDe(a.type) === pestana);
+  const [todos, conPush] = await Promise.all([avisosDe(userId), isEnabled("push.enabled")]);
+  const avisos = todos.filter((a) => pestana === "todas" || pestanaDe(a.type) === pestana);
   const secciones = new Map<string, typeof avisos>();
   for (const a of avisos) {
     const s = seccionDe(a.createdAt, ahora);
@@ -56,7 +58,7 @@ export async function Campana({ userId, pestana, ahora }: { userId: string; pest
         )}
       </div>
       {/* Si este celular aún no recibe push, la invitación a activarlos (se esconde cuando ya están) */}
-      <ActivarAvisos compacto />
+      {conPush && <ActivarAvisos compacto />}
       <nav aria-label="Tipos de aviso" className="-mx-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none]">
         {PESTANAS.map(([clave, texto]) => (
           <Link
