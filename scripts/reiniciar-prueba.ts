@@ -5,6 +5,7 @@
 //   npx tsx scripts/reiniciar-prueba.ts                                  # contra pnpm dev (localhost:3000)
 //   npx tsx scripts/reiniciar-prueba.ts https://chilena.vercel.app --todo # producción; --todo: pase de lista en blanco y hoy a las 20:00
 //   npx tsx scripts/reiniciar-prueba.ts https://chilena.vercel.app --todo --hora 17:00   # otra hora (si ya pasó, mañana)
+//   npx tsx scripts/reiniciar-prueba.ts https://chilena.vercel.app --todo --fecha 2026-11-08 --hora 12:00   # otro día
 import { existsSync, readFileSync } from "node:fs";
 import { parse } from "dotenv";
 
@@ -13,13 +14,15 @@ const base = (process.argv.slice(2).find((a) => a.startsWith("http")) ?? "http:/
 const todo = process.argv.includes("--todo");
 const iHora = process.argv.indexOf("--hora");
 const hora = iHora > 0 ? process.argv[iHora + 1] : undefined;
+const iFecha = process.argv.indexOf("--fecha");
+const fecha = iFecha > 0 ? process.argv[iFecha + 1] : undefined;
 
 async function main() {
   if (!env.CRON_SECRET) {
     console.log("Sin CRON_SECRET en .env.local: no hay con qué llamar a la app.");
     return;
   }
-  const q = new URLSearchParams(todo ? { todo: "1", ...(hora ? { hora } : {}) } : {});
+  const q = new URLSearchParams(todo ? { todo: "1", ...(hora ? { hora } : {}), ...(fecha ? { fecha } : {}) } : {});
   const r = await fetch(`${base}/api/cron/reiniciar-prueba${q.size ? `?${q}` : ""}`, {
     method: "POST",
     headers: { authorization: `Bearer ${env.CRON_SECRET}` },
