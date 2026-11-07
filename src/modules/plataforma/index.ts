@@ -3,3 +3,4 @@
 export { SinConexion } from "./components/sin-conexion";
 export { Instalar } from "./components/instalar";
 export { RegistrarServiceWorker } from "./components/registrar-sw";
+export { ReportarFalla } from "./components/reportar-falla";

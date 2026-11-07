@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { PantallaProvisional } from "@/modules/core/server-api";
+import { ActivarAvisos } from "@/modules/notificaciones";
 
 // PROVISIONAL hasta el menú de perfil (pantalla 07): quién entró, accesos a su perfil público y Salir
 export const metadata: Metadata = { title: "Mi perfil" };
 
 export default function PerfilPage() {
-  return <PantallaProvisional variante="perfil" />;
+  return <PantallaProvisional variante="perfil" avisos={<ActivarAvisos />} />;
 }

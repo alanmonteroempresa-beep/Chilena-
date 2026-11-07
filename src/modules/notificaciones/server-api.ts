@@ -4,3 +4,5 @@ export { notificar } from "./server/notificar";
 export { abrirAviso, sinLeer } from "./server/queries";
 export { Campana } from "./components/campana";
 export type { Pestana } from "./server/services/campana";
+export { mandarRecordatorios, olvidarRecordatorios } from "./server/recordatorios";
+export { mandarPush } from "./server/push";

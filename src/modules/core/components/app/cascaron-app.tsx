@@ -12,6 +12,8 @@ type Props = {
   hrefCentral?: string;
   avatar: { iniciales: string; src?: string | null };
   avisos?: number;
+  /** Algo flotante arriba de la barra (el botón "Reportar falla" de la beta, pantalla 42) */
+  flotante?: React.ReactNode;
   children: React.ReactNode;
 };
 
@@ -19,14 +21,17 @@ type Props = {
  * Cascarón de la app con sesión (PRD §5 · pantallas 07b, 23, 24): header con el selector de rol,
  * contenido y barra inferior (Inicio · En vivo · central por rol · Mi liga · Perfil). El acento sale de data-role.
  */
-export function CascaronApp({ rol, opciones, activoId, hrefCentral, avatar, avisos = 0, children }: Props) {
+export function CascaronApp({ rol, opciones, activoId, hrefCentral, avatar, avisos = 0, flotante, children }: Props) {
   return (
     <div data-role={rol} className="flex min-h-dvh flex-col bg-background">
       <RolEnBody rol={rol} />
       <AppHeader avisos={avisos} avatar={{ ...avatar, href: "/perfil" }} degradado>
         <SelectorRol opciones={opciones} activoId={activoId} />
       </AppHeader>
-      <div className="flex flex-1 flex-col pb-[calc(84px+env(safe-area-inset-bottom))]">{children}</div>
+      <div className={flotante ? "flex flex-1 flex-col pb-[calc(140px+env(safe-area-inset-bottom))]" : "flex flex-1 flex-col pb-[calc(84px+env(safe-area-inset-bottom))]"}>
+        {children}
+      </div>
+      {flotante}
       <BottomNav rol={rol} hrefCentral={hrefCentral} />
     </div>
   );

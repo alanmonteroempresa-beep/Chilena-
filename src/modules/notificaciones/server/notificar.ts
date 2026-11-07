@@ -1,7 +1,11 @@
 import "server-only";
+import { after } from "next/server";
 import type { NotificationType, Prisma } from "@/generated/prisma/client";
 import { db } from "@/shared/lib/db";
+import { logger } from "@/shared/lib/logger";
+import { mandarPush } from "./push";
 import { quienes, VENTANA_AGRUPAR_MS } from "./services/campana";
+import { debeMandarPush } from "./services/push";
 
 type Aviso = {
   userIds: string[];
@@ -17,7 +21,8 @@ type Aviso = {
 
 /**
  * `notify()` de docs/NOTIFICACIONES.md: guarda en `notifications` (la campana). Nunca a quien hizo la
- * acción ni a perfiles sin reclamar. Push y Broadcast llegan con la PWA.
+ * acción ni a perfiles sin reclamar. Los tipos ★ (y "Vota el MVP") también van como push al celular,
+ * fuera del horario silencioso, después de responder (`after`).
  */
 export async function notificar(a: Aviso) {
   const ids = [...new Set(a.userIds)].filter((id) => id && id !== a.actorId);
@@ -27,6 +32,7 @@ export async function notificar(a: Aviso) {
     select: { id: true },
   });
   let n = 0;
+  const nuevos: { id: string; userId: string }[] = [];
   for (const { id } of reclamados) {
     if (a.agrupar) {
       const previo = await db.notification.findFirst({
@@ -55,7 +61,8 @@ export async function notificar(a: Aviso) {
         continue;
       }
     }
-    await db.notification.create({
+    const creado = await db.notification.create({
+      select: { id: true, userId: true },
       data: {
         userId: id,
         actorId: a.actorId ?? null,
@@ -66,7 +73,30 @@ export async function notificar(a: Aviso) {
         data: { ...(a.data ?? {}), ...(a.agrupar ? { clave: a.agrupar.clave, actores: [a.agrupar.nombre] } : {}) } as Prisma.InputJsonValue,
       },
     });
+    nuevos.push(creado);
     n++;
   }
+  if (nuevos.length && debeMandarPush(a.type, new Date())) despachar(() => empujar(a, nuevos));
   return n;
+}
+
+/** Manda el push y marca `pushedAt` en los avisos que sí llegaron a algún celular */
+async function empujar(a: Aviso, nuevos: { id: string; userId: string }[]) {
+  const r = await mandarPush(
+    nuevos.map((x) => x.userId),
+    { title: a.title, body: a.body, href: a.href, tag: a.type },
+    { tipo: a.type },
+  );
+  const ids = nuevos.filter((x) => r.personas.has(x.userId)).map((x) => x.id);
+  if (ids.length) await db.notification.updateMany({ where: { id: { in: ids } }, data: { pushedAt: new Date() } });
+}
+
+/** Después de responder si hay petición (acción o cron); si no, en el momento. Un push que falla no rompe nada. */
+function despachar(tarea: () => Promise<void>) {
+  const segura = () => tarea().catch((error) => logger.error("push falló", { error: String(error) }));
+  try {
+    after(segura);
+  } catch {
+    void segura();
+  }
 }

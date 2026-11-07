@@ -1,5 +1,6 @@
 // API pública de servidor del módulo `equipos` (no la importes desde componentes cliente).
 export {
+  confirmadosDelPartido,
   contextosEnEquipos,
   cuotaVigente,
   equipoDeCadaQuien,

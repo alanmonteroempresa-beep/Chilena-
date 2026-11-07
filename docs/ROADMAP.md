@@ -54,7 +54,7 @@ y después la semilla demo. No cambies prisma/schema.prisma sin preguntarme.
 - [ ] Selector de rol y liga (hecho en el recorrido: `cambiarRol`, contextos de equipos y ligas); falta activar roles ("Crear mi equipo", "Registrar mi liga", "Soy árbitro")
 - [ ] Completa tu perfil (progresivo, un paso por pantalla) y subida de avatar comprimido
 - [ ] Ajustes: tema, privacidad, quitar etiquetas, cerrar sesión, borrar cuenta (ARCO)
-- [ ] Botón "Reportar falla" (tabla `bug_reports`) — la pantalla "Instala la app" ya está (`/instalar`, se llega desde Perfil)
+- [x] Botón "Reportar falla" (tabla `bug_reports`, pantalla 42: botón flotante en el cascarón con el flag `beta.bug_button`) y pantalla "Instala la app" (`/instalar`, se llega desde Perfil)
 - [ ] Authz base (`can`, `assertCan`) con tests de PERMISOS §5
 
 ---
@@ -120,7 +120,7 @@ y después la semilla demo. No cambies prisma/schema.prisma sin preguntarme.
 ### S2 — Notificaciones
 **`docs/NOTIFICACIONES.md` · pantallas 09, 43**
 - [ ] `notify()`, campana con pestañas, agrupación, Broadcast `user:{id}` — `notificar()`, campana (Todas · Partidos · Social · Liga) y agrupación hechos; falta Broadcast
-- [ ] Push web VAPID (pedir permiso después de reclamar o instalar, no al entrar), horario silencioso
+- [x] Push web VAPID (pedir permiso después de reclamar o instalar, no al entrar), horario silencioso — "Activar avisos" en Perfil, campana e Instala la app; push de los tipos ★ y "Vota el MVP"; "Te toca jugar" 1 h antes
 - [ ] Preferencias por tipo
 - [ ] Jobs con pg_cron (`trabajos`, `recordatorios`, `votaciones`) y Vercel Cron (`lunes`, `nocturno`)
 

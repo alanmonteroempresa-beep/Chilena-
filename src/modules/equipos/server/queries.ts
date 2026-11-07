@@ -42,6 +42,11 @@ export function equiposQueSigue(userId: string) {
   });
 }
 
+/** Los que dijeron "Voy" en el pase de lista de un partido (recordatorio "Te toca jugar") */
+export function confirmadosDelPartido(matchId: string) {
+  return db.matchAttendance.findMany({ where: { matchId, status: "VA" }, select: { userId: true, teamId: true } });
+}
+
 /** De estas personas, quiénes siguen al equipo (la porra del equipo en la quiniela, pantalla 13) */
 export async function siguenAlEquipo(teamId: string, userIds: string[]) {
   if (!userIds.length) return [];

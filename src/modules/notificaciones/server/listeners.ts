@@ -1,4 +1,5 @@
 import "server-only";
+import { registerRule } from "@/modules/core";
 import { insigniaPorCodigo } from "@/modules/carta/server-api";
 import { personasPorId } from "@/modules/core/server-api";
 import { delegadosDe, plantillaDelEquipo } from "@/modules/equipos/server-api";
@@ -8,8 +9,12 @@ import { nombreCorto, nombreDeArbitro } from "@/shared/lib/personas";
 import { datosDeComentario, duenosDePost } from "@/modules/social/server-api";
 import { cuandoCierra } from "@/modules/votaciones";
 import { on } from "@/shared/events/bus";
+import { db } from "@/shared/lib/db";
 import { nombreVisible } from "@/shared/lib/personas";
 import { notificar } from "./notificar";
+import { reglaCuentaReclamada } from "./reglas";
+
+const reclamada = async (userId: string) => (await db.user.count({ where: { id: userId, deletedAt: null, authId: { not: null } } })) > 0;
 
 const EMOJI: Record<string, string> = { FUEGO: "🔥", GOLAZO: "⚽", TROFEO: "🏆" };
 const QUE_COSA: Record<string, string> = {
@@ -32,6 +37,9 @@ async function persona(id: string) {
 
 // Eventos que escucha el módulo `notificaciones` (docs/NOTIFICACIONES.md §2)
 export function registerListeners() {
+  // Activar avisos en su celular (push)
+  registerRule("push.subscribe", reglaCuentaReclamada(reclamada));
+
   on("post.reacted", async ({ postId, userId, type }) => {
     const post = await duenosDePost(postId);
     const dueno = post?.authorId ?? post?.subjectUserId;

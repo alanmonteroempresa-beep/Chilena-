@@ -6,11 +6,12 @@ import { registerListeners as equipos } from "@/modules/equipos/server-api";
 import { registerListeners as ligas } from "@/modules/ligas/server-api";
 import { registerListeners as notificaciones } from "@/modules/notificaciones/server-api";
 import { registerListeners as partidos } from "@/modules/partidos/server-api";
+import { registerListeners as plataforma } from "@/modules/plataforma/server-api";
 import { registerListeners as social } from "@/modules/social/server-api";
 import { registerListeners as votaciones } from "@/modules/votaciones/server-api";
 
 export function registerAllListeners() {
-  for (const register of [partidos, ligas, equipos, carta, social, votaciones, comunidad, notificaciones]) {
+  for (const register of [partidos, ligas, equipos, carta, social, votaciones, comunidad, notificaciones, plataforma]) {
     register();
   }
 }

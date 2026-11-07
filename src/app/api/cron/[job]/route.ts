@@ -8,6 +8,7 @@ import {
   recalcularSancionesDelTorneo,
   reiniciarPartidoDePrueba,
 } from "@/modules/partidos/server-api";
+import { mandarRecordatorios, olvidarRecordatorios } from "@/modules/notificaciones/server-api";
 import { runPendingJobs } from "@/modules/plataforma/server-api";
 import { borrarPostsDelPartido, publicarPartido } from "@/modules/social/server-api";
 import { cerrarVencidas, reiniciarVotacionesDelPartido } from "@/modules/votaciones/server-api";
@@ -62,18 +63,20 @@ async function reiniciarPrueba(params: URLSearchParams) {
   const r = await reiniciarPartidoDePrueba({ todo, hora: params.get("hora") ?? undefined, fecha: params.get("fecha") ?? undefined });
   const paseDeLista = todo ? await reiniciarPaseDeLista(r.matchId) : null;
   const votaciones = await reiniciarVotacionesDelPartido(r.matchId);
-  if (!r.tournamentId) return { ...r, paseDeLista, votaciones };
+  const recordatorios = await olvidarRecordatorios(r.matchId);
+  if (!r.tournamentId) return { ...r, paseDeLista, votaciones, recordatorios };
   const jugadores = await jugadoresDelPartido(r.matchId);
   const tabla = await recalcularTabla(r.tournamentId);
   const posts = await borrarPostsDelPartido(r.matchId, { desde: r.validadoEn, userIds: jugadores });
   const cartas = await recalcularCartas(jugadores, { silencioso: true });
-  return { ...r, paseDeLista, votaciones, tabla, posts, cartas };
+  return { ...r, paseDeLista, votaciones, recordatorios, tabla, posts, cartas };
 }
 
 // Jobs (docs/NOTIFICACIONES.md §3). pg_cron llama `trabajos`, `recordatorios`, `votaciones`;
 // Vercel Cron (vercel.json) llama `lunes` y `nocturno`. Todos con Authorization: Bearer CRON_SECRET.
 const JOBS: Record<string, (params: URLSearchParams) => Promise<unknown>> = {
-  trabajos: () => runPendingJobs(),
+  // Cada minuto (pg_cron): la cola y "Te toca jugar" (1 h antes del partido)
+  trabajos: async () => ({ cola: await runPendingJobs(), recordatorios: await mandarRecordatorios() }),
   recalcular: recalcularTodo,
   "recalcular-torneo": recalcularTorneos,
   "reiniciar-prueba": reiniciarPrueba,

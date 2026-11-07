@@ -32,7 +32,7 @@ const PASOS: Record<Exclude<Celular, "otro">, { titulo: string; detalle: string;
  * Instala la app (pantalla 43): guía corta para iPhone o Android, sin tienda de apps. Detecta el celular y
  * muestra solo su guía; en Android, si se puede, el botón instala directo. Si ya está instalada, lo dice.
  */
-export function Instalar() {
+export function Instalar({ avisos }: { avisos?: React.ReactNode }) {
   const celular = useSyncExternalStore<Celular | null>(sinSuscripcion, () => celularDe(navigator.userAgent), () => null);
   const instalada = useSyncExternalStore(
     sinSuscripcion,
@@ -61,6 +61,7 @@ export function Instalar() {
       <div className="flex flex-col gap-3">
         <h1 className="titular-momento text-[44px] leading-[0.9]">Ya la tienes</h1>
         <p className="text-[15px] text-muted-foreground">Chilena ya está en tu pantalla de inicio. Ábrela desde ahí, como cualquier app.</p>
+        {avisos}
         <Link href="/inicio" className={buttonVariants({ variant: "lima", size: "cta", className: "w-full" })}>
           Ir a mi inicio
         </Link>
