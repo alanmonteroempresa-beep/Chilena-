@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { Award, ChevronRight, IdCard, LogOut, UserRound } from "lucide-react";
+import { Award, ChevronRight, IdCard, LogOut, Smartphone, UserRound } from "lucide-react";
 import { ETIQUETA_ROL, rolDesdeRoleType, type Rol } from "@/shared/lib/roles";
 import { buttonVariants } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
@@ -87,6 +87,7 @@ async function QuienEntro({ variante }: { variante: Variante }) {
               [`/j/${usuario.username}`, "Mi perfil público", UserRound],
               [`/j/${usuario.username}/carta`, "Mi carta", IdCard],
               [`/j/${usuario.username}/insignias`, "Mis insignias", Award],
+              ["/instalar", "Instala la app", Smartphone],
             ] as const
           ).map(([href, texto, Icono]) => (
             <Link key={href} href={href} className="flex min-h-12 items-center gap-3 px-4 text-[15px] font-semibold">

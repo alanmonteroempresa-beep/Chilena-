@@ -7,13 +7,14 @@ PWA, imágenes OG para compartir (1080×1920), reportar falla, analítica, error
 | | |
 |---|---|
 | **Tablas (dueño)** | jobs, bug_reports, audit_logs |
-| **Pantallas** | 08a 404 · 21 Plantillas para compartir · 42 Reportar falla |
+| **Pantallas** | 08a 404 · 08b Sin conexión · 21 Plantillas para compartir · 42 Reportar falla · 43 Instala la app |
 | **Emite** | — |
 | **Escucha** | — |
 
 ## Reglas clave
 - Vercel Hobby: crons 1 vez al día; lo frecuente va por pg_cron → /api/cron/*.
 - Todo debe caber en planes gratis.
+- **PWA**: `src/app/manifest.ts` (íconos y atajos), `public/sw.js` escrito a mano (sin build): páginas siempre de la red y, sin señal, `/sin-conexion` (08b, estática, la guarda al instalarse); `/_next/static` y `/brand` del celular; push con `href`. No guarda páginas ni datos de nadie. `RegistrarServiceWorker` (en el layout raíz) lo registra solo en producción. Si cambias `sw.js`, sube `VERSION`. `/instalar` (43) detecta iPhone o Android y en Android instala directo si se puede.
 
 ## Estructura
 - `index.ts`: **API pública**. Lo único que otros módulos pueden importar (`@/modules/plataforma`).
