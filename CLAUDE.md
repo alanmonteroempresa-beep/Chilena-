@@ -39,7 +39,7 @@ Si algo no está en el PRD, **pregunta o propón el cambio en el PRD antes de im
 - **Prisma 7** (generator `prisma-client` → `src/generated/prisma`, `@prisma/adapter-pg`, `prisma.config.ts`)
 - **Supabase**: Postgres, Auth (**Google + link mágico al correo** en la beta), Storage (solo bucket `avatars`), Realtime **Broadcast**, `pg_cron` + `pg_net`
 - `@supabase/ssr` · **Zod** · `react-hook-form` · **TanStack Query** (feed infinito, en vivo)
-- **PWA**: Serwist + `web-push` (VAPID)
+- **PWA**: service worker propio en `public/sw.js` (guía de PWA de Next 16) + `web-push` (VAPID)
 - `next/og` para las plantillas 1080×1920 que se comparten
 - **Vitest** + **Playwright** · Sentry · PostHog (planes gratis)
 - Deploy: **Vercel Hobby** (`*.vercel.app`) · GitHub

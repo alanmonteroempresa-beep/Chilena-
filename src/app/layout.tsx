@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow, Barlow_Condensed, Big_Shoulders } from "next/font/google";
+import { RegistrarServiceWorker } from "@/modules/plataforma";
 import { Providers } from "@/shared/components/providers";
 import "./globals.css";
 
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
+        <RegistrarServiceWorker />
       </body>
     </html>
   );

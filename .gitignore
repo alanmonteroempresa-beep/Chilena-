@@ -49,7 +49,6 @@ src/generated/
 supabase/.temp/
 playwright-report/
 test-results/
-public/sw.js
 public/swe-worker-*.js
 .claude/settings.local.json
 
