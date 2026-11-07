@@ -12,6 +12,7 @@ import {
   type PartidoParaSanciones,
   type TarjetaCedula,
 } from "@/modules/partidos";
+import { conciliarSanciones } from "../server/services/sanciones";
 
 // PRD §7.8 · pantalla 47
 const REGLAS = { partidosPorRoja: 1, amarillasParaSuspension: 5 };
@@ -249,5 +250,47 @@ describe("la liga ajusta la misma sanción", () => {
       /condónala en el cargo/,
     );
     expect(ajustarSancion(conMulta, { partidos: 2, motivo: "x" }).creaCargoDeMulta).toBe(false);
+  });
+});
+
+describe("conciliar las automáticas guardadas (no se duplican ni reviven)", () => {
+  const guardada = (id: string, matchId: string, motivo: string, status = "ACTIVA", userId = "guero") => ({ id, userId, matchId, motivo, status });
+  const cinco = (hasta: number) => jornadas(...Array.from({ length: hasta }, () => [amarilla()]));
+
+  it("crea la que falta y no toca la que ya está", () => {
+    const calculadas = sancionesAutomaticas(cinco(5), REGLAS);
+    expect(conciliarSanciones(calculadas, []).crear).toHaveLength(1);
+    const r = conciliarSanciones(calculadas, [guardada("s1", "m5", "5ª amarilla en la J5")]);
+    expect(r).toEqual({ crear: [], sobran: [] });
+  });
+
+  it("una que la liga ANULÓ no se vuelve a crear", () => {
+    const calculadas = sancionesAutomaticas(jornadas([roja("la-roca", 71)]), REGLAS);
+    const r = conciliarSanciones(calculadas, [guardada("s1", "m1", "Roja directa al 71' en la J1", "ANULADA", "la-roca")]);
+    expect(r).toEqual({ crear: [], sobran: [] });
+  });
+
+  it("validar fuera de orden: la 5ª amarilla cambia de partido y la vieja se anula", () => {
+    // Una amarilla por jornada. La J4 se validó al último: mientras tanto, la 5ª cayó en la J6
+    const sinJ4 = cinco(6).map((p) => (p.matchId === "m4" ? { ...p, status: "FINALIZADO" } : p));
+    expect(sancionesAutomaticas(sinJ4, REGLAS).map((s) => s.matchId)).toEqual(["m6"]);
+    // Ya validada la J4, la 5ª es en la J5: se crea esa y la de la J6 sobra
+    const r = conciliarSanciones(sancionesAutomaticas(cinco(6), REGLAS), [guardada("s6", "m6", "5ª amarilla en la J6")]);
+    expect(r.crear.map((c) => c.matchId)).toEqual(["m5"]);
+    expect(r.sobran.map((s) => s.id)).toEqual(["s6"]);
+  });
+
+  it("si quedó repetida (dos validaciones a la vez), sobra la segunda", () => {
+    const calculadas = sancionesAutomaticas(cinco(5), REGLAS);
+    const r = conciliarSanciones(calculadas, [guardada("a", "m5", "5ª amarilla en la J5"), guardada("b", "m5", "5ª amarilla en la J5")]);
+    expect(r.crear).toEqual([]);
+    expect(r.sobran.map((s) => s.id)).toEqual(["b"]);
+  });
+
+  it("la roja y las amarillas del mismo partido son hechos distintos", () => {
+    const calculadas = sancionesAutomaticas(jornadas([amarilla()], [amarilla()], [amarilla()], [amarilla()], [amarilla(), roja()]), REGLAS);
+    const r = conciliarSanciones(calculadas, [guardada("s1", "m5", "Roja directa en la J5")]);
+    expect(r.crear.map((c) => c.origen)).toEqual(["AMARILLAS"]);
+    expect(r.sobran).toEqual([]);
   });
 });

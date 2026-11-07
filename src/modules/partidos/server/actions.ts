@@ -1,16 +1,19 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { after } from "next/server";
 import type { Prisma } from "@/generated/prisma/client";
-import { assertCan, can, DomainError, NotFoundError } from "@/modules/core";
+import { assertCan, can, DomainError, ForbiddenError, NotFoundError } from "@/modules/core";
 import { getCurrentUser, personasPorId } from "@/modules/core/server-api";
+import { procesarCola } from "@/modules/plataforma/server-api";
 import { asegurarListeners, emit } from "@/shared/events/bus";
 import { db } from "@/shared/lib/db";
 import { logger } from "@/shared/lib/logger";
 import { nombreVisible } from "@/shared/lib/personas";
-import { enviarCedulaSchema, firmarSchema, pedirCorreccionSchema, responderCorreccionSchema } from "../schemas";
+import { enviarCedulaSchema, firmarSchema, pedirCorreccionSchema, responderCorreccionSchema, validarListasSchema, validarSchema } from "../schemas";
 import { inscritosDelPartido } from "./puertos";
 import { sancionesActivas } from "./queries";
+import { recalcularEstadisticas, recalcularSanciones } from "./recalcular";
 import {
   aplicarCorreccion,
   marcadorDeLaCedula,
@@ -20,7 +23,15 @@ import {
   type TipoCapturado,
   type TipoDeGol,
 } from "./services/cedula";
-import { ladoDe, transicion, type Estado, type EstadoDeLaCedula, type EstadoDelPartido } from "./services/estado-partido";
+import {
+  HORAS_PARA_VALIDAR_SIN_FIRMAS,
+  laLigaPuedeContestar,
+  ladoDe,
+  transicion,
+  type Estado,
+  type EstadoDeLaCedula,
+  type EstadoDelPartido,
+} from "./services/estado-partido";
 
 // La cédula del árbitro, sus firmas y sus correcciones (PRD §7.7 · pantallas 19, 56a y 56b).
 // Lo que cambia la cédula se decide DENTRO de la transacción, con la fila de la cédula bloqueada: dos
@@ -54,7 +65,7 @@ const partidoConCedula = (id: string, cliente: Cliente = db) =>
       homeTeamId: true,
       awayTeamId: true,
       report: {
-        select: { id: true, status: true, snapshot: true, homeScore: true, awayScore: true, homeSignedAt: true, awaySignedAt: true },
+        select: { id: true, status: true, snapshot: true, homeScore: true, awayScore: true, submittedAt: true, homeSignedAt: true, awaySignedAt: true },
       },
     },
   });
@@ -322,11 +333,28 @@ export async function responderCorreccion(entrada: unknown): Promise<Resultado<{
     const usuario = await quien();
     const corr = await db.matchReportCorrection.findUnique({
       where: { id: correctionId },
-      select: { id: true, kind: true, eventId: true, propuesta: true, comentario: true, reportId: true, report: { select: { matchId: true } } },
+      select: {
+        id: true,
+        kind: true,
+        eventId: true,
+        propuesta: true,
+        comentario: true,
+        reportId: true,
+        createdAt: true,
+        report: { select: { matchId: true, match: { select: { tournament: { select: { leagueId: true } } } } } },
+      },
     });
     if (!corr) throw new NotFoundError("No encontramos esa corrección.");
     const matchId = corr.report.matchId;
-    await assertCan(usuario.id, "report.respondCorrection", { matchId });
+    // Contesta el árbitro de esa cédula; si no lo hace en 48 h, la liga (POR APROBAR)
+    const leagueId = corr.report.match.tournament?.leagueId;
+    const esArbitro = await can(usuario.id, "report.respondCorrection", { matchId });
+    const comoLiga =
+      !esArbitro &&
+      !!leagueId &&
+      laLigaPuedeContestar(corr.createdAt, new Date()) &&
+      (await can(usuario.id, "match.validate", { leagueId, matchId }));
+    if (!esArbitro && !comoLiga) throw new ForbiddenError();
     const m0 = await partidoConCedula(matchId);
     if (!m0) throw new NotFoundError("No encontramos esa cédula.");
     // Lo que no cambia mientras se contesta: inscritos, suspendidos y nombres de las dos plantillas
@@ -437,13 +465,116 @@ export async function responderCorreccion(entrada: unknown): Promise<Resultado<{
           entityId: eventoId ?? m.report.id,
           before: { evento: antes, marcador: { local: m.report.homeScore, visita: m.report.awayScore }, firmas: estadoDe(m).firmas } as Prisma.InputJsonValue,
           after: { evento: corr.kind === "SOBRA_EVENTO" ? null : despues, marcador, firmas: t.firmas } as Prisma.InputJsonValue,
-          motivo: `Corrección ${corr.kind} aceptada por el árbitro${corr.comentario ? `: ${corr.comentario}` : ""}`,
+          motivo: `Corrección ${corr.kind} aceptada por ${esArbitro ? "el árbitro" : "la liga"}${corr.comentario ? `: ${corr.comentario}` : ""}`,
         },
       });
     });
     await emit("match.correction_answered", { matchId, correctionId: corr.id, accepted: aceptar });
     refresh();
     return { ok: true, aceptada: aceptar };
+  } catch (e) {
+    return fallo(e);
+  }
+}
+
+// ---- Validación de la liga (pantalla 46 · PRD §7.7): solo lo VALIDADO cuenta (regla 2)
+
+type TorneoParaValidar = { id: string; leagueId: string; partidosPorRoja: number; amarillasParaSuspension: number };
+
+/**
+ * Valida un partido: resultado oficial, cédula VALIDADA, sanciones automáticas y partidos cumplidos (con
+ * bitácora, en la misma transacción); luego estadísticas y `match.validated`, que recalcula la tabla y
+ * encola cartas, insignias y feed. La cola se procesa al terminar la respuesta (`after`).
+ */
+async function validar(matchId: string, torneo: TorneoParaValidar, actorId: string) {
+  const ahora = new Date();
+  const r = await db.$transaction(
+    async (tx) => {
+      const m = await bloquear(tx, matchId);
+      const horas = m.report.submittedAt ? (ahora.getTime() - m.report.submittedAt.getTime()) / 3_600_000 : 0;
+      exigir(transicion(estadoDe(m), { tipo: "VALIDAR", horasDesdeEnvio: horas }));
+      if (m.report.homeScore == null || m.report.awayScore == null) throw new DomainError("La cédula no trae marcador: pídele al árbitro que la revise.");
+      const marcador = { local: m.report.homeScore, visita: m.report.awayScore };
+      const ganador = marcador.local > marcador.visita ? m.homeTeamId : marcador.visita > marcador.local ? m.awayTeamId : null;
+      await tx.match.update({
+        where: { id: matchId },
+        data: { status: "VALIDADO", validatedAt: ahora, validatedById: actorId, homeScore: marcador.local, awayScore: marcador.visita, winnerTeamId: ganador },
+      });
+      await tx.matchReport.update({ where: { id: m.report.id }, data: { status: "VALIDADA" } });
+      const firmas = estadoDe(m).firmas;
+      await tx.auditLog.create({
+        data: {
+          actorId,
+          action: "VALIDATE",
+          entityType: "Match",
+          entityId: matchId,
+          before: { status: m.status } as Prisma.InputJsonValue,
+          after: { status: "VALIDADO", marcador, firmas } as Prisma.InputJsonValue,
+          motivo: firmas.local && firmas.visita ? "Cédula firmada por los dos" : `Validada sin todas las firmas (${HORAS_PARA_VALIDAR_SIN_FIRMAS} h)`,
+        },
+      });
+      const sanciones = await recalcularSanciones(tx, torneo, actorId);
+      const p = await tx.match.findUniqueOrThrow({ where: { id: matchId }, select: { roundId: true } });
+      return { marcador, sanciones: sanciones.creadas.length, roundId: p.roundId };
+    },
+    { timeout: 30_000, maxWait: 10_000 },
+  );
+  // Ya es oficial: aunque fallen las estadísticas, la tabla, las cartas y el feed se enteran
+  try {
+    await recalcularEstadisticas(torneo.id);
+  } catch (error) {
+    logger.error("no se recalcularon las estadísticas al validar", { matchId, error: String(error) });
+  }
+  await emit("match.validated", { matchId, tournamentId: torneo.id, roundId: r.roundId });
+  return r;
+}
+
+async function torneoDelPartido(matchId: string) {
+  const m = await db.match.findUnique({
+    where: { id: matchId },
+    select: { tournament: { select: { id: true, leagueId: true, partidosPorRoja: true, amarillasParaSuspension: true } } },
+  });
+  if (!m?.tournament) throw new NotFoundError("No encontramos ese partido.");
+  return m.tournament;
+}
+
+/** "VALIDAR RESULTADO" (pantalla 46): cuenta para tabla, goleo y cartas, y se avisa a los dos equipos */
+export async function validarCedula(entrada: unknown): Promise<Resultado<{ sanciones: number }>> {
+  try {
+    const { matchId } = validarSchema.parse(entrada);
+    const usuario = await quien();
+    const torneo = await torneoDelPartido(matchId);
+    await assertCan(usuario.id, "match.validate", { leagueId: torneo.leagueId, matchId });
+    const r = await validar(matchId, torneo, usuario.id);
+    after(() => procesarCola(6));
+    refresh();
+    return { ok: true, sanciones: r.sanciones };
+  } catch (e) {
+    return fallo(e);
+  }
+}
+
+/** "VALIDAR LAS LISTAS" (pantalla 46): todas las cédulas ya firmadas por los dos */
+export async function validarListas(entrada: unknown): Promise<Resultado<{ validadas: number }>> {
+  try {
+    const { tournamentId } = validarListasSchema.parse(entrada);
+    const usuario = await quien();
+    const torneo = await db.tournament.findUnique({
+      where: { id: tournamentId },
+      select: { id: true, leagueId: true, partidosPorRoja: true, amarillasParaSuspension: true },
+    });
+    if (!torneo) throw new NotFoundError("No encontramos ese torneo.");
+    await assertCan(usuario.id, "match.validate", { leagueId: torneo.leagueId });
+    const listas = await db.match.findMany({
+      where: { tournamentId, status: "FINALIZADO", report: { status: "FIRMADA" } },
+      orderBy: { scheduledAt: "asc" },
+      select: { id: true },
+    });
+    if (!listas.length) throw new DomainError("No hay cédulas firmadas por validar.");
+    for (const m of listas) await validar(m.id, torneo, usuario.id);
+    after(() => procesarCola(8));
+    refresh();
+    return { ok: true, validadas: listas.length };
   } catch (e) {
     return fallo(e);
   }

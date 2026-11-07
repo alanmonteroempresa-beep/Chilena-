@@ -14,6 +14,7 @@
 //   node scripts/supabase-dev.mjs cron-secret   # genera CRON_SECRET si falta
 //   node scripts/supabase-dev.mjs app [url]     # con pnpm dev corriendo: /api/cron/trabajos llega a la base
 //   node scripts/supabase-dev.mjs recalcular [url] # guarda cartas, insignias y posts de lo validado
+//   node scripts/supabase-dev.mjs torneo [url] [seco] # tabla, estadísticas y sanciones desde lo validado
 //   node scripts/supabase-dev.mjs cron [url]    # pg_cron llama /api/cron/trabajos cada minuto (o `cron quitar`)
 //
 // El ref sale de SUPABASE_PROJECT_REF o de supabase/.temp/project-ref (después del link).
@@ -317,6 +318,22 @@ const comandos = {
       headers: { authorization: `Bearer ${env.CRON_SECRET}` },
     }).catch((e) => fallar(`No responde ${base}: ${e.message}`));
     decir(`HTTP ${r.status} · ${(await r.text()).slice(0, 400)}`);
+    if (!r.ok) process.exit(1);
+  },
+
+  /**
+   * Recalcula la tabla, las estadísticas y las sanciones de los torneos vigentes desde lo validado
+   * (/api/cron/recalcular-torneo). Con `seco` solo cuenta qué cambiaría: `torneo [url] [seco]`.
+   */
+  async torneo() {
+    const base = process.argv[3] && !process.argv[3].startsWith("seco") ? process.argv[3] : "http://localhost:3000";
+    const seco = process.argv.includes("seco");
+    necesito("CRON_SECRET");
+    const r = await fetch(`${base}/api/cron/recalcular-torneo${seco ? "?seco=1" : ""}`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${env.CRON_SECRET}` },
+    }).catch((e) => fallar(`No responde ${base}: ${e.message}`));
+    decir(`HTTP ${r.status} · ${(await r.text()).slice(0, 1500)}`);
     if (!r.ok) process.exit(1);
   },
 

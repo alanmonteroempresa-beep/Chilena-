@@ -31,3 +31,8 @@ export { proveerInscritos, type Inscrito } from "./server/puertos";
 export { CedulaArbitro } from "./components/cedula/cedula-arbitro";
 export { CedulaEnviada } from "./components/cedula/cedula-enviada";
 export { RevisarCedula } from "./components/cedula/revisar-cedula";
+export { RevisarCedulas } from "./components/liga/revisar-cedulas";
+// Lo que sale de lo validado (sanciones, estadísticas, tabla)
+export { alertasDeAmarillas, partidosParaTabla, recalcularEstadisticas, recalcularSancionesDelTorneo, sancionesDelPartido } from "./server/recalcular";
+export { datosParaRecalcular } from "./server/queries";
+export { reiniciarPartidoDePrueba } from "./server/prueba";

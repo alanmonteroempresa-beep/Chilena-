@@ -59,7 +59,7 @@
 | Asignar árbitro | ✅ | ✅ | ✅ | — |
 | Aceptar / "no puedo" | — | — | — | ✅ (propio) |
 | Capturar cédula | 🔸² | 🔸² | 🔸² | ✅ (asignado y aceptado) |
-| Responder correcciones | — | — | — | ✅ (su cédula) |
+| Responder correcciones | — | 🔸⁴ | 🔸⁴ | ✅ (su cédula) |
 | Validar resultado | — | ✅ | ✅ | — |
 | Corregir resultado ya firmado | — | ✅ (con motivo y bitácora) | ✅ | — |
 | Suspender o reprogramar partido | ✅ | ✅ | ✅ | 🔸³ |
@@ -71,6 +71,7 @@
 
 ² Solo como captura desde la cédula de papel (`PAPEL_LIGA`).
 ³ Solo su partido, durante el juego.
+⁴ Solo si el árbitro no la contesta en 48 h (POR APROBAR).
 
 ## 5. Quién ve qué dato
 | Dato | Público | Compañeros de equipo | Delegados del equipo | Liga del torneo |

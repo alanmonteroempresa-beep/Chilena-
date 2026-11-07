@@ -61,9 +61,9 @@ export async function InicioLiga({
       {d.pendientes.length > 0 && (
         <Tarjeta>
           <ul className="divide-y divide-border">
-            {d.pendientes.map((p) => (
-              <li key={p.clave}>
-                <AccionPronto className="flex min-h-16 w-full items-center gap-3 px-3.5 py-2.5 text-left">
+            {d.pendientes.map((p) => {
+              const contenido = (
+                <>
                   <span
                     className={cn(
                       "font-display inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-[24px] font-black",
@@ -77,9 +77,22 @@ export async function InicioLiga({
                     <span className="block truncate text-xs text-muted-foreground">{p.detalle}</span>
                   </span>
                   <ChevronRight aria-hidden className="size-5 text-muted-foreground" />
-                </AccionPronto>
-              </li>
-            ))}
+                </>
+              );
+              const clase = "flex min-h-16 w-full items-center gap-3 px-3.5 py-2.5 text-left";
+              return (
+                <li key={p.clave}>
+                  {/* Las cédulas ya se revisan (pantalla 46); lo demás llega con su bloque */}
+                  {p.clave === "cedulas" ? (
+                    <Link href={`/admin/${slugLiga}/cedulas`} className={clase}>
+                      {contenido}
+                    </Link>
+                  ) : (
+                    <AccionPronto className={clase}>{contenido}</AccionPronto>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </Tarjeta>
       )}

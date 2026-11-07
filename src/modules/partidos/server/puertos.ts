@@ -5,8 +5,9 @@ import "server-only";
  * y ya importa `partidos`: en vez de leer su tabla (o crear un ciclo), `ligas` registra aquí su búsqueda
  * desde su `registerListeners()`, como las reglas de authz.
  */
-export type Inscrito = { userId: string; teamId: string; numero: number | null };
-type BuscarInscritos = (tournamentId: string, teamIds: string[]) => Promise<Inscrito[]>;
+export type Inscrito = { userId: string; teamId: string; tournamentTeamId: string; numero: number | null };
+/** Sin `teamIds`: todos los del torneo */
+type BuscarInscritos = (tournamentId: string, teamIds?: string[]) => Promise<Inscrito[]>;
 
 let buscarInscritos: BuscarInscritos | null = null;
 
@@ -25,4 +26,10 @@ export async function inscritosDelPartido(tournamentId: string | null, teamIds: 
     numeros.set(i.userId, i.numero);
   }
   return { porEquipo, numeros };
+}
+
+/** Todos los inscritos del torneo (recalcular estadísticas y sanciones) */
+export async function inscritosDelTorneo(tournamentId: string) {
+  if (!buscarInscritos) throw new Error("ligas no registró quién está inscrito (asegurarListeners)");
+  return buscarInscritos(tournamentId);
 }

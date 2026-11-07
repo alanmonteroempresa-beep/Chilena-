@@ -19,6 +19,7 @@ Ligas, administradores, canchas, torneos (asistente), generador del rol, inscrip
 - Panel en escritorio y celular.
 - Tabla (PRD §7.13, `server/services/tabla.ts`): puntos → diferencia → goles a favor → entre ellos → juego limpio → sorteo de la liga (`StandingRow.ordenManual`, con `marcarSorteo` y AuditLog).
 - Bitácora en la MISMA transacción (CLAUDE.md, Arquitectura): el sorteo (`ordenManual`), los cargos (multa, condonar, confirmar) y los pagos a árbitros escriben su `AuditLog` en el mismo `db.$transaction` que el cambio.
+- La tabla GUARDADA (`server/tabla.ts`, `recalcularTabla`) se recalcula desde cero con los partidos validados al escuchar `match.validated`; posición anterior = antes de la última jornada validada. `match.validate` (Admin y Dueño, `server/reglas.ts`) y el puerto de inscritos para `partidos` se registran en `server/listeners.ts`.
 - Multas (PRD §7.8, `server/services/cargos.ts`): la sanción con multa crea su cargo `MULTA` ligado por `sanctionId`; condonar se hace en el cargo.
 
 ## Estructura

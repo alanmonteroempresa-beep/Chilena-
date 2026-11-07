@@ -90,10 +90,10 @@ y después la semilla demo. No cambies prisma/schema.prisma sin preguntarme.
 - [x] **Cédula del árbitro** modo "al terminar" (por defecto); tipo de gol; offline (borrador en el celular y `clientId`); alto contraste
 - [ ] Cédula en vivo, cambios y penales fallados o atajados en la captura
 - [x] Firmas de delegados (en el celular del árbitro o en el suyo), **correcciones** (señalar → aceptar o rechazar)
-- [ ] Validar después de 48 h sin firma
 - [ ] Captura desde papel por la liga (`PAPEL_LIGA`)
-- [ ] **Validación** → `match.validated` → tabla (`StandingRow`), `PlayerTournamentStat`, carrera
-- [ ] Sanciones automáticas y manuales, descuento por jornada, alerta "Aguas: llevas 4 amarillas"
+- [x] **Validación** (pantalla 46) → `match.validated` → tabla (`StandingRow`), `PlayerTournamentStat`, cartas, insignias y feed; validar después de 48 h sin firma
+- [x] Sanciones automáticas, descuento por jornada, alerta "Aguas: llevas 4 amarillas"
+- [ ] Sanciones manuales y ajustes de la liga (pantalla 47)
 - [ ] "No hay juego", suspensión y reprogramación; anticachirul (QR y marca en la cédula)
 
 ### O4 — Cierre de torneo y dinero de la liga

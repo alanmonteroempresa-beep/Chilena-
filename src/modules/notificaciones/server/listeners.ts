@@ -3,7 +3,7 @@ import { insigniaPorCodigo } from "@/modules/carta/server-api";
 import { personasPorId } from "@/modules/core/server-api";
 import { delegadosDe, plantillaDelEquipo } from "@/modules/equipos/server-api";
 import { horarioCorto } from "@/modules/partidos";
-import { cedulaDelPartido, partidoDelDia } from "@/modules/partidos/server-api";
+import { alertasDeAmarillas, cedulaDelPartido, partidoDelDia, sancionesDelPartido } from "@/modules/partidos/server-api";
 import { nombreCorto, nombreDeArbitro } from "@/shared/lib/personas";
 import { datosDeComentario, duenosDePost } from "@/modules/social/server-api";
 import { on } from "@/shared/events/bus";
@@ -208,6 +208,42 @@ export function registerListeners() {
         href: `/equipo/${otro.slug}/cedula/${matchId}`,
       });
     }
+  });
+
+  // ---- La liga validó (PRD §7.7 y §7.8): ya es oficial, quién se sienta y quién va a una amarilla
+  on("match.validated", async ({ matchId }) => {
+    const m = await cedulaDelPartido(matchId);
+    if (!m || m.status !== "VALIDADO") return;
+    const marcador = `${nombreCorto(m.homeTeam.nombre)} ${m.homeScore ?? 0}–${m.awayScore ?? 0} ${nombreCorto(m.awayTeam.nombre)}`;
+    const [local, visita, sanciones, alertas] = await Promise.all([
+      plantillaDelEquipo(m.homeTeam.id),
+      plantillaDelEquipo(m.awayTeam.id),
+      sancionesDelPartido(matchId),
+      alertasDeAmarillas(matchId),
+    ]);
+    await notificar({
+      userIds: [...local, ...visita].map((x) => x.user.id),
+      type: "RESULTADO_OFICIAL",
+      title: `Ya es oficial: ${marcador}`,
+      body: `La liga validó la cédula${m.round?.numero ? ` de la J${m.round.numero}` : ""}. Ya cuenta para la tabla, el goleo y tu carta.`,
+      href: `/partido/${matchId}`,
+    });
+    for (const s of sanciones)
+      if (s.userId)
+        await notificar({
+          userIds: [s.userId],
+          type: "SANCION",
+          title: `Te toca sentarte ${s.partidos === 1 ? "un partido" : `${s.partidos} partidos`}`,
+          body: s.motivo,
+          href: "/inicio",
+        });
+    for (const a of alertas)
+      await notificar({
+        userIds: [a.userId],
+        type: "ALERTA_TARJETAS",
+        title: `Aguas: llevas ${a.acumuladas} amarillas. Una más y te sientas un partido.`,
+        href: "/inicio",
+      });
   });
 
   on("card.recalculated", async ({ userId, media, delta }) => {
