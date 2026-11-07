@@ -8,13 +8,16 @@
 - Horario silencioso de 23:00 a 07:00 para push (excepto si tu partido es en menos de 3 h).
 - Los perfiles sin reclamar no reciben nada.
 - iPhone: push solo si la app está instalada en la pantalla de inicio. La pantalla 43 guía la instalación después de reclamar el perfil.
+- **Cómo funciona (beta):** "Activar avisos" (Perfil, campana e Instala la app) pide el permiso y guarda el celular en `push_subscriptions` (solo servicios de push conocidos, máximo 5 celulares por cuenta). `notificar()` manda el push de los tipos ★ después de responder (`after`) con `web-push` y las llaves VAPID; las suscripciones muertas (404/410) se borran y `pushedAt` marca lo que llegó. "Mandarme uno de prueba" manda uno al momento. El service worker (`public/sw.js`) lo enseña y al tocarlo abre su liga. **Salir** apaga los avisos de ese celular. Flag `push.enabled` (apagado: no se ofrece ni se guarda).
+- **Horario silencioso:** el push que cae de 23:00 a 07:00 no suena (queda en la campana), salvo si el aviso trae la hora de un partido que es en menos de 3 h. El recordatorio vive 1 h en el servicio de push; lo demás, 6 h.
+- **"Te toca jugar":** una clave por persona, partido y hora en la cola (`apartarUnaVez`), así dos vueltas a la vez nunca mandan dos; quien confirma tarde lo recibe en la siguiente vuelta; si reprograman el partido, sale otro.
 - Pestañas en la campana (pantalla 09): Todas · Partidos · Social · Liga.
 
 ## 2. Catálogo
 | Tipo | Cuándo | A quién | Push |
 |---|---|---|---|
 | `PASE_DE_LISTA` | Delegado abre el pase de lista | Plantilla | ★ |
-| `RECORDATORIO_PARTIDO` | 1 h antes | Los que dijeron VOY | ★ |
+| `RECORDATORIO_PARTIDO` | 1 h antes ("Te toca jugar"; al árbitro "Te toca pitar") | Los que dijeron VOY y el árbitro | ★ |
 | `PARTIDO_EN_VIVO` | Inicia un partido | Seguidores del equipo | |
 | `RESULTADO_OFICIAL` | Partido validado | Plantillas | ★ |
 | `CEDULA_POR_FIRMAR` | Árbitro envía | Delegados de ambos equipos | ★ |
@@ -25,9 +28,9 @@
 | `ALERTA_TARJETAS` | Llega a amarillas − 1 | Jugador | |
 | `CUOTA` | Cuota nueva o vence mañana | Jugadores que deben | |
 | `PAGO_REPORTADO` | Jugador o equipo dice "ya pagué" | Delegado / liga | |
-| `CARTA_ACTUALIZADA` | Lunes, si cambió la media | Jugador | ★ |
+| `CARTA_ACTUALIZADA` | Lunes, si cambió la media | Jugador | ★ (hoy sale al validar: solo campana hasta que exista el job del lunes) |
 | `PORTADA` | Sale la portada y eres protagonista | Protagonista | |
-| `VOTACION_ABIERTA` | MVP o golazo abiertos | Plantillas y seguidores | |
+| `VOTACION_ABIERTA` | MVP o golazo abiertos | Plantillas y seguidores | ★ (decisión de la beta: "Vota el MVP") |
 | `QUINIELA` | Abre la quiniela de la jornada | Aficionados de la liga | |
 | `INSIGNIA` | Ganaste una insignia | Jugador o aficionado | |
 | `NUEVO_SEGUIDOR` · `REACCION` · `COMENTARIO` · `ETIQUETA` | Social | Dueño del contenido (agrupado) | |
@@ -41,7 +44,7 @@ En Hobby, Vercel Cron corre **una vez al día** por job. Lo que necesita más fr
 | Job | Frecuencia | Dónde | Hace |
 |---|---|---|---|
 | `trabajos` | Cada minuto | pg_cron | Procesa la cola: recalcular cartas, evaluar insignias, auto-posts |
-| `recordatorios` | Cada 15 min | pg_cron | `RECORDATORIO_PARTIDO`, cierre de quiniela |
-| `votaciones` | Cada 15 min | pg_cron | Cierra votaciones vencidas, premia y publica |
+| `recordatorios` | Cada minuto, dentro de `trabajos` | pg_cron | `RECORDATORIO_PARTIDO` 1 h antes (uno por persona y partido) |
+| `votaciones` | Con la cola (`votacion.cerrar` a su hora); el job cierra las vencidas que se quedaran | pg_cron | Cierra votaciones vencidas, premia y publica |
 | `lunes` | Lunes 06:00 | Vercel Cron | Fotos de cartas, delta, portada de la jornada, once ideal |
 | `nocturno` | Diario 03:00 | Vercel Cron | Rareza de insignias, rachas, vencer publicaciones de la bolsa |

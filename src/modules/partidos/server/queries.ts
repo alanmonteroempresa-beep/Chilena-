@@ -405,6 +405,15 @@ export async function participacionDelPartido(matchId: string) {
   return { ...m, leagueId: m.tournament?.leagueId ?? null, jugaron, eventos: m.events };
 }
 
+/** Los partidos que empiezan entre `desde` y `hasta` y siguen PROGRAMADOS ("Te toca jugar", 1 h antes) */
+export function partidosPorEmpezar(desde: Date, hasta: Date) {
+  return db.match.findMany({
+    where: { status: "PROGRAMADO", scheduledAt: { gt: desde, lte: hasta } },
+    orderBy: { scheduledAt: "asc" },
+    select: { ...partidoSelect, refereeId: true },
+  });
+}
+
 /** ¿Ya se validaron todos los partidos de la jornada? (fin de jornada: tabla y rachas) */
 export async function jornadaCompleta(roundId: string) {
   const partidos = await db.match.findMany({

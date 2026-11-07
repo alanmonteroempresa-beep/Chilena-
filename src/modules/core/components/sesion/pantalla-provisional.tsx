@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { Award, ChevronRight, IdCard, LogOut, Smartphone, UserRound } from "lucide-react";
+import { Award, ChevronRight, IdCard, Smartphone, UserRound } from "lucide-react";
 import { ETIQUETA_ROL, rolDesdeRoleType, type Rol } from "@/shared/lib/roles";
 import { buttonVariants } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
-import { salir } from "../../server/actions";
+import { BotonSalir } from "./boton-salir";
 import { getCurrentUser } from "../../server/auth";
 
 type Variante = "completar" | "perfil";
@@ -24,7 +24,8 @@ const TEXTOS: Record<Variante, { titulo: string; cuerpo: string }> = {
  * PROVISIONAL: /perfil (hasta el menú de la pantalla 07) y /perfil/completar (hasta la pantalla 40).
  * Confirma con quién entraste y tus roles, lleva a tu perfil público y deja salir. Va dentro del cascarón.
  */
-export function PantallaProvisional({ variante }: { variante: Variante }) {
+/** `avisos`: el control "Activar avisos" de `notificaciones`, que compone la página (core no depende de él) */
+export function PantallaProvisional({ variante, avisos }: { variante: Variante; avisos?: React.ReactNode }) {
   const t = TEXTOS[variante];
   return (
     <main className="flex flex-col gap-6 px-4 pt-4 pb-6">
@@ -33,13 +34,13 @@ export function PantallaProvisional({ variante }: { variante: Variante }) {
         <p className="max-w-[440px] text-[15px] leading-snug text-muted-foreground">{t.cuerpo}</p>
       </div>
       <Suspense fallback={<Skeleton className="h-24 w-full max-w-[440px] rounded-xl" />}>
-        <QuienEntro variante={variante} />
+        <QuienEntro variante={variante} avisos={avisos} />
       </Suspense>
     </main>
   );
 }
 
-async function QuienEntro({ variante }: { variante: Variante }) {
+async function QuienEntro({ variante, avisos }: { variante: Variante; avisos?: React.ReactNode }) {
   // src/proxy.ts ya manda a /entrar a quien no tiene sesión; aquí no se redirige dentro del Suspense
   const usuario = await getCurrentUser();
   if (!usuario) {
@@ -80,6 +81,7 @@ async function QuienEntro({ variante }: { variante: Variante }) {
           </p>
         )}
       </div>
+      {variante === "perfil" && avisos}
       {variante === "perfil" && (
         <nav aria-label="Tu perfil" className="flex flex-col divide-y divide-border rounded-xl bg-surface">
           {(
@@ -103,15 +105,7 @@ async function QuienEntro({ variante }: { variante: Variante }) {
           Ir a mi inicio
         </Link>
       )}
-      <form action={salir}>
-        <button
-          type="submit"
-          className={buttonVariants({ variant: "quieto", size: "cta", className: "w-full border border-border" })}
-        >
-          <LogOut aria-hidden />
-          Salir
-        </button>
-      </form>
+      <BotonSalir />
     </div>
   );
 }

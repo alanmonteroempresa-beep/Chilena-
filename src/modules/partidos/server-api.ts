@@ -9,6 +9,7 @@ export {
   jornadaCompleta,
   jornadaQueViene,
   partidosDeLaJornada,
+  partidosPorEmpezar,
   partidoCompleto,
   partidoDelDia,
   partidoValidadoParaFeed,

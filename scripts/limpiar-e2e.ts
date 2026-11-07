@@ -19,6 +19,8 @@ async function main() {
   await db.report.deleteMany({ where: { targetId: { in: comentarios.map((c) => c.id) } } });
   await db.comment.deleteMany({ where: { id: { in: comentarios.map((c) => c.id) } } });
   const posts = await db.post.deleteMany({ where: { body: { startsWith: MARCA } } });
+  // Reportes de falla de los E2E (pantalla 42): el texto lleva la marca después del "¿qué pasó?"
+  const fallas = await db.bugReport.deleteMany({ where: { descripcion: { contains: ` · ${MARCA}` } } });
   const desde = process.argv.find((a) => a.startsWith("--desde="))?.slice(8);
   let avisos = 0;
   if (desde && !Number.isNaN(Date.parse(desde))) {
@@ -27,6 +29,6 @@ async function main() {
     });
     avisos = r.count;
   }
-  console.log(`✓ limpié ${comentarios.length} comentarios, ${posts.count} publicaciones [e2e] y ${avisos} avisos`);
+  console.log(`✓ limpié ${comentarios.length} comentarios, ${posts.count} publicaciones [e2e], ${fallas.count} reportes de falla y ${avisos} avisos`);
 }
 main().finally(() => db.$disconnect());

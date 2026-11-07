@@ -3,7 +3,7 @@ import { registerRule } from "@/modules/core";
 import { registerJobHandler } from "@/modules/plataforma/server-api";
 import { on } from "@/shared/events/bus";
 import { abrirMvp, cerrarVotacion } from "./mvp";
-import { cuentaReclamada } from "./queries";
+import { cuentaReclamada } from "@/modules/core/server-api";
 import { calificarQuiniela } from "./quiniela";
 import { reglaCuentaReclamada } from "./reglas";
 

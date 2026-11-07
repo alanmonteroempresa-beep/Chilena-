@@ -25,6 +25,7 @@
 | Respeto (RES) | Solo jugadores del equipo **rival** que estuvieron en la alineación |
 | Quiniela | Cualquier cuenta reclamada, hasta 1 min antes del partido (se puede cambiar hasta entonces) |
 | Votar por uno mismo | Nunca |
+| Activar avisos al celular (`push.subscribe`) · Reportar falla (`bug.report`) | Cualquier cuenta reclamada, para sí misma |
 
 ## 3. Equipo
 | Acción | Jugador | Capitán | Del. auxiliar | Del. principal | Liga |
