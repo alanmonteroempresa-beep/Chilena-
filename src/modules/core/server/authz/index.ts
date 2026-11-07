@@ -34,6 +34,7 @@ export type Action =
   | "sanction.create"
   | "money.confirmPayment"
   | "poll.vote"
+  | "prediction.create"
   | "respect.vote";
 
 export type AuthzContext = {

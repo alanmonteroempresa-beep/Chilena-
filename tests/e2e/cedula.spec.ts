@@ -4,12 +4,14 @@ import { ARCHIVO_CUENTAS, cuentas, entrarCon, salir } from "./cuentas";
 import { limpiarE2E, MARCA } from "./db";
 
 // Bloque D2: cédula al final, firmas y correcciones (PRD §7.7 · pantallas 02, 19, 56a y 56b) con el
-// partido de prueba J16 Portales vs Tigres. Al terminar lo regresa a "sin jugar".
+// partido de prueba J16 Portales vs Tigres; bloque E: la liga valida; bloque F: quiniela y MVP (pantallas 12
+// y 13). Al terminar lo regresa a "sin jugar".
 test.skip(cuentas.size === 0, `Necesita ${ARCHIVO_CUENTAS} (npx tsx scripts/cuentas-de-prueba.ts)`);
 test.describe.configure({ mode: "serial" });
 const inicio = new Date();
-const reiniciar = () => execFileSync("npx", ["tsx", "scripts/reiniciar-prueba.ts"], { stdio: "inherit" });
-test.beforeAll(reiniciar);
+const reiniciar = (...extra: string[]) => execFileSync("npx", ["tsx", "scripts/reiniciar-prueba.ts", ...extra], { stdio: "inherit" });
+// --todo: el partido vuelve a tener hora por delante (la quiniela cierra 1 minuto antes)
+test.beforeAll(() => reiniciar("--todo"));
 test.afterAll(() => {
   reiniciar();
   limpiarE2E(inicio);
@@ -62,7 +64,17 @@ async function llenarCedula(page: Page) {
 
 test("el árbitro manda la cédula; Tigres señala, el árbitro acepta y firman los dos", async ({ page }, info) => {
   test.skip(info.project.name !== "celular-oscuro", "Una pasada (cambia datos)");
-  test.setTimeout(240_000);
+  test.setTimeout(300_000);
+  // Bloque F: antes del partido, Doña Lupe pone su quiniela (pantalla 13)
+  await entrarCon(page, "aficionada");
+  await page.goto("/mi-liga/quiniela");
+  await expect(page.getByRole("heading", { name: "¿Cuánto queda?" })).toBeVisible();
+  await page.getByRole("button", { name: "1-1", exact: true }).click();
+  await page.getByRole("button", { name: "Mandar mi pronóstico · 1-1" }).click();
+  await expect(page.getByRole("button", { name: "Ya mandaste tu 1-1" })).toBeVisible();
+  await expect(page.getByText(/Lo que dice la porra · 1 pronóstico/)).toBeVisible();
+  await salir(page);
+
   await entrarCon(page, "arbitro");
   await abrirCedula(page);
   await llenarCedula(page);
@@ -121,10 +133,24 @@ test("el árbitro manda la cédula; Tigres señala, el árbitro acepta y firman 
   await expect(page.getByText(/oficial/i).first()).toBeVisible();
   await salir(page);
 
-  // Al Chícharo le llega que ya es oficial
+  // Al Chícharo le llega que ya es oficial y que vote el MVP; vota por El Tanque (por él mismo no puede)
   await entrarCon(page, "jugador");
   await page.goto("/notificaciones?tab=partidos");
   await expect(page.getByRole("link", { name: /Ya es oficial: Portales 1–1 Tigres/ })).toBeVisible();
+  await page.goto("/notificaciones");
+  await expect(page.getByRole("link", { name: /Vota el MVP de Portales 1–1 Tigres/ })).toBeVisible();
+  await page.goto("/mi-liga/votaciones");
+  await expect(page.getByRole("heading", { name: "¿Quién se la rifó?" })).toBeVisible();
+  const mvp = page.locator("section", { hasText: "MVP del partido" }).filter({ hasText: "Portales 1-1 Tigres" });
+  await expect(mvp.getByRole("button", { name: "Votar por El Chícharo" })).toHaveCount(0);
+  await mvp.getByRole("button", { name: "Votar por El Tanque" }).click();
+  await expect(mvp.getByText("Tu voto")).toBeVisible();
+  await salir(page);
+
+  // La quiniela ya se calificó: 1-1 exacto = 3 puntos
+  await entrarCon(page, "aficionada");
+  await page.goto("/mi-liga/quiniela?ranking=liga");
+  await expect(page.getByRole("listitem").filter({ hasText: "· tú" })).toContainText("3pts");
   await salir(page);
 });
 

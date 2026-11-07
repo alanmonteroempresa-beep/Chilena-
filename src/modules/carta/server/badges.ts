@@ -50,6 +50,8 @@ export type HistorialJugador = {
   /** Cuenta reclamada durante la beta (o marcada como pionera) */
   esPionero: boolean;
   torneo?: ContextoTorneo;
+  /** Votaciones ganadas por tipo (`MVP_PARTIDO`, `EL_MURO`…), de `votaciones` */
+  votadas?: Record<string, number>;
 };
 
 export type EstadoInsignia = {
@@ -147,8 +149,10 @@ export function evaluarInsignia(badge: InsigniaCatalogo, h: HistorialJugador): E
     case "champion":
     case "runner_up":
       return { ...base, veces: 0, pista: "Al cierre del torneo" };
-    case "poll_win":
-      return { ...base, veces: 0, pista: "Por votación" };
+    case "poll_win": {
+      const veces = h.votadas?.[String(c.poll)] ?? 0;
+      return veces ? { ...base, veces } : { ...base, veces: 0, pista: "Por votación" };
+    }
     case "beta_pioneer":
       return h.esPionero ? { ...base, veces: 1 } : { ...base, veces: 0, pista: "Solo en la beta" };
     default:

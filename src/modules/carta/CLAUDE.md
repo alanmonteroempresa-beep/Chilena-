@@ -18,8 +18,8 @@ La carta (fórmula, fotos semanales, delta), insignias (motor por `criteria`, pr
 - Media entre 40 y 99; en construcción hasta 3 partidos.
 - La carta y las insignias se GUARDAN (`server/persistir.ts`, `recalcularCartas`): al validar un partido, `match.validated` encola `carta.recalcular` para las dos plantillas; solo escribe lo que cambió y emite `card.recalculated` y `badge.awarded`. `services/historial.ts` arma el historial validado con lo que dan `ligas` (plantillas) y `partidos`. La lectura (`server/jugador.ts`) usa lo guardado y, si no hay nada, calcula.
 - Después de cargar la semilla: `node scripts/supabase-dev.mjs recalcular` (en silencio: no avisa ni publica lo que ya pasó).
-- Insignias (`server/badges.ts`): las de votaciones y de cierre de torneo quedan con pista hasta que existan esos datos. Rareza = % de los jugadores del torneo que la tienen.
-- Sin votaciones todavía: CRK y RES toman su valor base (55 y 70). RES solo de rivales (regla 6) cuando lleguen los votos.
+- Insignias (`server/badges.ts`): las votadas (`poll_win`) cuentan las votaciones ganadas que da `votaciones` (`votosParaLasCartas`); las de cierre de torneo quedan con pista. Rareza = % de los jugadores del torneo que la tienen.
+- CRK = MVP ganados + % de votos promedio en las votaciones del MVP de los partidos de su ventana (`votosParaLaCarta` de `votaciones`); sin votos, 55. `poll.closed` encola `carta.recalcular` del partido. RES aún toma su valor base (70); solo de rivales (regla 6) cuando lleguen los votos.
 
 ## Estructura
 - `index.ts`: **API pública**. Lo único que otros módulos pueden importar (`@/modules/carta`).

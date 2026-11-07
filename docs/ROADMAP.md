@@ -35,7 +35,7 @@ Para revisar la app en `chilena.vercel.app` con las cuentas de prueba antes de c
 - [x] 1. Esqueleto: header con selector de rol y barra inferior (Inicio · En vivo · central por rol · Mi liga · Perfil); el rol cambia el acento, el botón central y el inicio. Al entrar se va a `/inicio`. Rutas de la barra y del botón central con "Próximamente"
 - [x] 2. Inicio de cada rol con sus datos: Jugador (03), Delegado (04), Aficionado (05), Árbitro (02) y Liga (18 resumen). Sin equipo o liga: estados vacíos (§6.16). Las acciones (confirmar, pagar, recordatorio, seguir…) avisan "Llega pronto"
 - [x] 3. Perfil público y carta: perfil del jugador (06) en `/j/[username]` con pestañas Carta · Insignias · Golazos · Stats, carta frente y reverso volteable con portero y en construcción (25), insignias con rareza y progreso (14/28), y vista de visitante. Se calcula al leer con lo validado (todavía sin `player_cards` ni `user_badges`)
-- [x] 4. Mi liga: hub (`/mi-liga`) con el rol de la jornada, la tabla y el goleo; `/mi-liga/tabla`, `/mi-liga/rol?j=` y `/mi-liga/goleo`; la página del partido (`/partido/[id]`, 32) en estado final (resumen y alineaciones de la cédula validada) y programado. Votaciones, rankings, quiniela y bolsa avisan "Llega pronto"
+- [x] 4. Mi liga: hub (`/mi-liga`) con el rol de la jornada, la tabla y el goleo; `/mi-liga/tabla`, `/mi-liga/rol?j=` y `/mi-liga/goleo`; la página del partido (`/partido/[id]`, 32) en estado final (resumen y alineaciones de la cédula validada) y programado. Rankings y bolsa avisan "Llega pronto" (votaciones y quiniela ya están: S4)
 - [x] 5. Feed (10): pestañas Para ti · Golazos · Siguiendo en el inicio de jugador, delegado y aficionado; auto-posts de la última jornada validada (crónica con plantilla, resultado, gol con su tipo, tabla y rachas) armados al leer; WhatsApp comparte el partido público; reaccionar y comentar llegan pronto
 
 **Prompt:**
@@ -134,9 +134,9 @@ y después la semilla demo. No cambies prisma/schema.prisma sin preguntarme.
 
 ### S4 — Votaciones, quiniela, rankings y portada ⭐
 **PRD §6.5–6.9, §6.11 · pantallas 12, 13, 17, 26, 27**
-- [ ] Votaciones (MVP, golazo, once por posición, atajada, El Muro) con cierre automático y premio
+- [ ] Votaciones (MVP, golazo, once por posición, atajada, El Muro) con cierre automático y premio — **MVP hecho** (`/mi-liga/votaciones`): se abre al validar, un toque por voto, cierre solo con la cola, ganador a CRK, insignia MVP y su post; faltan golazo, once, atajada y El Muro (al cerrar la jornada)
 - [ ] Respeto (RES) de rivales después del partido
-- [ ] Quiniela (+/–, 3 y 1 puntos, ranking por porra y liga, "lo que dice la porra")
+- [x] Quiniela (+/–, 3 y 1 puntos, ranking por porra y liga, "lo que dice la porra") — `/mi-liga/quiniela`, se califica al validar
 - [ ] Rankings y pique: por posición y alcaldía, duelo, clásico, rachas, récords, humor opcional por liga
 - [ ] **Portada de la jornada** y crónica con plantillas (CARTA §5), once ideal; la liga puede editarlas
 - [ ] **Inicio según el día** (lunes, entre semana, sábado y domingo)

@@ -8,6 +8,7 @@ export {
   equiposQueSigue,
   plantillaDelEquipo,
   respuestasDelPaseDeLista,
+  siguenAlEquipo,
 } from "./server/queries";
 export { contextosDeRolEnEquipos } from "./server/contextos";
 export { InicioDelegado } from "./components/inicio-delegado";

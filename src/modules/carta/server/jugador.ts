@@ -65,6 +65,7 @@ export async function datosDelJugador(username: string, { conRareza = false } = 
     partidos: calculada?.historial ?? [],
     esPortero: carta.grupo === "PORTERO",
     esPionero: persona.isPionero || persona.claimedAt != null,
+    votadas: calculada?.votadas,
     torneo: torneo
       ? {
           nombre: torneo.nombre,

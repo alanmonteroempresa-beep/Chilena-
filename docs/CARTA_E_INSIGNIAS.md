@@ -87,7 +87,7 @@ Interpolación lineal entre los puntos de cada tabla (fuera de rango se toma el 
 ## 3. Votaciones
 | Votación | Quién vota | Cuándo cierra | Premio |
 |---|---|---|---|
-| MVP del partido | Jugadores de ambos equipos y aficionados (1 voto por persona) | Domingo 22:00 o 24 h después del partido | +1 MVP (CRK), insignia MVP, auto-post |
+| MVP del partido | Jugadores de ambos equipos y aficionados (1 voto por persona) | 22:00 del día en que se valida (si se valida después de las 16:00, del día siguiente) — POR APROBAR, ver PRD §6.7 | +1 MVP (CRK), insignia MVP, auto-post |
 | Golazo de la jornada | Todos | Lunes 22:00 | Insignia, auto-post |
 | Once de la jornada (por posición) | Todos | Lunes 22:00 | Carta especial de la semana |
 | Atajada de la jornada | Todos | Lunes 22:00 | Insignia |

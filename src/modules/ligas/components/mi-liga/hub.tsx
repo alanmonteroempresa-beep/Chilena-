@@ -13,17 +13,21 @@ import type { datosMiLiga } from "../../server/mi-liga";
 
 type Datos = NonNullable<Awaited<ReturnType<typeof datosMiLiga>>>;
 
-/** Lo que el hub trae pero llega con su fase (votaciones, rankings, quiniela, bolsa) */
+/** Votaciones y quiniela (pantallas 12 y 13): un toque y listo */
+const ACCESOS = [
+  { titulo: "Votaciones", Icono: Vote, href: "/mi-liga/votaciones", texto: "¿Quién se la rifó? Vota el MVP" },
+  { titulo: "Quiniela", Icono: Ticket, href: "/mi-liga/quiniela", texto: "¿Cuánto queda? Sin dinero, puro orgullo" },
+];
+
+/** Lo que el hub trae pero llega con su fase (rankings, bolsa) */
 const PRONTO = [
-  { titulo: "Votaciones", Icono: Vote },
   { titulo: "Rankings y pique", Icono: Swords },
-  { titulo: "Quiniela", Icono: Ticket },
   { titulo: "Bolsa del llano", Icono: Megaphone },
 ];
 
 /**
  * Hub de Mi liga (pantalla Mi liga · celular): cada acceso trae su adelanto. El rol de la jornada con el
- * partido de tu equipo, la tabla y el goleo; lo demás avisa que llega pronto. Solo lectura.
+ * partido de tu equipo, la tabla, el goleo, las votaciones y la quiniela; lo demás avisa que llega pronto.
  */
 export function HubMiLiga({ d, yo, esJugador }: { d: Datos; yo: string; esJugador: boolean }) {
   const p = d.destacado;
@@ -129,6 +133,20 @@ export function HubMiLiga({ d, yo, esJugador }: { d: Datos; yo: string; esJugado
       )}
 
       <ul className="grid grid-cols-2 gap-2.5">
+        {ACCESOS.map(({ titulo, Icono, href, texto }) => (
+          <li key={titulo}>
+            <Link
+              href={href}
+              className="flex h-full min-h-24 w-full flex-col items-start gap-2 rounded-2xl border border-border bg-surface p-3.5 text-left shadow-[0_1px_2px_rgba(7,9,12,0.05)]"
+            >
+              <Sobretitulo className="flex items-center gap-1.5">
+                <Icono aria-hidden className="size-4 text-role" />
+                {titulo}
+              </Sobretitulo>
+              <span className="text-[13px] leading-snug text-muted-foreground">{texto}</span>
+            </Link>
+          </li>
+        ))}
         {PRONTO.map(({ titulo, Icono }) => (
           <li key={titulo}>
             <AccionPronto

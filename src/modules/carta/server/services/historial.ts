@@ -83,8 +83,14 @@ export function armarHistoriales(plantillas: Plantilla[], filas: Filas): Map<str
   return historiales;
 }
 
-/** La ventana de la carta: los últimos 20 partidos validados en que fue convocado (§1) */
-export function ventanaDe(partidos: PartidoDelJugador[]): Ventana {
+/** Los partidos de la ventana de la carta (para contar sus votaciones) */
+export const partidosDeLaVentana = (partidos: PartidoDelJugador[]) => new Set(partidos.slice(-VENTANA_PARTIDOS).map((p) => p.matchId));
+
+/**
+ * La ventana de la carta: los últimos 20 partidos validados en que fue convocado (§1). `votos`: MVP ganados
+ * y % de votos promedio en esos partidos (de `votaciones`); sin votos, CRK toma su valor base.
+ */
+export function ventanaDe(partidos: PartidoDelJugador[], votos: { mvps: number; porcentajeVotos: number } = { mvps: 0, porcentajeVotos: 0 }): Ventana {
   const ventana = partidos.slice(-VENTANA_PARTIDOS);
   const jugados = ventana.filter((p) => p.jugo);
   const tarjetas = conteoDeTarjetas(ventana.map((p) => p.tarjetas)).values().next().value ?? { amarillas: 0, rojas: 0 };
@@ -95,9 +101,9 @@ export function ventanaDe(partidos: PartidoDelJugador[]): Ventana {
     asistencias: jugados.reduce((s, p) => s + p.asistencias, 0),
     amarillas: tarjetas.amarillas,
     rojas: tarjetas.rojas,
-    // Las votaciones (MVP y RES) llegan con su fase: sin votos, CRK y RES toman su valor base
-    mvps: 0,
-    porcentajeVotos: 0,
+    mvps: votos.mvps,
+    porcentajeVotos: votos.porcentajeVotos,
+    // RES llega con su fase: sin votos de los rivales toma su valor base
     votosDeRivales: [],
     vallasInvictas: jugados.filter((p) => p.golesEnContra === 0).length,
     golesRecibidos: jugados.reduce((s, p) => s + p.golesEnContra, 0),

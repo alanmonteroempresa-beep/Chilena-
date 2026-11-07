@@ -10,6 +10,7 @@ import {
 } from "@/modules/partidos/server-api";
 import { runPendingJobs } from "@/modules/plataforma/server-api";
 import { borrarPostsDelPartido, publicarPartido } from "@/modules/social/server-api";
+import { cerrarVencidas, reiniciarVotacionesDelPartido } from "@/modules/votaciones/server-api";
 import { asegurarListeners } from "@/shared/events/bus";
 import { logger } from "@/shared/lib/logger";
 
@@ -52,20 +53,21 @@ async function recalcularTorneos(params: URLSearchParams) {
 
 /**
  * Regresa el partido de prueba (J16 Portales vs Tigres) a "sin jugar" y deja todo como si nunca se hubiera
- * jugado: sanciones, estadísticas, tabla, posts y cartas. `?todo=1`: además el pase de lista en blanco y el
- * partido hoy a las 20:00. Lo llama `npx tsx scripts/reiniciar-prueba.ts [url] [--todo]`.
+ * jugado: sanciones, estadísticas, tabla, votación del MVP, posts y cartas. `?todo=1`: además el pase de lista en blanco y el
+ * partido hoy a las 20:00 (o mañana, si ya pasó; `&hora=17:00` cambia la hora). Lo llama `npx tsx scripts/reiniciar-prueba.ts [url] [--todo]`.
  */
 async function reiniciarPrueba(params: URLSearchParams) {
   await asegurarListeners();
   const todo = params.get("todo") === "1";
-  const r = await reiniciarPartidoDePrueba({ todo });
+  const r = await reiniciarPartidoDePrueba({ todo, hora: params.get("hora") ?? undefined });
   const paseDeLista = todo ? await reiniciarPaseDeLista(r.matchId) : null;
-  if (!r.tournamentId) return { ...r, paseDeLista };
+  const votaciones = await reiniciarVotacionesDelPartido(r.matchId);
+  if (!r.tournamentId) return { ...r, paseDeLista, votaciones };
   const jugadores = await jugadoresDelPartido(r.matchId);
   const tabla = await recalcularTabla(r.tournamentId);
   const posts = await borrarPostsDelPartido(r.matchId, { desde: r.validadoEn, userIds: jugadores });
   const cartas = await recalcularCartas(jugadores, { silencioso: true });
-  return { ...r, paseDeLista, tabla, posts, cartas };
+  return { ...r, paseDeLista, votaciones, tabla, posts, cartas };
 }
 
 // Jobs (docs/NOTIFICACIONES.md §3). pg_cron llama `trabajos`, `recordatorios`, `votaciones`;
@@ -75,8 +77,10 @@ const JOBS: Record<string, (params: URLSearchParams) => Promise<unknown>> = {
   recalcular: recalcularTodo,
   "recalcular-torneo": recalcularTorneos,
   "reiniciar-prueba": reiniciarPrueba,
+  // Las votaciones cierran solas con la cola (`votacion.cerrar`); esto cierra las vencidas que se quedaran
+  votaciones: () => cerrarVencidas(),
   // Fase S2 / S3 / S4: implementar
-  // recordatorios: ..., votaciones: ..., lunes: ..., nocturno: ...
+  // recordatorios: ..., lunes: ..., nocturno: ...
 };
 
 export async function GET(request: NextRequest, ctx: RouteContext<"/api/cron/[job]">) {

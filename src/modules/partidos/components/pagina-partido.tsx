@@ -106,7 +106,19 @@ export function PaginaPartido({ p }: { p: Partido }) {
             <Pronto texto="La porra del partido llega con el feed y los comentarios." />
           </TabsContent>
           <TabsContent value="mvp">
-            <Pronto texto="La votación del MVP llega con su fase: votan los dos equipos y la afición." />
+            {/* La votación vive en votaciones (pantalla 12); se abre cuando la liga valida */}
+            <Tarjeta className="flex flex-col gap-2 p-4 text-sm">
+              <p className="text-muted-foreground">
+                {p.status === "VALIDADO"
+                  ? "¿Quién se la rifó? Votan los dos equipos y la afición: un toque y listo."
+                  : "La votación del MVP se abre cuando la liga valida la cédula."}
+              </p>
+              {p.status === "VALIDADO" && (
+                <Link href="/mi-liga/votaciones" className={buttonVariants({ variant: "lima", size: "cta", className: "w-full" })}>
+                  Votar el MVP
+                </Link>
+              )}
+            </Tarjeta>
           </TabsContent>
         </Tabs>
       ) : (

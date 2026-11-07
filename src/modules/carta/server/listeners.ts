@@ -10,8 +10,13 @@ export function registerListeners() {
   on("match.validated", async ({ matchId }) => {
     await enqueueJob("carta.recalcular", { matchId });
   });
+  // Cerró una votación (MVP, El Muro…): CRK y las insignias votadas de los de ese partido
+  on("poll.closed", async ({ matchId, winnerUserId }) => {
+    if (matchId) await enqueueJob("carta.recalcular", { matchId });
+    else if (winnerUserId) await enqueueJob("carta.recalcular", { userIds: [winnerUserId] });
+  });
   registerJobHandler("carta.recalcular", async (payload) => {
-    const { matchId } = payload as { matchId: string };
-    await recalcularCartas(await jugadoresDelPartido(matchId));
+    const { matchId, userIds } = payload as { matchId?: string; userIds?: string[] };
+    await recalcularCartas(matchId ? await jugadoresDelPartido(matchId) : (userIds ?? []));
   });
 }
