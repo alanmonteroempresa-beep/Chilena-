@@ -13,9 +13,11 @@ const PRUEBA = { liga: "dominical-iztapalapa", jornada: 16, local: "dep-portales
  * en vivo y las sanciones automáticas que salieron de él (con bitácora), lo deja PROGRAMADO y recalcula los
  * partidos cumplidos y las estadísticas. La tabla, el pase de lista, el feed y las cartas los recalcula quien
  * llama (cada módulo lo suyo). Solo toca ese partido de la liga demo y de un torneo vigente.
- * `todo`: además, el partido hoy a las 20:00 (CDMX).
+ * `todo`: además, el partido hoy a las `hora` (CDMX, 20:00 por defecto); si esa hora ya pasó, mañana (así la
+ * quiniela sigue abierta).
  */
-export async function reiniciarPartidoDePrueba({ todo = false } = {}) {
+export async function reiniciarPartidoDePrueba({ todo = false, hora = "20:00" }: { todo?: boolean; hora?: string } = {}) {
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(hora)) throw new Error("La hora va como 20:00");
   const m = await db.match.findFirst({
     where: {
       round: { numero: PRUEBA.jornada },
@@ -31,7 +33,10 @@ export async function reiniciarPartidoDePrueba({ todo = false } = {}) {
     },
   });
   if (!m) throw new Error("No encontré la J16 Portales vs Tigres de la liga demo en un torneo vigente (¿cargaste la semilla demo?)");
-  const hoy = new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date());
+  const ahora = new Date();
+  const dia = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(d);
+  let cuando = fromZonedTime(`${dia(ahora)}T${hora}:00`, TZ);
+  if (cuando.getTime() <= ahora.getTime() + 10 * 60_000) cuando = fromZonedTime(`${dia(new Date(ahora.getTime() + 86_400_000))}T${hora}:00`, TZ);
 
   await db.$transaction(
     async (tx) => {
@@ -66,7 +71,7 @@ export async function reiniciarPartidoDePrueba({ todo = false } = {}) {
           endedAt: null,
           validatedAt: null,
           validatedById: null,
-          ...(todo ? { scheduledAt: fromZonedTime(`${hoy}T20:00:00`, TZ) } : {}),
+          ...(todo ? { scheduledAt: cuando } : {}),
         },
       });
       await tx.auditLog.create({
@@ -77,5 +82,11 @@ export async function reiniciarPartidoDePrueba({ todo = false } = {}) {
     { timeout: 30_000, maxWait: 10_000 },
   );
   if (m.tournament) await recalcularEstadisticas(m.tournament.id);
-  return { matchId: m.id, tournamentId: m.tournament?.id ?? null, estaba: m.status, validadoEn: m.validatedAt, hoy: todo ? hoy : null };
+  return {
+    matchId: m.id,
+    tournamentId: m.tournament?.id ?? null,
+    estaba: m.status,
+    validadoEn: m.validatedAt,
+    cuando: todo ? `${dia(cuando)} a las ${hora}` : null,
+  };
 }

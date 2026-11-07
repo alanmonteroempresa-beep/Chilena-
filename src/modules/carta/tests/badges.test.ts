@@ -107,6 +107,12 @@ describe("las que dependen del torneo y de las votaciones", () => {
     expect(evaluarInsignia(badge("MVP"), h)).toMatchObject({ veces: 0, pista: "Por votación" });
   });
 
+  it("las votadas cuentan las votaciones ganadas (MVP ×2)", () => {
+    const h = historial([partido()], { votadas: { MVP_PARTIDO: 2 } });
+    expect(evaluarInsignia(badge("MVP"), h)).toMatchObject({ veces: 2 });
+    expect(evaluarInsignia(badge("EL_MURO"), h)).toMatchObject({ veces: 0, pista: "Por votación" });
+  });
+
   it("fair play sin tarjetas muestra su avance", () => {
     const h = historial([partido()], { torneo: { ...torneo, amarillas: 0, jugados: 5 } });
     expect(evaluarInsignia(badge("FAIR_PLAY"), h)).toMatchObject({ veces: 0, progreso: 5, meta: 8 });

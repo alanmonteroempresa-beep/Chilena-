@@ -12,6 +12,7 @@ export {
   partidoCompleto,
   partidoDelDia,
   partidoValidadoParaFeed,
+  participacionDelPartido,
   partidosValidadosVigentes,
   partidosValidadosConGoles,
   partidosDelArbitro,

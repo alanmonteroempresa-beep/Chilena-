@@ -42,6 +42,13 @@ export function equiposQueSigue(userId: string) {
   });
 }
 
+/** De estas personas, quiénes siguen al equipo (la porra del equipo en la quiniela, pantalla 13) */
+export async function siguenAlEquipo(teamId: string, userIds: string[]) {
+  if (!userIds.length) return [];
+  const filas = await db.teamFollow.findMany({ where: { teamId, userId: { in: userIds } }, select: { userId: true } });
+  return filas.map((f) => f.userId);
+}
+
 const personaSelect = { id: true, username: true, nombre: true, sobrenombre: true, fotoPath: true } as const;
 
 export function equipoPorSlug(slug: string) {

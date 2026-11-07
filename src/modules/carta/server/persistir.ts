@@ -4,13 +4,15 @@ import { perfilesDeJugadores } from "@/modules/core/server-api";
 import { equipoDeCadaQuien } from "@/modules/equipos/server-api";
 import { plantillasDeJugadores } from "@/modules/ligas/server-api";
 import { estadisticasVigentes, historialDePlantillas } from "@/modules/partidos/server-api";
+import { votosParaLaCarta } from "@/modules/votaciones";
+import { votosParaLasCartas } from "@/modules/votaciones/server-api";
 import { emit } from "@/shared/events/bus";
 import { db } from "@/shared/lib/db";
 import { logger } from "@/shared/lib/logger";
 import { evaluarInsignias, type CriterioInsignia } from "./badges";
 import { calcularCarta, grupoDePosicion, type Carta, type Ventana } from "./formula";
 import { catalogoDeInsignias } from "./queries";
-import { armarHistoriales, posicionMasJugada, ventanaDe, type PartidoDelJugador } from "./services/historial";
+import { armarHistoriales, partidosDeLaVentana, posicionMasJugada, ventanaDe, type PartidoDelJugador } from "./services/historial";
 
 /** El historial validado de cada persona (plantillas de `ligas` + partidos, alineaciones y eventos) */
 export async function historiales(userIds: string[]) {
@@ -22,19 +24,35 @@ export async function historiales(userIds: string[]) {
   return armarHistoriales(plantillas, await historialDePlantillas(plantillas));
 }
 
-export type CartaCalculada = { carta: Carta; ventana: Ventana; historial: PartidoDelJugador[]; esPionero: boolean };
+export type CartaCalculada = {
+  carta: Carta;
+  ventana: Ventana;
+  historial: PartidoDelJugador[];
+  esPionero: boolean;
+  /** Votaciones ganadas por tipo (insignias votadas: MVP, Golazo, El Muro…) */
+  votadas: Record<string, number>;
+};
 
 /** La carta de cada jugador con la fórmula (docs/CARTA_E_INSIGNIAS.md §1) */
 export async function calcularCartas(userIds: string[]): Promise<Map<string, CartaCalculada>> {
-  const [hs, perfiles, miembros] = await Promise.all([historiales(userIds), perfilesDeJugadores(userIds), equipoDeCadaQuien(userIds)]);
+  const [hs, perfiles, miembros, votaciones] = await Promise.all([
+    historiales(userIds),
+    perfilesDeJugadores(userIds),
+    equipoDeCadaQuien(userIds),
+    votosParaLasCartas(userIds),
+  ]);
   const resultado = new Map<string, CartaCalculada>();
   for (const id of userIds) {
     const historial = hs.get(id) ?? [];
     const perfil = perfiles.find((p) => p.id === id);
     const posicion = perfil?.playerProfile?.posicionPrincipal ?? miembros.find((m) => m.userId === id)?.posicion ?? null;
-    const ventana = ventanaDe(historial);
+    // CRK: MVP y % de votos solo de las votaciones del MVP de los partidos de su ventana (CARTA §1)
+    const mvp = votaciones.filter((v) => v.tipo === "MVP_PARTIDO");
+    const ventana = ventanaDe(historial, votosParaLaCarta(mvp, id, partidosDeLaVentana(historial)));
     const carta = calcularCarta(ventana, grupoDePosicion(posicion, posicionMasJugada(historial)), historial.filter((p) => p.jugo).length);
-    resultado.set(id, { carta, ventana, historial, esPionero: Boolean(perfil?.isPionero || perfil?.claimedAt) });
+    const votadas: Record<string, number> = {};
+    for (const v of votaciones) if (v.ganadorUserId === id) votadas[v.tipo] = (votadas[v.tipo] ?? 0) + 1;
+    resultado.set(id, { carta, ventana, historial, esPionero: Boolean(perfil?.isPionero || perfil?.claimedAt), votadas });
   }
   return resultado;
 }
@@ -99,7 +117,7 @@ export async function recalcularCartas(userIds: string[], { silencioso = false }
   for (const [userId, c] of calculadas) {
     const estados = evaluarInsignias(
       catalogo.map((b) => ({ ...b, criteria: b.criteria as CriterioInsignia })),
-      { partidos: c.historial, esPortero: c.carta.grupo === "PORTERO", esPionero: c.esPionero },
+      { partidos: c.historial, esPortero: c.carta.grupo === "PORTERO", esPionero: c.esPionero, votadas: c.votadas },
     );
     for (const e of estados) {
       const badge = porCodigo.get(e.code)!;

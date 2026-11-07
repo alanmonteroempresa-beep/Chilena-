@@ -6,6 +6,7 @@ import { horarioCorto } from "@/modules/partidos";
 import { alertasDeAmarillas, cedulaDelPartido, partidoDelDia, sancionesDelPartido } from "@/modules/partidos/server-api";
 import { nombreCorto, nombreDeArbitro } from "@/shared/lib/personas";
 import { datosDeComentario, duenosDePost } from "@/modules/social/server-api";
+import { cuandoCierra } from "@/modules/votaciones";
 import { on } from "@/shared/events/bus";
 import { nombreVisible } from "@/shared/lib/personas";
 import { notificar } from "./notificar";
@@ -244,6 +245,22 @@ export function registerListeners() {
         title: `Aguas: llevas ${a.acumuladas} amarillas. Una más y te sientas un partido.`,
         href: "/inicio",
       });
+  });
+
+  // ---- Se abrió la votación del MVP (pantalla 12): a los dos equipos
+  on("poll.opened", async ({ type, matchId, closesAt }) => {
+    if (type !== "MVP_PARTIDO" || !matchId) return;
+    const m = await partidoDelDia(matchId);
+    if (!m) return;
+    const [local, visita] = await Promise.all([plantillaDelEquipo(m.homeTeam.id), plantillaDelEquipo(m.awayTeam.id)]);
+    const marcador = `${nombreCorto(m.homeTeam.nombre)} ${m.homeScore ?? 0}–${m.awayScore ?? 0} ${nombreCorto(m.awayTeam.nombre)}`;
+    await notificar({
+      userIds: [...local, ...visita].map((x) => x.user.id),
+      type: "VOTACION_ABIERTA",
+      title: `¿Quién se la rifó? Vota el MVP de ${marcador}`,
+      body: `Cierra ${cuandoCierra(new Date(closesAt), new Date())}. Un toque y listo.`,
+      href: "/mi-liga/votaciones",
+    });
   });
 
   on("card.recalculated", async ({ userId, media, delta }) => {

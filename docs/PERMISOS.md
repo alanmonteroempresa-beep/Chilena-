@@ -23,7 +23,7 @@
 | MVP, golazo, once, atajada | Cualquier cuenta reclamada, 1 voto por votación |
 | El Muro | Solo compañeros activos del equipo |
 | Respeto (RES) | Solo jugadores del equipo **rival** que estuvieron en la alineación |
-| Quiniela | Cualquier cuenta reclamada, hasta 1 min antes del partido |
+| Quiniela | Cualquier cuenta reclamada, hasta 1 min antes del partido (se puede cambiar hasta entonces) |
 | Votar por uno mismo | Nunca |
 
 ## 3. Equipo

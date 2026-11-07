@@ -12,7 +12,8 @@ export type DomainEvents = {
   "match.correction_requested": { matchId: string; correctionId: string };
   "match.validated": { matchId: string; tournamentId: string | null; roundId: string | null };
   "round.closed": { roundId: string; tournamentId: string };
-  "poll.closed": { pollId: string; winnerOptionId: string | null };
+  "poll.opened": { pollId: string; type: string; matchId: string | null; closesAt: string };
+  "poll.closed": { pollId: string; winnerOptionId: string | null; type: string; matchId: string | null; winnerUserId: string | null };
   "tournament.finished": { tournamentId: string; championTeamId: string | null };
   "post.created": { postId: string };
   "post.reacted": { postId: string; userId: string; type: string };

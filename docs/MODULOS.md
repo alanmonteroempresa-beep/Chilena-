@@ -59,7 +59,7 @@ src/
 3. **Cada módulo es dueño de sus tablas.** Otro módulo puede leerlas solo con funciones de `queries.ts` exportadas en el `index.ts`.
 
 ### Eventos del dominio (beta)
-`user.claimed` · `team.member_joined` · `attendance.responded` · `match.started` · `match.live_score_updated` · `attendance.link_opened` · `match.report_submitted` · `match.report_signed` · `match.correction_requested` · `match.correction_answered` · `match.validated` · `round.closed` · `poll.closed` · `tournament.finished` · `post.created` · `comment.created` · `badge.awarded` · `card.recalculated`
+`user.claimed` · `team.member_joined` · `attendance.responded` · `match.started` · `match.live_score_updated` · `attendance.link_opened` · `match.report_submitted` · `match.report_signed` · `match.correction_requested` · `match.correction_answered` · `match.validated` · `round.closed` · `poll.opened` · `poll.closed` · `tournament.finished` · `post.created` · `comment.created` · `badge.awarded` · `card.recalculated`
 
 ## 3. Reparto entre dos programadores
 

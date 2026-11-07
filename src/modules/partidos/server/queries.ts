@@ -374,6 +374,37 @@ export function partidoValidadoParaFeed(matchId: string) {
   });
 }
 
+/**
+ * Quiénes jugaron un partido VALIDADO y sus goles, asistencias y penales atajados (candidatos al MVP,
+ * pantalla 12). "Jugó" = lo marcó el árbitro en la cédula; si no marcó, los titulares.
+ */
+export async function participacionDelPartido(matchId: string) {
+  const m = await db.match.findFirst({
+    where: { id: matchId, status: "VALIDADO" },
+    select: {
+      id: true,
+      homeScore: true,
+      awayScore: true,
+      validatedAt: true,
+      tournamentId: true,
+      roundId: true,
+      tournament: { select: { leagueId: true } },
+      homeTeam: { select: equipoSelect },
+      awayTeam: { select: equipoSelect },
+      lineups: { select: { teamId: true, players: { select: { userId: true, posicion: true, jugo: true, titular: true } } } },
+      events: {
+        where: { oficial: true, voided: false, type: { in: ["GOL", "PENAL_ATAJADO"] } },
+        select: { type: true, minute: true, tipoGol: true, teamId: true, playerId: true, assistPlayerId: true },
+      },
+    },
+  });
+  if (!m) return null;
+  const jugaron = m.lineups.flatMap((l) =>
+    l.players.filter((p) => p.jugo ?? p.titular).map((p) => ({ userId: p.userId, teamId: l.teamId, posicion: p.posicion })),
+  );
+  return { ...m, leagueId: m.tournament?.leagueId ?? null, jugaron, eventos: m.events };
+}
+
 /** ¿Ya se validaron todos los partidos de la jornada? (fin de jornada: tabla y rachas) */
 export async function jornadaCompleta(roundId: string) {
   const partidos = await db.match.findMany({

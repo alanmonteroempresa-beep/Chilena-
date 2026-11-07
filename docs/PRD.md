@@ -267,8 +267,16 @@ Votan **compañeros y aficionados**, con un toque por voto. Cierran a una hora f
 - **El Muro** (interna: votan solo los compañeros del portero).
 - **Respeto (RES):** después del partido, **solo los rivales** califican el juego limpio de cada jugador del 1 al 5 (alimenta la carta).
 
+**MVP del partido: cómo funciona en la app — POR APROBAR**
+- Se abre solo cuando la liga **valida** el partido. Candidatos: los que jugaron, de los dos equipos (lo que marcó el árbitro en la cédula), con su renglón real de la cédula ("Gol de chilena al 87'", "Valla invicta").
+- Vota cualquier cuenta reclamada (compañeros, rivales y aficionados), **un voto por votación y no se cambia**; nadie vota por sí mismo. Ya votado, se ven los porcentajes.
+- **Cierre:** a las **22:00 del día en que se valida**; si se valida después de las 16:00, a las 22:00 del día siguiente (siempre hay al menos 6 h para votar).
+- **Ganador:** el de más votos; si empatan, **el que llegó primero** a ese número. Sin votos no hay MVP.
+- Premio: +1 MVP en CRK (con el % de votos promedio), la insignia MVP (repetible) y su post en el feed. Al abrirse, aviso "Vota el MVP" a los dos equipos.
+
 ### 6.8 Quiniela (pantalla 13)
 **Sin dinero, puro orgullo.** Pronóstico de marcador con botones +/–. Da **3 puntos** si atinas al marcador y **1** si atinas a quién gana. Hay ranking por porra o equipo y por liga, y "Lo que dice la porra" (% de pronósticos). Cierra 1 minuto antes del partido.
+- **Cómo funciona en la app — POR APROBAR:** el pronóstico **se puede cambiar** hasta que cierra. Atinarle al empate cuenta como atinarle a quién gana (1 punto). Se califica cuando la liga valida (regla 2). El ranking ordena por puntos y luego por marcadores exactos; los empatados comparten lugar. La porra de un equipo = sus jugadores y quienes lo siguen.
 
 ### 6.9 La Portada (pantalla 26)
 Cada lunes, por liga: **portada estilo tabloide** con el héroe de la jornada, titular pícaro, marcador grande y franja de resultados, en formato 1080×1920 para estados e historias. Sale **destacada arriba del feed del lunes**. En la beta, el titular sale de un **banco de plantillas** según el resultado (goleada, remontada, gol agónico, empate, etc.).
