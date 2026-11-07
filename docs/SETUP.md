@@ -79,6 +79,15 @@ Después de cargar la semilla demo, guarda cartas, insignias y posts de lo ya va
 ```bash
 node scripts/supabase-dev.mjs recalcular            # con pnpm dev corriendo
 ```
+Tabla, estadísticas y sanciones salen solas de lo validado. Para comprobar que lo guardado cuadra con las cédulas (o arreglarlo):
+```bash
+node scripts/supabase-dev.mjs torneo seco           # solo cuenta qué cambiaría
+node scripts/supabase-dev.mjs torneo                # lo recalcula y lo guarda
+```
+El partido de prueba (J16 Portales vs Tigres) se regresa a "sin jugar", como si nunca se hubiera jugado:
+```bash
+npx tsx scripts/reiniciar-prueba.ts https://chilena.vercel.app --todo   # --todo: pase de lista en blanco y hoy a las 20:00
+```
 
 A mano, en el SQL editor de otro proyecto:
 ```sql

@@ -13,7 +13,10 @@ export {
   tablaDelTorneo,
   torneoVigenteDeLaLiga,
   torneoVigenteDelEquipo,
+  rolEnLiga,
+  torneosVigentes,
 } from "./server/queries";
+export { recalcularTabla } from "./server/tabla";
 export { contextosDeRolEnLigas } from "./server/contextos";
 export { InicioLiga } from "./components/inicio-liga";
 // Mi liga (hub, tabla, rol de juegos y goleo)

@@ -1,70 +1,31 @@
-// Regresa el partido de prueba (J16 · Dep. Portales vs Tigres del Llano) a "sin jugar" en chilena-dev:
-// borra su cédula, correcciones, eventos, alineaciones y marcador en vivo, y lo deja PROGRAMADO.
-// Lo usan los E2E de la cédula al terminar y sirve para volver a jugarlo de principio a fin.
-//   npx tsx scripts/reiniciar-prueba.ts            # solo la cédula y el resultado
-//   npx tsx scripts/reiniciar-prueba.ts --todo     # además, el pase de lista en blanco y el partido hoy a las 20:00
-//   --forzar                                       # aunque la liga ya lo haya validado
-// La bitácora (audit_logs) no se borra: queda el historial de cada prueba.
-// Carga .env.local por dentro; nunca imprime secretos.
+// Regresa el partido de prueba (J16 · Dep. Portales vs Tigres del Llano) a "sin jugar", como si nunca se
+// hubiera jugado: cédula, correcciones, eventos, alineaciones, sanciones que salieron de él, estadísticas,
+// tabla, posts y cartas. Llama /api/cron/reiniciar-prueba de la app con el CRON_SECRET de .env.local
+// (se lee por dentro y nunca se imprime). Lo usan los E2E de la cédula al terminar.
+//   npx tsx scripts/reiniciar-prueba.ts                                  # contra pnpm dev (localhost:3000)
+//   npx tsx scripts/reiniciar-prueba.ts https://chilena.vercel.app --todo # producción; --todo: pase de lista en blanco y hoy a las 20:00
 import { existsSync, readFileSync } from "node:fs";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { fromZonedTime } from "date-fns-tz";
 import { parse } from "dotenv";
-import { PrismaClient } from "../src/generated/prisma/client";
 
 const env = existsSync(".env.local") ? parse(readFileSync(".env.local")) : {};
-if (!env.DIRECT_URL) {
-  console.log("Sin DIRECT_URL: no hay base que reiniciar.");
-  process.exit(0);
-}
-const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: env.DIRECT_URL }) });
+const base = (process.argv.slice(2).find((a) => a.startsWith("http")) ?? "http://localhost:3000").replace(/\/$/, "");
 const todo = process.argv.includes("--todo");
-const forzar = process.argv.includes("--forzar");
 
 async function main() {
-  const m = await db.match.findFirst({
-    where: { round: { numero: 16 }, homeTeam: { slug: "dep-portales" }, awayTeam: { slug: "tigres-del-llano" } },
-    select: { id: true, status: true },
+  if (!env.CRON_SECRET) {
+    console.log("Sin CRON_SECRET en .env.local: no hay con qué llamar a la app.");
+    return;
+  }
+  const r = await fetch(`${base}/api/cron/reiniciar-prueba${todo ? "?todo=1" : ""}`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${env.CRON_SECRET}` },
   });
-  if (!m) throw new Error("No encontré la J16 Portales vs Tigres (¿cargaste la semilla demo?)");
-  if (m.status === "VALIDADO" && !forzar) throw new Error("La liga ya lo validó: usa --forzar para regresarlo (y recalcula la tabla y las cartas).");
-
-  const hoy = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Mexico_City" }).format(new Date());
-  await db.$transaction(async (tx) => {
-    await tx.matchReport.deleteMany({ where: { matchId: m.id } });
-    await tx.matchEvent.deleteMany({ where: { matchId: m.id } });
-    await tx.lineup.deleteMany({ where: { matchId: m.id } });
-    await tx.liveScoreUpdate.deleteMany({ where: { matchId: m.id } });
-    await tx.match.update({
-      where: { id: m.id },
-      data: {
-        status: "PROGRAMADO",
-        homeScore: null,
-        awayScore: null,
-        homePenalties: null,
-        awayPenalties: null,
-        winnerTeamId: null,
-        liveHomeScore: 0,
-        liveAwayScore: 0,
-        liveMinute: null,
-        liveUpdatedAt: null,
-        startedAt: null,
-        endedAt: null,
-        validatedAt: null,
-        validatedById: null,
-        ...(todo ? { scheduledAt: fromZonedTime(`${hoy}T20:00:00`, "America/Mexico_City") } : {}),
-      },
-    });
-    if (todo) {
-      await tx.matchAttendance.updateMany({ where: { matchId: m.id }, data: { status: "CONVOCADO", respondedAt: null, nota: null } });
-      await tx.attendanceLink.deleteMany({ where: { matchId: m.id } });
-    }
-  });
-  console.log(`✓ J16 Portales vs Tigres otra vez sin jugar${todo ? ` (hoy ${hoy} a las 20:00, pase de lista en blanco)` : ""}`);
+  const cuerpo = (await r.json().catch(() => null)) as { ok?: boolean; result?: { hoy?: string | null; estaba?: string }; error?: string } | null;
+  if (!r.ok || !cuerpo?.ok) throw new Error(`HTTP ${r.status}: ${cuerpo?.error ?? "sin respuesta"}`);
+  const hoy = cuerpo.result?.hoy;
+  console.log(`✓ J16 Portales vs Tigres otra vez sin jugar (estaba ${cuerpo.result?.estaba})${hoy ? ` · hoy ${hoy} a las 20:00, pase de lista en blanco` : ""}`);
 }
-main()
-  .catch((e) => {
-    console.error(e instanceof Error ? e.message : e);
-    process.exitCode = 1;
-  })
-  .finally(() => db.$disconnect());
+main().catch((e) => {
+  console.error(e instanceof Error ? e.message : e);
+  process.exitCode = 1;
+});

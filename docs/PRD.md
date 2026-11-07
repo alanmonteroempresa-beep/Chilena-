@@ -398,6 +398,9 @@ Estados: `BORRADOR → INSCRIPCIONES_ABIERTAS → EN_CURSO → LIGUILLA → FINA
 - **Sin señal:** la cédula se guarda en el celular y se manda sola al volver la señal (o al abrir otra vez la cédula). Si llega dos veces, cuenta una (`clientId`).
 - **Capturar la cédula** es del árbitro asignado que aceptó el partido (PERMISOS §4).
 - Todavía no se capturan en el modo "al terminar": cambios, penales fallados o atajados, el modo "en vivo" ni el dictado por voz.
+- **Si el árbitro no contesta una corrección en 48 h, la contesta la liga** (dueño o administrador), para que ningún partido se quede trabado.
+
+**Al validar (bloque E, `partidos/server/actions.ts` y `recalcular.ts`):** en una transacción con bitácora, el partido queda `VALIDADO` con el marcador de la cédula, salen las sanciones automáticas (§7.8) y se recalculan los partidos cumplidos. Después se recalculan desde cero las estadísticas del torneo y la tabla (la **posición anterior** es la de antes de la última jornada validada: "subimos al 2º"), y se procesan la carta, las insignias y el feed. Avisos: "Ya es oficial" a los dos equipos, "Te toca sentarte" al sancionado y "Aguas: llevas 4 amarillas" a quien quedó a una. Recalcular da siempre lo mismo: con la semilla, 0 diferencias en tabla, estadísticas y sanciones.
 
 ### 7.8 Sanciones (pantalla 47)
 - **Automáticas** (salen solas de la cédula validada, con las reglas del torneo): roja = 1 partido (`partidosPorRoja`); 5 amarillas acumuladas = 1 partido (`amarillasParaSuspension`).
@@ -408,6 +411,8 @@ Estados: `BORRADOR → INSCRIPCIONES_ABIERTAS → EN_CURSO → LIGUILLA → FINA
 - La roja crea su sanción automática (1 partido). La liga la **sube, la baja o la anula** en esa misma sanción ("APLICAR: 2 PARTIDOS"), con motivo y bitácora (antes → después).
 - `Sanction.automatica` significa "nació de la cédula", aunque la liga la haya ajustado.
 - No se puede dejar en menos partidos de los que ya cumplió. Para quitarla, se anula.
+- **Una sanción que la liga anuló no revive** al validar otros partidos.
+- **Validar fuera de orden:** el acumulado sigue el orden de las jornadas, no el orden en que se validan. Si la liga valida la J6 antes que la J5, la 5ª amarilla puede caer primero en la J6; al validar la J5 se recalcula, se crea la de la J5 y la de la J6 se anula sola, con bitácora. Lo mismo si dos validaciones al mismo tiempo dejaran una sanción repetida (no debería pasar: se validan de una en una por torneo).
 
 **Amarillas acumuladas:**
 - Al llegar a 5 se crea la suspensión y el **acumulado vuelve a 0**: la siguiente suspensión sale con 5 más.

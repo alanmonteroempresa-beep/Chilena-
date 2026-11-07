@@ -106,6 +106,26 @@ test("el árbitro manda la cédula; Tigres señala, el árbitro acepta y firman 
   await abrirCedula(page);
   await expect(page.getByText("Firmaron los dos. Ya la tiene la liga para validar.")).toBeVisible();
   await salir(page);
+
+  // Bloque E: la liga valida (pantalla 46) y ya cuenta
+  const matchId = cedula.split("/").pop()!;
+  await entrarCon(page, "liga");
+  await page.goto("/inicio");
+  await page.getByRole("link", { name: /Cédula.* por revisar/ }).click();
+  await expect(page.getByRole("heading", { name: "Revisar cédulas" })).toBeVisible();
+  await page.goto(`/admin/dominical-iztapalapa/cedulas?partido=${matchId}`);
+  await expect(page.getByLabel("Detalle de la cédula").getByText("Gol · El Chícharo · 64'", { exact: false }).or(page.getByLabel("Detalle de la cédula").getByText("#9 El Chícharo")).first()).toBeVisible();
+  await page.getByRole("button", { name: "Validar resultado" }).click();
+  await expect(page.getByText(/Validado\. Ya cuenta para la tabla/)).toBeVisible({ timeout: 30_000 });
+  await page.goto(`/partido/${matchId}`);
+  await expect(page.getByText(/oficial/i).first()).toBeVisible();
+  await salir(page);
+
+  // Al Chícharo le llega que ya es oficial
+  await entrarCon(page, "jugador");
+  await page.goto("/notificaciones?tab=partidos");
+  await expect(page.getByRole("link", { name: /Ya es oficial: Portales 1–1 Tigres/ })).toBeVisible();
+  await salir(page);
 });
 
 test("con las dos firmas en el celular del árbitro queda firmada al enviar", async ({ page }, info) => {

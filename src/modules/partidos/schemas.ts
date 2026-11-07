@@ -68,5 +68,9 @@ export const pedirCorreccionSchema = z
 
 export const responderCorreccionSchema = z.object({ correctionId: id, aceptar: z.boolean() });
 
+/** La liga valida un partido o todas las cédulas firmadas del torneo (pantalla 46) */
+export const validarSchema = z.object({ matchId: id });
+export const validarListasSchema = z.object({ tournamentId: id });
+
 export type EnviarCedula = z.infer<typeof enviarCedulaSchema>;
 export type PedirCorreccion = z.infer<typeof pedirCorreccionSchema>;

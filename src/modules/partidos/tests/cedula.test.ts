@@ -15,7 +15,7 @@ import {
   type Cedula,
   type EventoCapturado,
 } from "../server/services/cedula";
-import { transicion, type Estado } from "../server/services/estado-partido";
+import { laLigaPuedeContestar, transicion, type Estado } from "../server/services/estado-partido";
 
 // J16 de prueba: Portales (DP) vs Tigres (TL), pantallas 56a, 56b y 19
 const ev = (id: string, tipo: EventoCapturado["tipo"], equipoId: string, jugadorId: string, minuto: number | null = null, extra: Partial<EventoCapturado> = {}): EventoCapturado => ({
@@ -216,5 +216,13 @@ describe("esquemas de la cédula", () => {
     expect(pedirCorreccionSchema.safeParse({ ...c, kind: "MINUTO", eventoId: null, propuesta: { minuto: 63 } }).success).toBe(false);
     expect(pedirCorreccionSchema.safeParse({ ...c, kind: "FALTA_EVENTO", eventoId: null, propuesta: { tipo: "GOL" } }).success).toBe(false);
     expect(pedirCorreccionSchema.safeParse({ ...c, kind: "JUGADOR_EQUIVOCADO", eventoId: u(5), propuesta: { jugadorId: u(6), equipoId: u(2) } }).success).toBe(true);
+  });
+});
+
+describe("la liga contesta la corrección si el árbitro no (PRD §7.7, POR APROBAR)", () => {
+  const pedida = new Date("2026-11-01T20:00:00Z");
+  it("antes de 48 h solo el árbitro; desde las 48 h, también la liga", () => {
+    expect(laLigaPuedeContestar(pedida, new Date("2026-11-03T19:59:00Z"))).toBe(false);
+    expect(laLigaPuedeContestar(pedida, new Date("2026-11-03T20:00:00Z"))).toBe(true);
   });
 });

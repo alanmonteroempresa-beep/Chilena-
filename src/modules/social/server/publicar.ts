@@ -188,3 +188,16 @@ export async function publicarInsignia(userId: string, badgeCode: string) {
   });
   return post;
 }
+
+/**
+ * Regresar el partido de prueba (scripts/reiniciar-prueba.ts): borra sus auto-posts y las insignias que se
+ * anunciaron desde que se validó. Los comentarios y reacciones se van con su post.
+ */
+export async function borrarPostsDelPartido(matchId: string, { desde, userIds = [] }: { desde?: Date | null; userIds?: string[] } = {}) {
+  const delPartido = await db.post.deleteMany({ where: { matchId, source: "PLANTILLA" } });
+  const insignias =
+    desde && userIds.length
+      ? await db.post.deleteMany({ where: { source: "PLANTILLA", type: "AUTO_INSIGNIA", subjectUserId: { in: userIds }, createdAt: { gte: desde } } })
+      : { count: 0 };
+  return { posts: delPartido.count, insignias: insignias.count };
+}

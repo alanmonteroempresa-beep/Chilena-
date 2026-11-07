@@ -16,6 +16,7 @@ export type CorreccionDeLaVista = {
   quien: string;
   equipo: string;
   requestedById: string;
+  creadaEn: Date;
   titulo: string;
   dice: string | null;
   debeDecir: string | null;
@@ -101,6 +102,7 @@ export async function vistaDeLaCedula(matchId: string) {
       quien: nombreVisible(c.requestedBy),
       equipo: lado.corto,
       requestedById: c.requestedById,
+      creadaEn: c.createdAt,
       titulo:
         c.kind === "JUGADOR_EQUIVOCADO" && original
           ? `${DEL[original.tipo]}${original.minuto != null ? ` del ${original.minuto}'` : ""} ¿de quién?`

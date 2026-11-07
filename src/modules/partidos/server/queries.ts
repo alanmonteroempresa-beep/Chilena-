@@ -465,3 +465,74 @@ export function cedulaDelPartido(matchId: string) {
 export function correccionesParaElArbitro(refereeId: string) {
   return db.matchReportCorrection.count({ where: { status: "PENDIENTE", report: { match: { refereeId } } } });
 }
+
+type Lector = Pick<typeof db, "match" | "lineupPlayer" | "matchEvent" | "sanction">;
+
+/**
+ * Lo VALIDADO del torneo para recalcular sanciones, estadísticas y tabla (regla 2): partidos en orden,
+ * alineaciones, eventos oficiales y suspensiones. Acepta la transacción para ver el partido recién validado.
+ */
+export async function datosParaRecalcular(tournamentId: string, cliente: Lector = db) {
+  const partidos = await cliente.match.findMany({
+    where: { tournamentId, status: "VALIDADO" },
+    orderBy: [{ scheduledAt: "asc" }, { id: "asc" }],
+    select: {
+      id: true,
+      status: true,
+      homeTeamId: true,
+      awayTeamId: true,
+      homeScore: true,
+      awayScore: true,
+      round: { select: { numero: true, fase: true } },
+    },
+  });
+  const ids = partidos.map((p) => p.id);
+  const [alineaciones, eventos, sanciones] = await Promise.all([
+    cliente.lineupPlayer.findMany({
+      where: { lineup: { matchId: { in: ids } } },
+      select: { userId: true, jugo: true, titular: true, posicion: true, lineup: { select: { matchId: true, teamId: true } } },
+    }),
+    cliente.matchEvent.findMany({
+      where: { matchId: { in: ids }, oficial: true, voided: false, type: { in: ["GOL", "AUTOGOL", "AMARILLA", "ROJA", "PENAL_ATAJADO"] } },
+      select: { matchId: true, type: true, minute: true, teamId: true, playerId: true, assistPlayerId: true },
+    }),
+    cliente.sanction.findMany({
+      where: { tournamentId, type: "SUSPENSION_PARTIDOS", status: { in: ["ACTIVA", "CUMPLIDA"] } },
+      select: { id: true, userId: true, matchId: true, partidos: true, partidosCumplidos: true, status: true, automatica: true, motivo: true },
+    }),
+  ]);
+  return { partidos, alineaciones, eventos, sanciones };
+}
+export type DatosParaRecalcular = Awaited<ReturnType<typeof datosParaRecalcular>>;
+
+/** Las cédulas que esperan a la liga (pantalla 46): enviadas, en corrección o firmadas, con su avance */
+export function cedulasParaLaLiga(tournamentId: string) {
+  return db.match.findMany({
+    where: { tournamentId, report: { status: { in: ["ENVIADA", "EN_CORRECCION", "FIRMADA"] } } },
+    orderBy: [{ scheduledAt: "asc" }, { id: "asc" }],
+    select: {
+      id: true,
+      status: true,
+      round: { select: { numero: true } },
+      homeTeam: { select: equipoSelect },
+      awayTeam: { select: equipoSelect },
+      report: {
+        select: {
+          status: true,
+          source: true,
+          homeScore: true,
+          awayScore: true,
+          submittedAt: true,
+          homeSignedAt: true,
+          awaySignedAt: true,
+          _count: { select: { corrections: { where: { status: "PENDIENTE" } } } },
+        },
+      },
+    },
+  });
+}
+
+/** Cuántos partidos de la jornada ya validó la liga ("11 validadas") */
+export function validadosDeLaJornada(tournamentId: string, numero: number) {
+  return db.match.count({ where: { tournamentId, status: "VALIDADO", round: { numero } } });
+}

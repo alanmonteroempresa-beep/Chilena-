@@ -141,12 +141,12 @@ export function plantillasDeJugadores(userIds: string[]) {
 }
 
 /** Inscritos (activos o suspendidos) de varios equipos en el torneo, con dorsal: la cédula (`partidos`) */
-export async function inscritosDeEquipos(tournamentId: string, teamIds: string[]) {
+export async function inscritosDeEquipos(tournamentId: string, teamIds?: string[]) {
   const filas = await db.tournamentRoster.findMany({
-    where: { tournamentId, status: { in: ["ACTIVO", "SUSPENDIDO"] }, tournamentTeam: { teamId: { in: teamIds } } },
-    select: { userId: true, numero: true, tournamentTeam: { select: { teamId: true } } },
+    where: { tournamentId, status: { in: ["ACTIVO", "SUSPENDIDO"] }, ...(teamIds ? { tournamentTeam: { teamId: { in: teamIds } } } : {}) },
+    select: { userId: true, numero: true, tournamentTeamId: true, tournamentTeam: { select: { teamId: true } } },
   });
-  return filas.map((f) => ({ userId: f.userId, teamId: f.tournamentTeam.teamId, numero: f.numero }));
+  return filas.map((f) => ({ userId: f.userId, teamId: f.tournamentTeam.teamId, tournamentTeamId: f.tournamentTeamId, numero: f.numero }));
 }
 
 /** Quiénes juegan el torneo (para la rareza de las insignias: "41% de la liga la tiene") */
@@ -205,6 +205,20 @@ export async function jugadoresDelPartido(matchId: string) {
     select: { userId: true },
   });
   return filas.map((f) => f.userId);
+}
+
+/** El rol de la persona en la liga (permisos por relación, PERMISOS §4) */
+export async function rolEnLiga(userId: string, leagueId: string) {
+  const a = await db.leagueAdmin.findUnique({ where: { leagueId_userId: { leagueId, userId } }, select: { role: true } });
+  return a?.role ?? null;
+}
+
+/** Torneos vigentes con sus reglas de sanciones (recalcular tabla, estadísticas y sanciones) */
+export function torneosVigentes() {
+  return db.tournament.findMany({
+    where: { status: { in: [...ACTIVOS] } },
+    select: { id: true, nombre: true, partidosPorRoja: true, amarillasParaSuspension: true },
+  });
 }
 
 /** Todos los que juegan algún torneo vigente (recalcular todo) */

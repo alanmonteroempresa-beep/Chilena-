@@ -83,6 +83,37 @@ export function sancionesAutomaticas(
   return recorrer(partidos, reglas).sanciones;
 }
 
+/** ¿La sanción salió de juntar amarillas? (las automáticas guardan su origen en el motivo que arma `recorrer`) */
+export const esPorAmarillas = (motivo: string) => /ª amarilla/.test(motivo);
+
+export type SancionGuardada = { id: string; userId: string | null; matchId: string | null; motivo: string; status: string };
+
+/**
+ * Concilia lo que dicen las cédulas validadas con las automáticas guardadas. Una sanción es un hecho:
+ * partido + jugador + si fue por amarillas o por expulsión.
+ * - `crear`: los hechos que aún no tienen sanción. Una que la liga ANULÓ no se vuelve a crear.
+ * - `sobran`: las guardadas (no anuladas) que ya no salen de las cédulas o que están repetidas. Pasa cuando se
+ *   validan partidos fuera de orden: la 5ª amarilla cae en otro partido. Se anulan con bitácora.
+ */
+export function conciliarSanciones(calculadas: SancionAutomatica[], guardadas: SancionGuardada[]) {
+  const llave = (matchId: string | null, userId: string | null, amarillas: boolean) => `${matchId}|${userId}|${amarillas}`;
+  const deseadas = new Set(calculadas.map((c) => llave(c.matchId, c.jugadorId, c.origen === "AMARILLAS")));
+  const vistas = new Set<string>();
+  const sobran: SancionGuardada[] = [];
+  // Primero las anuladas: si la liga ya anuló el hecho, no se crea otra
+  for (const g of [...guardadas].sort((a, b) => Number(a.status !== "ANULADA") - Number(b.status !== "ANULADA"))) {
+    const k = llave(g.matchId, g.userId, esPorAmarillas(g.motivo));
+    if (g.status === "ANULADA") {
+      vistas.add(k);
+      continue;
+    }
+    if (!deseadas.has(k) || vistas.has(k)) sobran.push(g);
+    vistas.add(k);
+  }
+  const crear = calculadas.filter((c) => !vistas.has(llave(c.matchId, c.jugadorId, c.origen === "AMARILLAS")));
+  return { crear, sobran };
+}
+
 /** Amarillas acumuladas hoy por jugador (después de los reinicios) */
 export function amarillasAcumuladas(
   partidos: PartidoParaSanciones[],

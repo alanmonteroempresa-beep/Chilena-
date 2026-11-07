@@ -39,6 +39,11 @@ export type Transicion = { ok: true; estado: Estado } | { ok: false; motivo: str
 /** "Firmas pendientes: si después de 48 h un delegado no firma ni señala, la liga puede validar igual" */
 export const HORAS_PARA_VALIDAR_SIN_FIRMAS = 48;
 
+/** Si el árbitro no contesta una corrección en 48 h, la contesta la liga (PRD §7.7, POR APROBAR) */
+export function laLigaPuedeContestar(pedidaEn: Date, ahora: Date): boolean {
+  return ahora.getTime() - pedidaEn.getTime() >= HORAS_PARA_VALIDAR_SIN_FIRMAS * 3_600_000;
+}
+
 const SIN_FIRMAS: Record<Lado, boolean> = { local: false, visita: false };
 const no = (motivo: string): Transicion => ({ ok: false, motivo });
 const si = (estado: Estado): Transicion => ({ ok: true, estado });
