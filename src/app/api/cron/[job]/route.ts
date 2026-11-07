@@ -54,12 +54,12 @@ async function recalcularTorneos(params: URLSearchParams) {
 /**
  * Regresa el partido de prueba (J16 Portales vs Tigres) a "sin jugar" y deja todo como si nunca se hubiera
  * jugado: sanciones, estadísticas, tabla, votación del MVP, posts y cartas. `?todo=1`: además el pase de lista en blanco y el
- * partido hoy a las 20:00 (o mañana, si ya pasó; `&hora=17:00` cambia la hora). Lo llama `npx tsx scripts/reiniciar-prueba.ts [url] [--todo]`.
+ * partido hoy a las 20:00 (o mañana, si ya pasó; `&hora=12:00` cambia la hora y `&fecha=2026-11-08` el día). Lo llama `npx tsx scripts/reiniciar-prueba.ts [url] [--todo]`.
  */
 async function reiniciarPrueba(params: URLSearchParams) {
   await asegurarListeners();
   const todo = params.get("todo") === "1";
-  const r = await reiniciarPartidoDePrueba({ todo, hora: params.get("hora") ?? undefined });
+  const r = await reiniciarPartidoDePrueba({ todo, hora: params.get("hora") ?? undefined, fecha: params.get("fecha") ?? undefined });
   const paseDeLista = todo ? await reiniciarPaseDeLista(r.matchId) : null;
   const votaciones = await reiniciarVotacionesDelPartido(r.matchId);
   if (!r.tournamentId) return { ...r, paseDeLista, votaciones };

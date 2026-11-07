@@ -14,10 +14,11 @@ const PRUEBA = { liga: "dominical-iztapalapa", jornada: 16, local: "dep-portales
  * partidos cumplidos y las estadísticas. La tabla, el pase de lista, el feed y las cartas los recalcula quien
  * llama (cada módulo lo suyo). Solo toca ese partido de la liga demo y de un torneo vigente.
  * `todo`: además, el partido hoy a las `hora` (CDMX, 20:00 por defecto); si esa hora ya pasó, mañana (así la
- * quiniela sigue abierta).
+ * quiniela sigue abierta). Con `fecha` (2026-11-08), ese día.
  */
-export async function reiniciarPartidoDePrueba({ todo = false, hora = "20:00" }: { todo?: boolean; hora?: string } = {}) {
+export async function reiniciarPartidoDePrueba({ todo = false, hora = "20:00", fecha }: { todo?: boolean; hora?: string; fecha?: string } = {}) {
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(hora)) throw new Error("La hora va como 20:00");
+  if (fecha && !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) throw new Error("La fecha va como 2026-11-08");
   const m = await db.match.findFirst({
     where: {
       round: { numero: PRUEBA.jornada },
@@ -35,8 +36,9 @@ export async function reiniciarPartidoDePrueba({ todo = false, hora = "20:00" }:
   if (!m) throw new Error("No encontré la J16 Portales vs Tigres de la liga demo en un torneo vigente (¿cargaste la semilla demo?)");
   const ahora = new Date();
   const dia = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(d);
-  let cuando = fromZonedTime(`${dia(ahora)}T${hora}:00`, TZ);
-  if (cuando.getTime() <= ahora.getTime() + 10 * 60_000) cuando = fromZonedTime(`${dia(new Date(ahora.getTime() + 86_400_000))}T${hora}:00`, TZ);
+  let cuando = fromZonedTime(`${fecha ?? dia(ahora)}T${hora}:00`, TZ);
+  if (fecha && cuando.getTime() <= ahora.getTime()) throw new Error("Esa fecha y hora ya pasaron");
+  if (!fecha && cuando.getTime() <= ahora.getTime() + 10 * 60_000) cuando = fromZonedTime(`${dia(new Date(ahora.getTime() + 86_400_000))}T${hora}:00`, TZ);
 
   await db.$transaction(
     async (tx) => {

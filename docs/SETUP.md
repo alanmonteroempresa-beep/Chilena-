@@ -86,7 +86,8 @@ node scripts/supabase-dev.mjs torneo                # lo recalcula y lo guarda
 ```
 El partido de prueba (J16 Portales vs Tigres) se regresa a "sin jugar", como si nunca se hubiera jugado:
 ```bash
-npx tsx scripts/reiniciar-prueba.ts https://chilena.vercel.app --todo   # --todo: pase de lista en blanco y hoy a las 20:00
+npx tsx scripts/reiniciar-prueba.ts https://chilena.vercel.app --todo   # --todo: pase de lista en blanco y hoy a las 20:00 (o mañana si ya pasó)
+npx tsx scripts/reiniciar-prueba.ts https://chilena.vercel.app --todo --fecha 2026-11-08 --hora 12:00   # otro día y hora
 ```
 
 A mano, en el SQL editor de otro proyecto:
